@@ -29,9 +29,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies for tauri 
         if: matrix.platform == 'ubuntu-latest'
-        run: | # tauri dependencies
+        run: | 
           sudo apt-get update 
           sudo apt install libwebkit2gtk-4.0-dev \
             build-essential \
@@ -42,7 +42,12 @@ jobs:
             libgtk-3-dev \
             libayatana-appindicator3-dev \
             librsvg2-dev
-
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false  # Prevent automatic installation of dependencies
+          
       - name: install NodeJS
         uses: actions/setup-node@v4
         with:
@@ -58,7 +63,7 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: install web dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: build web
         run: pnpm run build
