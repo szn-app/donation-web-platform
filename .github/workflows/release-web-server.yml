@@ -1,0 +1,75 @@
+name: release web-server
+
+on:
+  push:
+    tags:
+      - 'web-server/v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ ubuntu-latest, macos-latest, windows-latest ]
+        service: 
+          - web-server
+        
+    runs-on: ${{ matrix.platform }}
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/${{matrix.service}}
+        
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: | # tauri dependencies
+          sudo apt-get update 
+          sudo apt install libwebkit2gtk-4.0-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install web dependencies
+        run: pnpm install
+
+      - name: build web
+        run: pnpm run build
+
+      - name: build tauri app 
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ matrix.service }}/${{ github.ref_name }}
+          releaseName: "Release ${{ matrix.service }} - v__VERSION__"
+          releaseBody: 'See the assets to download and install this version.'
+          releaseDraft: true
+          prerelease: false
