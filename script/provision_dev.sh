@@ -70,3 +70,24 @@ setup_nodejs_for_react_development_environment() {
 
     sudo npm install -g pnpm
 }
+
+version_bump() { 
+    # bump package.json version
+    set_version() {
+        local new_version="$1"
+
+        jq --arg new_version "$new_version" '.version = $new_version' package.json > package.json.tmp
+        mv package.json.tmp package.json
+
+        echo "Version set to $new_version"
+    }
+
+    VERSION=0.1.0
+    SERVICE=web-server
+
+    # Call the set_version function
+    pushd ./service/web-server
+    set_version "$VERSION"
+    git tag ${SERVICE}-v${VERSION}
+    popd
+}
