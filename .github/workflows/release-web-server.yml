@@ -3,7 +3,7 @@ name: release web-server
 on:
   push:
     tags:
-      - 'web-server/v*'
+      - 'web-server-v*'
   workflow_dispatch:
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         service: 
           - web-server
         
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{matrix.platform}}
     
     defaults:
       run:
@@ -33,7 +33,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: | 
           sudo apt-get update 
-          sudo apt install libwebkit2gtk-4.0-dev \
+          sudo apt install libwebkit2gtk-4.1-dev \
             build-essential \
             curl \
             wget \
@@ -47,12 +47,14 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false  # Prevent automatic installation of dependencies
+          version: latest
           
       - name: install NodeJS
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
+          cache-dependency-path: ./service/${{matrix.service}}
 
       - name: install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -73,8 +75,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ matrix.service }}/${{ github.ref_name }}
-          releaseName: "Release ${{ matrix.service }} - v__VERSION__"
+          tagName: ${{matrix.service}}-${{ github.ref_name }}
+          releaseName: "${{matrix.service}} v__VERSION__"
           releaseBody: 'See the assets to download and install this version.'
           releaseDraft: true
           prerelease: false
