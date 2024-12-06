@@ -1,0 +1,4 @@
+Node.js version: 22.11.0
+pnpm version: 9.14.4
+Rust version: 1.83.0
+Cargo version: 1.83.0
