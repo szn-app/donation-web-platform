@@ -77,6 +77,6 @@ jobs:
         with:
           tagName: ${{matrix.service}}-${{ github.ref_name }}
           releaseName: "${{matrix.service}} v__VERSION__"
-          releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: true
+          releaseBody: 'See the assets to download the app.'
+          releaseDraft: false
           prerelease: false
