@@ -15,6 +15,8 @@ service_tag_version() {
     # Call the set_version function
     pushd ./service/$service
     set_version "$version"
+    git add package.json
+    git commit -m "version bump"
     git tag $service-v$version
     popd
 }
@@ -25,4 +27,10 @@ release_package() {
     fi
 
     git push --tags
+}
+
+delete_tag() { 
+    tag=web-server-v0.1.1
+    git push origin :$tag
+    git tag -d $tag
 }
