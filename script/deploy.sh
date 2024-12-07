@@ -1,5 +1,5 @@
 
-service_tag_version() { 
+manual_service_tag_version() { 
     local service="${1:-web-server}" 
     local version="${2:-0.1.0}" 
 
@@ -22,12 +22,12 @@ service_tag_version() {
     popd
 }
 
-release_package() {
+manual_release_package() {
     local service="${1:-web-server}" 
     local version="${2:-0.1.0}" 
 
     if ! git symbolic-ref --short HEAD | grep -q '^main$'; then
-        echo "Not on main branch."
+        echo "error: not on main branch."
         exit 1;
     fi
 

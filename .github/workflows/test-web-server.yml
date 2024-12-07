@@ -9,7 +9,12 @@ jobs:
   test-frontend:
     runs-on: ubuntu-latest
     if: startsWith(github.head_ref, 'feature/')
-        
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/web-server
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
