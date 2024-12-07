@@ -17,7 +17,7 @@ service_tag_version() {
     set_version "$version"
 
     git add package.json
-    git commit -m "version bump"
+    git commit -m "$service: $version version bump"
 
     popd
 }
