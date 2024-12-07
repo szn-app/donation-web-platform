@@ -1,0 +1,86 @@
+name: test
+
+on:
+  pull_request:
+    branches:
+      - master
+      - development
+  
+jobs:
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+          
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false  # Prevent automatic installation of dependencies
+          version: latest
+          
+      - name: install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: ./service/web-server
+
+      - name: install web dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: test javascript
+        run: pnpm run test
+
+  test-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ macos-latest, ubuntu-latest, windows-latest ]
+        service: [ web-server ]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/${{matrix.service}}
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies for tauri 
+        if: matrix.platform == 'ubuntu-latest'
+        run: | 
+          sudo apt-get update 
+          sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: ./service/${{matrix.service}}
+
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+  
+      - name: install web dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: build web
+        run: pnpm run build
+  
+      - name: test rust
+        run: cargo test
+
+      ## build tauri cross-platform artifacts
+      # - uses: tauri-apps/tauri-action@v0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
