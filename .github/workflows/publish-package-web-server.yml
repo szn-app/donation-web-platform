@@ -76,7 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{matrix.service}}-${{ github.ref_name }}
-          releaseName: "${{matrix.service}} v__VERSION__"
+          releaseName: "${{matrix.service}} ${{github.ref_name}}"
           releaseBody: 'See the assets to download the app.'
           releaseDraft: false
           prerelease: false
