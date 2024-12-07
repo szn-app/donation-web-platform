@@ -39,3 +39,13 @@ record_version() {
     echo "Rust version: ${RUST_VERSION}" >> version.txt
     echo "Cargo version: ${CARGO_VERSION}" >> version.txt
 }
+
+feature_pull_request() { 
+    if [[ $# -lt 1 ]]; then
+        exit 1; 
+    fi
+
+    local feature_branch="${1:-feature/example}"
+    git push origin $feature_branch
+    gh pr create --head $feature_branch --base development --title "$feature_branch" 
+}

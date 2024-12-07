@@ -3,9 +3,12 @@ name: test
 on:
   pull_request:
     branches:
-      - master
       - development
+  push: 
+    branches: 
+      - master
   
+      
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
