@@ -3,16 +3,13 @@ name: test
 on:
   pull_request:
     branches:
-      - development
-  push: 
-    branches: 
-      - master
-  
+      - main 
       
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
-    
+    if: startsWith(github.head_ref, 'feature/')
+        
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -37,6 +34,8 @@ jobs:
         run: pnpm run test
 
   test-tauri:
+    if: startsWith(github.head_ref, 'feature/') 
+
     strategy:
       fail-fast: false
       matrix:
