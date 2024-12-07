@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: merge PR
-        run: gh pr merge --squash --auto "1" --rebase false -t "${{ github.event.pull_request.title }}"
+        run: gh pr merge ${{ github.event.pull_request.number }} --squash --auto --rebase=false -t "${{ github.event.pull_request.title }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
