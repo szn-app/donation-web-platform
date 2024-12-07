@@ -1,3 +1,4 @@
+
 service_tag_version() { 
     local service="${1:-web-server}" 
     local version="${2:-0.1.0}" 
@@ -12,25 +13,45 @@ service_tag_version() {
         echo "Version set to $new_version"
     }
 
-    # Call the set_version function
     pushd ./service/$service
     set_version "$version"
+
     git add package.json
     git commit -m "version bump"
-    git tag $service-v$version
+
     popd
 }
 
 release_package() {
-    if [[ $# -gt 0 ]]; then
-        service_tag_version $1 $2
+    local service="${1:-web-server}" 
+    local version="${2:-0.1.0}" 
+
+    if [[ -z "$(git diff --cached --name-only)" ]]; then
+        echo "No staged files found. Proceeding..."
+        if [[ -n "$(git status --porcelain)" ]]; then
+            git stash 
+        fi 
+    else 
+        echo "There are staged files. Please commit or stash them before proceeding."
+        exit 1
     fi
 
+    if [[ $# -gt 1 ]]; then
+        service_tag_version $service $version
+    fi
+
+    git checkout main
+    git merge development 
+    git tag $service-v$version
+
+    git push 
     git push --tags
+
+    git stash pop > /dev/null 2>&1
 }
 
 delete_tag() { 
-    tag=web-server-v0.1.1
+    tag=${1:-web-server-v0.1.1}
     git push origin :$tag
     git tag -d $tag
 }
