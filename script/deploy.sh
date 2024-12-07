@@ -17,7 +17,7 @@ service_tag_version() {
     set_version "$version"
 
     git add package.json
-    git commit -m "$service: $version version bump"
+    git commit -m "$service $version version bump"
 
     popd
 }
@@ -43,6 +43,7 @@ release_package() {
     git checkout main
     git merge development 
     git tag $service-v$version
+    git checkout development
 
     git push 
     git push --tags
