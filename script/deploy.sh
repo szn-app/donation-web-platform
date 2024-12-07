@@ -40,12 +40,9 @@ release_package() {
         service_tag_version $service $version
     fi
 
-    git checkout main
-    git merge development 
     git tag $service-v$version
-    git checkout development
 
-    git push origin main development
+    git push origin 
     git push --tags
 
     git stash pop > /dev/null 2>&1

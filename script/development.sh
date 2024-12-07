@@ -40,12 +40,13 @@ record_version() {
     echo "Cargo version: ${CARGO_VERSION}" >> version.txt
 }
 
-feature_pull_request() { 
+# for feature branches and hotfixes.
+feature_pull_request() {  
     if [[ $# -lt 1 ]]; then
         exit 1; 
     fi
 
     local feature_branch="${1:-feature/example}"
     git push origin $feature_branch
-    gh pr create --head $feature_branch --base development --title "$feature_branch" --fill
+    gh pr create --head $feature_branch --base main --title "$feature_branch" --fill
 }
