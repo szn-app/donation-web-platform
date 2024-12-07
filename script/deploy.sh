@@ -26,6 +26,11 @@ release_package() {
     local service="${1:-web-server}" 
     local version="${2:-0.1.0}" 
 
+    if ! git symbolic-ref --short HEAD | grep -q '^main$'; then
+        echo "Not on main branch."
+        exit 1;
+    fi
+
     if [[ -z "$(git diff --cached --name-only)" ]]; then
         echo "No staged files found. Proceeding..."
         if [[ -n "$(git status --porcelain)" ]]; then
@@ -40,9 +45,9 @@ release_package() {
         service_tag_version $service $version
     fi
 
-    git tag $service-v$version
-
     git push origin 
+
+    git tag $service-v$version
     git push --tags
 
     git stash pop > /dev/null 2>&1
