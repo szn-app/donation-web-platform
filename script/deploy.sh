@@ -45,7 +45,7 @@ release_package() {
     git tag $service-v$version
     git checkout development
 
-    git push 
+    git push origin main development
     git push --tags
 
     git stash pop > /dev/null 2>&1
