@@ -4,8 +4,10 @@
 # `./script.sh <function-name> [args...]`
 
 # load functions
-source ./script/provision_dev.sh
-source ./script/dev.sh 
+directory=./script
+for file in "$directory/*.sh"; do
+  source $file
+done
 
 # call function in this script file from commandline argument
 {
