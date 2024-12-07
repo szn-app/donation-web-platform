@@ -1,4 +1,4 @@
-name: release web-server
+name: publish package web-server
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  publish-package:
     permissions:
       contents: write
       
