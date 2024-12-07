@@ -3,6 +3,7 @@ name: merge pull request
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches: [development]
 
 jobs:
   auto_merge:

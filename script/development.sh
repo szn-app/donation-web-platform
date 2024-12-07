@@ -47,5 +47,5 @@ feature_pull_request() {
 
     local feature_branch="${1:-feature/example}"
     git push origin $feature_branch
-    gh pr create --head $feature_branch --base development --title "$feature_branch" 
+    gh pr create --head $feature_branch --base development --title "$feature_branch" --fill
 }
