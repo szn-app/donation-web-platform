@@ -24,9 +24,9 @@
   "pull-request-footer": "_release-please generated PR_",
   "packages": {
       ".": {
-        "component": "Application", 
+        "component": "donation-app", 
         "release-type": "rust", 
-        "include-component-in-tag": false,
+        "include-component-in-tag": true,
         "exclude-paths": [
           "service/web-server",
           ".release-please-config.json",
