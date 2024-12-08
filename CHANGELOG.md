@@ -14,6 +14,20 @@
 * dummy commit ([48fd38e](https://github.com/szn-app/donation-app/commit/48fd38ecebfd5b412cc8e0c4ff15a683cffd53ce))
 * dummy commit ([1a3c112](https://github.com/szn-app/donation-app/commit/1a3c112ef431effa3d759f285ceafbf65d60f6a4))
 
+## [0.3.2](https://github.com/szn-app/donation-app/compare/donation-app@v0.3.1...donation-app@v0.3.2) (2024-12-08)
+
+
+### Features
+
+* dummy commit ([cee1170](https://github.com/szn-app/donation-app/commit/cee117029ba669ab3497c92e52150c5233b87e79))
+
+
+### Bug Fixes
+
+* dummy commit ([4a726cc](https://github.com/szn-app/donation-app/commit/4a726cc4b6859791f23e7efcd154f3b776e00567))
+* dummy commit ([48fd38e](https://github.com/szn-app/donation-app/commit/48fd38ecebfd5b412cc8e0c4ff15a683cffd53ce))
+* dummy commit ([1a3c112](https://github.com/szn-app/donation-app/commit/1a3c112ef431effa3d759f285ceafbf65d60f6a4))
+
 ## [0.3.2](https://github.com/szn-app/donation-app/compare/v0.3.1...v0.3.2) (2024-12-08)
 
 
