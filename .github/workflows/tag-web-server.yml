@@ -35,7 +35,7 @@ jobs:
                 # assign version variable
                 echo "::set-output name=tag_version::$new_version"
 
-            - name: commit version bump 
+            - name: update package.json version 
               run: | 
                 new_version=${{ steps.tag_version.outputs.tag_version }} 
                 # update package.json
