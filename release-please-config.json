@@ -4,7 +4,7 @@
   "release-search-depth": 50,
   "tag-separator": "@",
   "always-link-local": false,
-  "separate-pull-requests": true,
+  "separate-pull-requests": false,
   "include-v-in-tag": true,
   "include-component-in-tag": true,
   "packages": {
