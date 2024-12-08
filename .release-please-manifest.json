@@ -1,4 +1,4 @@
 {
   ".": "0.1.1",
-  "service/web-server": "0.1.7"
+  "web-server": "0.1.7"
 }
