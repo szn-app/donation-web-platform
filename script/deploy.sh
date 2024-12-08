@@ -58,4 +58,3 @@ delete_tag() {
     git push origin :$tag
     git tag -d $tag
 }
-
