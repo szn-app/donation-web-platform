@@ -1,6 +1,6 @@
 {
   "plugins": [
-    { "type": "cargo-workspace", "merge": false }, 
+    { "type": "cargo-workspace", "merge": true }, 
     {
       "type": "linked-versions",
       "groupName": "Services",
