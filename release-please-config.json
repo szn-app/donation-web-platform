@@ -21,6 +21,7 @@
     "./service/web-server": { 
       "release-type": "node", 
       "package-name": "web-server",
+      "path": "./service/web-server",
       "draft": false,
       "prerelease": false
     }

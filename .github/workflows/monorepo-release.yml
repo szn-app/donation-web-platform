@@ -12,11 +12,25 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    
+    outputs:
+      donation-app--tag_name: ${{ steps.release.outputs.donation-app--tag_name}}
+      donation-app--release_created: ${{ steps.release.outputs.donation-app--release_created}}
+      web-server--tag_name: ${{ steps.release.outputs.web-server--tag_name}}
+      web-server--release_created: ${{ steps.release.outputs.web-server--release_created}}
+
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release   
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
       
+      - name: Print release outputs for debugging
+        continue-on-error: true
+        run: |
+          echo "debug outputs:"
+          echo "${{ toJson(steps.release.outputs) }}"
+  
       # [TODO:] upload artifacts
