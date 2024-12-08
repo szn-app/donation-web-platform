@@ -5,7 +5,7 @@
   "always-link-local": false,
   "separate-pull-requests": false,
   "include-v-in-tag": true,
-  "include-component-in-tag": true,
+  "include-component-in-tag": false,
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "draft": false,
@@ -14,15 +14,22 @@
   "pull-request-footer": "(release-please generated PR)",
   "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
   "packages": {
+  ".": {
+    "component": "service",
+    "release-type": "rust",
+    "changelog-path": "CHANGELOG.md",
+    "bump-minor-pre-major": true,
+    "bump-patch-for-minor-pre-major": false,
+    "draft": false,
+    "prerelease": false
+  }, 
     "service/web-server": { 
       "component": "service",
       "component-no-space": true,
       "release-type": "node", 
-      "package-name": "web-server", 
+      "package-name": "@service/web-server", 
       "draft": false,
-      "prerelease": false,
-      "versioning": "always-bump-patch",
-      "initial-version": "1.1.0"
+      "prerelease": false
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
