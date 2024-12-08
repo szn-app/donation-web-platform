@@ -18,10 +18,10 @@
       "pull-request-header": "🤖 Release created:", 
       "pull-request-footer": "(release-please generated PR)"
     }, 
-    "./service/web-server": { 
+    "service/web-server": { 
       "release-type": "node", 
       "package-name": "web-server",
-      "path": "./service/web-server",
+      "path": "service/web-server",
       "draft": false,
       "prerelease": false
     }
