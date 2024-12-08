@@ -27,7 +27,7 @@
         "component": "service",
         "component-no-space": true,
         "release-type": "node", 
-        "package-name": "@service/web-server", 
+        "package-name": "service/web-server", 
         "draft": false,
         "prerelease": false
       }
