@@ -12,6 +12,7 @@
       "pull-request-footer": "(release-please generated PR)"
     }, 
     "service/web-server": { 
+      "initial-version": "0.1.7",
       "package-name": "web-server",
       "release-type": "node", 
       "draft": false,
