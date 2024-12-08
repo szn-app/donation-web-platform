@@ -83,5 +83,6 @@ setup_monorepo() {
         --token=$GITHUB_TOKEN \
         --repo-url=szn-app/donation-app --dry-run
 
+    release-please github-release --token=$GITHUB_TOKEN --repo-url=szn-app/donation-app
 
 }
