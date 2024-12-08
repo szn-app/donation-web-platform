@@ -7,7 +7,7 @@
       "components": [
         "@service/web-server"
       ],
-      "merge": true
+      "merge": false
     }
   ],
   "commit-search-depth": 50, 
