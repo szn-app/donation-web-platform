@@ -7,17 +7,14 @@
   "separate-pull-requests": false,
   "include-v-in-tag": true,
   "include-component-in-tag": true,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": false,
+  "draft": false,
+  "prerelease": false, 
+  "pull-request-header": "🤖 Release created:", 
+  "pull-request-footer": "(release-please generated PR)",
+  "release-type": "rust",
   "packages": {
-    ".": {
-      "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
-      "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": false,
-      "draft": false,
-      "prerelease": false, 
-      "pull-request-header": "🤖 Release created:", 
-      "pull-request-footer": "(release-please generated PR)"
-    }, 
     "service/web-server": { 
       "release-type": "node", 
       "package-name": "web-server",
