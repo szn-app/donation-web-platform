@@ -31,6 +31,6 @@ jobs:
         continue-on-error: true
         run: |
           echo "debug outputs:"
-          echo "${{ toJson(steps.release.outputs) }}"
+          echo "${{ steps.release.outputs }}"
   
       # [TODO:] upload artifacts
