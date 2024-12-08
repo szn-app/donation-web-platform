@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.2](https://github.com/szn-app/donation-app/compare/v0.3.1...v0.3.2) (2024-12-08)
+
+
+### Features
+
+* dummy commit ([85e2fbf](https://github.com/szn-app/donation-app/commit/85e2fbf8e0cfa14f3776fa20e0b51930e9c5ab6f))
+* dummy commit ([db0fa35](https://github.com/szn-app/donation-app/commit/db0fa35ded467c64f8f8fda351a84b12097fd8b0))
+* dummy commit ([6dba3c9](https://github.com/szn-app/donation-app/commit/6dba3c93e31085adb7ac330a6f2995f90aa3dc83))
+* dummy commit ([eac6155](https://github.com/szn-app/donation-app/commit/eac6155d21a285b86b892e16ffeff4a14064bff1))
+* dummy commit ([52a6e47](https://github.com/szn-app/donation-app/commit/52a6e47dda595da74e2f74484911857754d6ab3a))
+* dummy commit ([3251ddd](https://github.com/szn-app/donation-app/commit/3251ddd0c91339aefe73ecea60b73b06ced33ca6))
+
+
+### Bug Fixes
+
+* dummy commit ([1a3c112](https://github.com/szn-app/donation-app/commit/1a3c112ef431effa3d759f285ceafbf65d60f6a4))
+* dummy commit ([3388969](https://github.com/szn-app/donation-app/commit/33889698fed9447795ba3744031b38586d36b5e9))
+
 ## [0.3.1](https://github.com/szn-app/donation-app/compare/donation-app-v0.3.0...donation-app@v0.3.1) (2024-12-08)
 
 
