@@ -33,7 +33,7 @@
           "Cargo.toml"
         ]
       }, 
-      "service/web-server": { 
+      "service/web-server": {
         "component": "@service/web-server",
         "release-type": "node"
       }
