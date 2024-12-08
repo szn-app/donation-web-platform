@@ -1,5 +1,8 @@
 {
   "plugins": ["cargo-workspace"],
+  "include-v-in-tag": true,
+  "tag-separator": "@",
+  "always-link-local": false,
   "packages": {
     ".": {
       "release-type": "rust",
@@ -12,9 +15,9 @@
       "pull-request-footer": "(release-please generated PR)"
     }, 
     "service/web-server": { 
+      "release-type": "node", 
       "initial-version": "0.1.7",
       "package-name": "web-server",
-      "release-type": "node", 
       "draft": false,
       "prerelease": false
     }

@@ -76,7 +76,12 @@ setup_monorepo() {
     
     # using `release-please-config.json` file to bootstrap release-please 
     release-please bootstrap \
-    --token=$GITHUB_TOKEN \
-    --repo-url=szn-app/donation-app --dry-run
+        --token=$GITHUB_TOKEN \
+        --repo-url=szn-app/donation-app --dry-run
+
+    release-please release-pr \
+        --token=$GITHUB_TOKEN \
+        --repo-url=szn-app/donation-app --dry-run
+
 
 }
