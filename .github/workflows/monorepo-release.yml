@@ -36,11 +36,9 @@ jobs:
           echo "${{ steps.release.outputs.release_created }}"
           echo "${{ steps.release.outputs.tag_name }}"
           echo "${{ steps.release.outputs }}"
-          echo <<EOF
-            ${{ steps.release.outputs.donation-app--tag_name}}
-            ${{ steps.release.outputs.donation-app--release_created}}
-            ${{ steps.release.outputs.web-server--tag_name}}
-            ${{ steps.release.outputs.web-server--release_created}}        
-          EOF
+          echo "${{ steps.release.outputs.donation-app--tag_name}}"
+          echo "${{ steps.release.outputs.donation-app--release_created}}"
+          echo "${{ steps.release.outputs.web-server--tag_name}}"
+          echo "${{ steps.release.outputs.web-server--release_created}}"
 
       # [TODO:] upload artifacts

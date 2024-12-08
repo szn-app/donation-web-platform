@@ -26,7 +26,6 @@
       ".": {
         "component": "donation-app", 
         "release-type": "rust", 
-        "include-component-in-tag": true,
         "exclude-paths": [
           "service/web-server",
           ".release-please-config.json",
