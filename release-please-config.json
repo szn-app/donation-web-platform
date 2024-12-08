@@ -15,9 +15,9 @@
   "pull-request-footer": "(release-please generated PR)",
   "release-type": "rust",
   "packages": {
-    "web-server": { 
+    "service/web-server": { 
       "release-type": "node", 
-      "path": "service/web-server",
+      "package-name": "web-server", 
       "draft": false,
       "prerelease": false
     }
