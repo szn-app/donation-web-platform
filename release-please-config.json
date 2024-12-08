@@ -1,5 +1,4 @@
 {
-  "plugins": ["cargo-workspace"],
   "commit-search-depth": 50, 
   "release-search-depth": 50,
   "tag-separator": "@",
