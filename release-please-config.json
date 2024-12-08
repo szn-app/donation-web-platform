@@ -1,19 +1,18 @@
 {
-  "plugins": ["cargo-workspace"],
+  "plugins": [
+    "cargo-workspace"
+  ],
   "packages": {
     ".": {
-      "release-type": "rust",
       "changelog-path": "CHANGELOG.md",
-      "bump-minor-pre-major": true,
+      "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
-      "prerelease": false, 
-      "pull-request-header": "🤖 Release created:", 
-      "pull-request-footer": "(release-please generated PR)"
-    }, 
-    "service/web-server": { 
+      "prerelease": false
+    },
+    "service/web-server": {
       "package-name": "web-server",
-      "release-type": "node", 
+      "release-type": "node",
       "draft": false,
       "prerelease": false
     }
