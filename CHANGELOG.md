@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/szn-app/donation-app/compare/v0.2.0...v0.3.0) (2024-12-08)
+
+
+### Features
+
+* dummy commit ([85e2fbf](https://github.com/szn-app/donation-app/commit/85e2fbf8e0cfa14f3776fa20e0b51930e9c5ab6f))
+
 ## [0.2.0](https://github.com/szn-app/donation-app/compare/v0.1.0...v0.2.0) (2024-12-08)
 
 
