@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     
     outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
       donation-app--tag_name: ${{ steps.release.outputs.donation-app--tag_name}}
       donation-app--release_created: ${{ steps.release.outputs.donation-app--release_created}}
       web-server--tag_name: ${{ steps.release.outputs.web-server--tag_name}}
@@ -31,6 +33,14 @@ jobs:
         continue-on-error: true
         run: |
           echo "debug outputs:"
+          echo "${{ steps.release.outputs.release_created }}"
+          echo "${{ steps.release.outputs.tag_name }}"
           echo "${{ steps.release.outputs }}"
-  
+          echo <<EOF
+            ${{ steps.release.outputs.donation-app--tag_name}}
+            ${{ steps.release.outputs.donation-app--release_created}}
+            ${{ steps.release.outputs.web-server--tag_name}}
+            ${{ steps.release.outputs.web-server--release_created}}        
+          EOF
+
       # [TODO:] upload artifacts

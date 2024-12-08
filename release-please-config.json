@@ -1,4 +1,15 @@
 {
+  "plugins": [
+    { "type": "cargo-workspace", "merge": false }, 
+    {
+      "type": "linked-versions",
+      "groupName": "Services",
+      "components": [
+        "@service/web-server"
+      ],
+      "merge": true
+    }
+  ],
   "commit-search-depth": 50, 
   "release-search-depth": 50,
   "tag-separator": "@",
@@ -10,12 +21,21 @@
   "draft": false,
   "prerelease": false, 
   "pull-request-header": "🤖 Release created:", 
-  "pull-request-footer": "__release-please generated PR__",
+  "pull-request-footer": "_release-please generated PR_",
   "packages": {
       ".": {
-        "release-type": "rust"
+        "component": "Application", 
+        "release-type": "rust", 
+        "include-component-in-tag": false,
+        "exclude-paths": [
+          "service/web-server",
+          ".release-please-config.json",
+          ".release-please-manifest.json",
+          "Cargo.toml"
+        ]
       }, 
       "service/web-server": { 
+        "component": "@service/web-server",
         "release-type": "node"
       }
   },
