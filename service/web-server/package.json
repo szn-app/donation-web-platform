@@ -1,12 +1,16 @@
 {
   "name": "web-server",
   "private": true,
+<<<<<<< HEAD
   "version": "0.0.1",
+=======
+  "version": "0.1.8",
+>>>>>>> fcb1619ac406f41f1f19925bf142607e1cbbceb5
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "tsc && vite build",
-    "preview": "tsc && vite build && vite preview", 
+    "preview": "tsc && vite build && vite preview",
     "test": "echo '[TODO] should implement test'"
   },
   "dependencies": {
