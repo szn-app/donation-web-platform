@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.17](https://github.com/szn-app/donation-app/compare/web-server@v0.0.16...web-server@v0.0.17) (2024-12-11)
+
+
+### Features
+
+* add paragraph (dummy commit) ([75527d8](https://github.com/szn-app/donation-app/commit/75527d83cd95035755ad8022ecef48eb009a75c8))
+
 ## [0.0.16](https://github.com/szn-app/donation-app/compare/web-server@v0.0.15...web-server@v0.0.16) (2024-12-11)
 
 
