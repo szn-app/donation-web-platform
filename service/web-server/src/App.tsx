@@ -33,6 +33,7 @@ function App() {
 
 
       <h1>In-kind Donation Platform</h1>
+      <p>cross-platform app</p>
 
       <div className="row">
         <a href="https://vitejs.dev" target="_blank">
