@@ -2,7 +2,12 @@ misc() {
    cargo create-tauri-app 
 }
 
-
+## IMPORTANT! used in .github/workflows/*
+release_build_react_spa() { 
+    # cd ./service/web-server
+    pnpm install --frozen-lockfile
+    pnpm run build
+}
 
 develop_tauri_desktop_with_workaround_black_screen() { 
     cd ./service/web-server

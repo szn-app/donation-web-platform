@@ -67,6 +67,7 @@ jobs:
 
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
+        working-directory: ./
         run: | 
           chmod +x ./script.sh
           ./script.sh install_tauri_dependencies_debian
@@ -95,11 +96,11 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: install project dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: build project - web app
-        run: pnpm run build
+      - name: install dependencies & build project
+        working-directory: ./
+        run: |
+          chmod +x ./script.sh
+          ./script.sh release_build_react_spa
         
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
