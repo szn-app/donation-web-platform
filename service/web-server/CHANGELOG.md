@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.15](https://github.com/szn-app/donation-app/compare/web-server@v0.0.14...web-server@v0.0.15) (2024-12-11)
+
+
+### Features
+
+* form for rust execution (dummy commit) ([da7d4af](https://github.com/szn-app/donation-app/commit/da7d4afd5fde2eea30959088fbffe2d5d8c0d37e))
+
 ## [0.0.14](https://github.com/szn-app/donation-app/compare/web-server@v0.0.13...web-server@v0.0.14) (2024-12-11)
 
 
