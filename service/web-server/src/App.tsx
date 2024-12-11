@@ -14,7 +14,7 @@ function App() {
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+      <h1>In-kind Donation Platform</h1>
 
       <div className="row">
         <a href="https://vitejs.dev" target="_blank">
@@ -27,7 +27,6 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
       <form
         className="row"
