@@ -15,16 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      donation-app--tag_name: ${{ steps.release.outputs.donation-app--tag_name}}
-      donation-app--release_created: ${{ steps.release.outputs.donation-app--release_created}}
-      web-server--tag_name: ${{ steps.release.outputs.web-server--tag_name}}
-      web-server--release_created: ${{ steps.release.outputs.web-server--release_created}}
+      web-server--release_created: ${{ steps.release-step.outputs.web-server--release_created}}
+      web-server--tag_name: ${{ steps.release-step.outputs.web-server--tag_name}}
 
     steps:
       - uses: googleapis/release-please-action@v4
-        id: release   
+        id: release-step
         with: 
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
@@ -34,12 +30,87 @@ jobs:
         continue-on-error: true
         run: |
           echo "debug outputs:"
-          echo "${{ steps.release.outputs.release_created }}"
-          echo "${{ steps.release.outputs.tag_name }}"
-          echo "${{ steps.release.outputs }}"
-          echo "${{ steps.release.outputs.donation-app--tag_name}}"
-          echo "${{ steps.release.outputs.donation-app--release_created}}"
-          echo "${{ steps.release.outputs.web-server--tag_name}}"
-          echo "${{ steps.release.outputs.web-server--release_created}}"
+          echo "${{ steps.release-step.outputs.release_created }}"
+          echo "${{ steps.release-step.outputs.tag_name }}"
 
-      # [TODO:] upload artifacts
+  publish-package:
+    needs: [release-please]
+    if: ${{ needs.release-please.outputs.web-server--release_created }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include: 
+          - platform: "ubuntu-22.04"
+            args: ""
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin"
+          - platform: "windows-latest"
+            args: ""
+
+    runs-on: ${{matrix.platform}}
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/web-server
+        
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies for tauri 
+        if: matrix.platform == 'ubuntu-latest'
+        run: | 
+          sudo apt-get update 
+          sudo apt install libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false  # Prevent automatic installation of dependencies
+          version: latest
+          
+      - name: install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: ./service/${{matrix.service}}
+
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install project dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: build project - web app
+        run: pnpm run build
+        
+      - name: build project (tauri app) & upload artifacts to release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          projectPath: "service/web-server"
+          tagName: "${{ needs.release-please.outputs.web-server--tag_name }}" # tag to find the release for (each github tag may be associated with a single release only)
+          args: ${{ matrix.args }}

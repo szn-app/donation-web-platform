@@ -2,9 +2,8 @@
   "plugins": [
     {
       "type": "linked-versions",
-      "groupName": "group/web-server",
+      "groupName": "group-some-associated-services",
       "components": [
-        "@web-server"
       ],
       "merge": true
     }
