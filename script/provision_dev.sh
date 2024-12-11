@@ -33,7 +33,6 @@ provision_tauri() {
 ## https://v2.tauri.app/start/prerequisites/#linux
 ## IMPORTANT! script is used in ./github/workflows/*
 install_tauri_dependencies_debian() {
-    exit 1; 
     sudo apt update
     sudo apt install libwebkit2gtk-4.1-dev \
         build-essential \

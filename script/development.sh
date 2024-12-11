@@ -4,9 +4,12 @@ misc() {
 
 ## IMPORTANT! used in .github/workflows/*
 release_build_react_spa() { 
-    # cd ./service/web-server
+    pushd ./service/web-server
+
     pnpm install --frozen-lockfile
     pnpm run build
+    
+    popd
 }
 
 develop_tauri_desktop_with_workaround_black_screen() { 
