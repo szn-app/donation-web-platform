@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         include: 
-          - platform: "ubuntu-22.04"
+          - platform: "ubuntu-latest"
             args: ""
           - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin"
@@ -109,4 +109,4 @@ jobs:
         with:
           projectPath: "service/web-server"
           tagName: "${{ needs.release-please.outputs.web-server--tag_name }}" # tag to find the release for (each github tag may be associated with a single release only)
-          args: ${{ matrix.args }}
+          # args: ${{ matrix.args }} # extend or limit to specific deployments
