@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.0.16](https://github.com/szn-app/donation-app/compare/web-server@v0.0.15...web-server@v0.0.16) (2024-12-11)
+
+
+### Features
+
+* change message (dummy commit) ([0d30dad](https://github.com/szn-app/donation-app/commit/0d30dadc48f2d3e2b2af88db281ee0d9830a6197))
+* form for rust execution (dummy commit) ([da7d4af](https://github.com/szn-app/donation-app/commit/da7d4afd5fde2eea30959088fbffe2d5d8c0d37e))
+* html title ([f7e093c](https://github.com/szn-app/donation-app/commit/f7e093c12a13e420951c2b6f874c5cdc00bed5c4))
+* paragraph addition (dummy commit) ([63fcb11](https://github.com/szn-app/donation-app/commit/63fcb118bc6ea9201a28e35baee967f440e2a093))
+* rust execution code (dummy commit) ([7af9c61](https://github.com/szn-app/donation-app/commit/7af9c6178534333ebd71b5e5bf28699e6b9971df))
+* title app ([bf337bb](https://github.com/szn-app/donation-app/commit/bf337bb7cfbf6a32f9359a8edfb71ab46909f97c))
+
 ## [0.0.15](https://github.com/szn-app/donation-app/compare/web-server@v0.0.14...web-server@v0.0.15) (2024-12-11)
 
 
