@@ -2,9 +2,9 @@
   "plugins": [
     {
       "type": "linked-versions",
-      "groupName": "coupled-group-web-server",
+      "groupName": "group/web-server",
       "components": [
-        "@service/web-server"
+        "@web-server"
       ],
       "merge": true
     }
@@ -38,7 +38,7 @@
       }, 
       
       "service/web-server": {
-        "component": "@service/web-server",
+        "component": "web-server",
         "release-type": "node"
       }
   },

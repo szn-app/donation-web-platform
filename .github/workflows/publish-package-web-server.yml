@@ -3,7 +3,7 @@ name: publish package web-server
 on:
   push:
     tags:
-      - 'web-server-v*'
+      - 'web-server@v*'
   workflow_dispatch:
 
 jobs:
