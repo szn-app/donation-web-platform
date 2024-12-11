@@ -1,27 +1,28 @@
 {
   "plugins": [
-    { "type": "cargo-workspace", "merge": true }, 
     {
       "type": "linked-versions",
-      "groupName": "Services",
+      "groupName": "coupled-group-web-server",
       "components": [
         "@service/web-server"
       ],
-      "merge": false
+      "merge": true
     }
   ],
+  "separate-pull-requests": true,
   "commit-search-depth": 50, 
   "release-search-depth": 50,
-  "tag-separator": "@",
   "always-link-local": true,
-  "separate-pull-requests": true,
   "include-v-in-tag": true,
+  "tag-separator": "@",
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "draft": false,
   "prerelease": false, 
+  
   "pull-request-header": "🤖 Release created:", 
   "pull-request-footer": "_release-please generated PR_",
+
   "packages": {
       ".": {
         "component": "donation-app", 
@@ -33,6 +34,7 @@
           "Cargo.toml"
         ]
       }, 
+      
       "service/web-server": {
         "component": "@service/web-server",
         "release-type": "node"
