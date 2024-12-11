@@ -6,3 +6,4 @@ edition = "2021"
 
 [workspace]
 members = []
+exclude = ["service/web-server/src-tauri"]
