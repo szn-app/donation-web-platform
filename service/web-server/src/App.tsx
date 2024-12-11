@@ -28,6 +28,7 @@ function App() {
         </a>
       </div>
 
+      <p>Try Rust code execution:</p> 
       <form
         className="row"
         onSubmit={(e) => {
