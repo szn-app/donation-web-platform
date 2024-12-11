@@ -29,9 +29,12 @@ jobs:
       - name: Print release outputs for debugging
         continue-on-error: true
         run: |
-          echo "debug outputs:"
+          echo "debug root path outputs:"
           echo "${{ steps.release-step.outputs.release_created }}"
           echo "${{ steps.release-step.outputs.tag_name }}"
+          echo "debug service/web-server path outputs:"
+          echo "${{ steps.release-step.outputs.web-server--release_created }}"
+          echo "${{ steps.release-step.outputs.web-server--tag_name }}"
 
   publish-package:
     needs: [release-please]

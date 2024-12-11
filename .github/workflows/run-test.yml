@@ -9,8 +9,12 @@ on:
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
-    if: startsWith(github.head_ref, 'feature/')
-    
+    # Ensure the PR is not a release PR
+
+   # release-please PR originate from branches with `release-please--branches--*`
+    if: > 
+      !contains(github.head_ref, 'release-please') 
+
     defaults:
       run:
         shell: bash
@@ -40,7 +44,10 @@ jobs:
         run: pnpm run test
 
   test-tauri:
-    if: startsWith(github.head_ref, 'feature/') 
+    # release-please PR originate from branches with `release-please--branches--*`
+    if: > 
+      !contains(github.head_ref, 'release-please') && 
+      startsWith(github.head_ref, 'feature/') 
 
     strategy:
       fail-fast: false

@@ -1,16 +1,21 @@
+# automatically merge PRs 
+
 name: merge pull request
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
-  workflow_dispatch: 
-  
-
+  workflow_dispatch:  
+      
+      
 jobs:
   auto_merge:
+    # condition: if PR originate from a `feature/*` or `hotfix/*` branches, etc.
     if: startsWith(github.head_ref, 'hotfix/') || startsWith(github.head_ref, 'feature/')
+
     runs-on: ubuntu-latest
+    
     steps:
       - name: checkout code
         uses: actions/checkout@v4
