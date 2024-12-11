@@ -31,17 +31,19 @@ provision_tauri() {
 }
 
 ## https://v2.tauri.app/start/prerequisites/#linux
+## important! script is used in ./github/workflows/*
 install_tauri_dependencies_debian() {
     sudo apt update
     sudo apt install libwebkit2gtk-4.1-dev \
-    build-essential \
-    curl \
-    wget \
-    file \
-    libxdo-dev \
-    libssl-dev \
-    libayatana-appindicator3-dev \
-    librsvg2-dev
+        build-essential \
+        curl \
+        wget \
+        file \
+        libxdo-dev \
+        libssl-dev \
+        libgtk-3-dev \
+        libayatana-appindicator3-dev \
+        librsvg2-dev
 }
 
 install_tauri_dependencies_fedora() {

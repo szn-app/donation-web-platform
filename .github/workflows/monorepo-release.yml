@@ -68,16 +68,8 @@ jobs:
       - name: Install dependencies for tauri 
         if: matrix.platform == 'ubuntu-latest'
         run: | 
-          sudo apt-get update 
-          sudo apt install libwebkit2gtk-4.1-dev \
-            build-essential \
-            curl \
-            wget \
-            file \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev
+          chmod +x ./script.sh
+          ./script.sh install_tauri_dependencies_debian
           
       - name: Install pnpm
         uses: pnpm/action-setup@v4
