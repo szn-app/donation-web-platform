@@ -48,5 +48,13 @@ feature_pull_request() {
 
     local feature_branch="${1:-feature/example}"
     git push origin $feature_branch
-    gh pr create --head $feature_branch --base main --title "$feature_branch" --fill
+    
+    gh pr create --head $feature_branch --base main --title "feat(frontend): new implementation feature" --fill-verbose
+    ## or 
+    {
+        git checkout main
+        git merge --squash 
+    }
+
+    
 }

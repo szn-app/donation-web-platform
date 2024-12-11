@@ -61,7 +61,7 @@ example_workflow_with_release_please_manually_triggered() {
         git commit --allow-empty -m "commit 2" 
         git commit --allow-empty -m "commit 3"
         git push --set-upstream origin $feature_branch
-        gh pr create --base main --head $feature_branch --title "feat: adding feacture x to component A" 
+        gh pr create --base main --head $feature_branch --title "feat: adding feacture x to component A" --fill-verbose
     }
 
     merge_last_pr() { 
