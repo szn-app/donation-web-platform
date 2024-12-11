@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/szn-app/donation-app/compare/donation-app@v0.3.3...donation-app@v0.3.4) (2024-12-11)
+
+
+### Reverts
+
+* remove temporary script ([f9d2624](https://github.com/szn-app/donation-app/commit/f9d2624a6e76b00182b756c88feb2cafc0240088))
+
 ## [0.3.3](https://github.com/szn-app/donation-app/compare/donation-app-v0.3.2...donation-app@v0.3.3) (2024-12-11)
 
 
