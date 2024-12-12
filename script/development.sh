@@ -57,11 +57,13 @@ feature_pull_request() {
     local feature_branch="${1:-feature/example}"
     git push origin $feature_branch
     
+    # PR to trigger CI test
     gh pr create --head $feature_branch --base main --title "feat(frontend): new implementation feature" --fill-verbose
-    ## or 
+
+    # or merges but without triggering CI test
     {
         git checkout main
-        git merge --squash $feature_branch
+        git merge --squash $feature_branch -m "feat(frontend): new implementation feature"
     }
 
     
