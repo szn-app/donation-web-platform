@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.21](https://github.com/szn-app/donation-app/compare/web-server@v0.0.20...web-server@v0.0.21) (2024-12-12)
+
+
+### Features
+
+* dummy commit ([#49](https://github.com/szn-app/donation-app/issues/49)) ([5c60006](https://github.com/szn-app/donation-app/commit/5c60006142c6dc1c3f5f9f99bcb7f165fe417940))
+
 ## [0.0.20](https://github.com/szn-app/donation-app/compare/web-server@v0.0.19...web-server@v0.0.20) (2024-12-12)
 
 
