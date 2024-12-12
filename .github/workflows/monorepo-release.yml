@@ -117,5 +117,5 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         with:
           projectPath: "service/web-server"
-          tagName: "${{ steps.find_release_id.outputs.release_id }}" # tag to find the release for (each github tag may be associated with a single release only)
+          releaseId: "${{ steps.find_release_id.outputs.release_id }}" # tag to find the release for (each github tag may be associated with a single release only)
           args: ${{ matrix.args }} # build specific formats
