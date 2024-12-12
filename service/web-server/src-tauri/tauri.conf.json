@@ -1,35 +1,63 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "web-server",
+  "productName": "donation-platform",
+  "mainBinaryName": "donation-platform",
   "version": "0.1.0",
-  "identifier": "com.web-server.app",
+  "identifier": "com.szn.donation-app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
+  "plugins": {},
   "app": {
     "windows": [
       {
         "title": "web-server",
         "width": 800,
-        "height": 600
+        "height": 600, 
+        "resizable": true, 
+        "fullscreen": false
       }
     ],
     "security": {
+      "capabilities": ["main-capabilities"],
       "csp": null
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "category": "Ecommerce",
+    "longDescription": "App to find/post physical items to donate locally.",
+    "shortDescription": "In-kind donation platform",
+    "copyright": "Copyright © 2024 SZN",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "targets": "all",
+    "externalBin": [],
+    "resources": [],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": "",
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
   }
 }
