@@ -83,7 +83,7 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
-          cache-dependency-path: ./service/${{matrix.service}}
+          cache-dependency-path: ./service/web-server
 
       - name: install Rust
         uses: dtolnay/rust-toolchain@stable

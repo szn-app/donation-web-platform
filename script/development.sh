@@ -59,12 +59,11 @@ feature_pull_request() {
     
     # PR to trigger CI test
     gh pr create --head $feature_branch --base main --title "feat(frontend): new implementation feature" --fill-verbose
-
     # or merges but without triggering CI test
     {
         git checkout main
         git merge --squash $feature_branch -m "feat(frontend): new implementation feature"
     }
 
-    
+    # NOTE: automerge is applied only on PRs from branches that are prefix with "feature/*" or "hotfix/*".
 }
