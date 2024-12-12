@@ -1,0 +1,80 @@
+name: dummy release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+  
+permissions:
+  contents: write
+  pull-requests: write
+  
+jobs:
+  publish-package:
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include: 
+          - platform: "ubuntu-latest"
+            args: ""
+
+    runs-on: ${{matrix.platform}}
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/web-server
+        
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies for tauri 
+        if: startsWith(matrix.platform, 'ubuntu')
+        working-directory: ./
+        run: | 
+          chmod +x ./script.sh
+          ./script.sh install_tauri_dependencies_debian
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false  # Prevent automatic installation of dependencies
+          version: latest
+          
+      - name: install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+          cache-dependency-path: ./service/web-server
+
+      - name: install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install dependencies & build project
+        working-directory: ./
+        run: |
+          chmod +x ./script.sh
+          ./script.sh build_react_spa
+        
+      - name: build project (tauri app) & upload artifacts to release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          projectPath: "service/web-server"
+          tagName: "web-server@v0.0.21" # tag to find the release for (each github tag may be associated with a single release only)
+          args: ${{ matrix.args }} # build specific formats
