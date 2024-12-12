@@ -1,0 +1,26 @@
+
+
+name: _print
+
+on:
+  workflow_dispatch:  
+      
+      
+jobs:
+  print:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+
+        # find release ID given the associated tag and pass it to Tauri build in following step (bc it seems like tauri-action fails to find the release id sometimes)
+        -   name: Find Release ID
+            id: find_release_id
+            env:
+                GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+            run: |
+                release_id=$(gh release view web-server@v0.0.23 --json id | jq -r '.id')
+                echo "::set-output name=release_id::$release_id"
+
+        - name: printing
+          run: echo "${{ steps.find_release_id.outputs.release_id }}"
