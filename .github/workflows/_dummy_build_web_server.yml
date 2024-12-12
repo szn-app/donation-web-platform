@@ -36,6 +36,8 @@ jobs:
 
       - name: Find Release ID
         id: find_release_id
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           release_id=$(gh release view web-server@v0.0.21 --json id | jq -r '.id')
           echo "::set-output name=release_id::$release_id"
