@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.0.23](https://github.com/szn-app/donation-app/compare/web-server-v0.0.22...web-server@v0.0.23) (2024-12-12)
+
+
+### Features
+
+* add paragraph (dummy commit) ([75527d8](https://github.com/szn-app/donation-app/commit/75527d83cd95035755ad8022ecef48eb009a75c8))
+* add tauri config data ([8ed8e95](https://github.com/szn-app/donation-app/commit/8ed8e956cd50742ae9f915050edf848f14cf9616))
+* change message (dummy commit) ([e078cd3](https://github.com/szn-app/donation-app/commit/e078cd3a077dc3ceb8f64c086787640ea3815487))
+* dummy commit ([#47](https://github.com/szn-app/donation-app/issues/47)) ([8c19bdb](https://github.com/szn-app/donation-app/commit/8c19bdb3fbeaa9c735fa8a64a20cee15d2f6b06f))
+* dummy commit ([#49](https://github.com/szn-app/donation-app/issues/49)) ([5c60006](https://github.com/szn-app/donation-app/commit/5c60006142c6dc1c3f5f9f99bcb7f165fe417940))
+* update html description (dummy commit) ([7529422](https://github.com/szn-app/donation-app/commit/752942264559dc2c269078ee373ad637683e206e))
+
+
+### Bug Fixes
+
+* remove Tauri capability ([ddd35f7](https://github.com/szn-app/donation-app/commit/ddd35f719ba03ef7c552999b4633a1f49805a5f2))
+* select proper tauri app category ([0202d17](https://github.com/szn-app/donation-app/commit/0202d17a0774334664090e68e6fd2e396e41fdcc))
+* update package.json (dummy commit 2) ([#45](https://github.com/szn-app/donation-app/issues/45)) ([d2428e7](https://github.com/szn-app/donation-app/commit/d2428e7d76c431fccf2fc7c7b52f1070d067f306))
+* update package.json (dummy commit) ([#43](https://github.com/szn-app/donation-app/issues/43)) ([0b25b49](https://github.com/szn-app/donation-app/commit/0b25b49aa39111d3a51fcb8cfd2df11093cde613))
+
 ## [0.0.22](https://github.com/szn-app/donation-app/compare/web-server@v0.0.21...web-server@v0.0.22) (2024-12-12)
 
 
