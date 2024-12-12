@@ -1,6 +1,6 @@
 # automatically merge PRs 
 
-name: merge pull request
+name: auto-merge-pull-request
 
 on:
   pull_request:

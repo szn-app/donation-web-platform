@@ -11,4 +11,4 @@
 
 ## tests: 
 - direct `main` branch commits skips testing. 
-- PR requests trigger tests.
+- PR requests trigger tests (either on direct commits or merges from other branch).
