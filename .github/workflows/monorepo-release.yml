@@ -109,4 +109,4 @@ jobs:
         with:
           projectPath: "service/web-server"
           tagName: "${{ needs.release-please.outputs.web-server--tag_name }}" # tag to find the release for (each github tag may be associated with a single release only)
-          # args: ${{ matrix.args }} # extend or limit to specific deployments
+          args: ${{ matrix.args }} # build specific formats
