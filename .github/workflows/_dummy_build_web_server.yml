@@ -11,6 +11,7 @@ permissions:
   pull-requests: write
   
 jobs:
+ 
   publish-package:
     permissions:
       contents: write
@@ -32,6 +33,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Find Release ID
+        id: find_release_id
+        run: |
+          release_id=$(gh release view web-server@v0.0.21 --json id | jq -r '.id')
+          echo "::set-output name=release_id::$release_id"
 
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
@@ -72,10 +79,9 @@ jobs:
         
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
-        working-directory: ./
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         with:
           projectPath: "service/web-server/src-tauri"
-          tagName: "web-server%40v0.0.21" # tag to find the release for (each github tag may be associated with a single release only)
+          releaseId: ${{ steps.find_release_id.outputs.release_id }} # tag to find the release for (each github tag may be associated with a single release only)
           args: ${{ matrix.args }} # build specific formats
