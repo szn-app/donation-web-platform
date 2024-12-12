@@ -61,7 +61,7 @@ feature_pull_request() {
     ## or 
     {
         git checkout main
-        git merge --squash 
+        git merge --squash $feature_branch
     }
 
     
