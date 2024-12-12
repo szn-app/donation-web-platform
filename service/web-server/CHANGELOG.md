@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.18](https://github.com/szn-app/donation-app/compare/web-server@v0.0.17...web-server@v0.0.18) (2024-12-12)
+
+
+### Features
+
+* add tauri config data ([8ed8e95](https://github.com/szn-app/donation-app/commit/8ed8e956cd50742ae9f915050edf848f14cf9616))
+* update html description (dummy commit) ([7529422](https://github.com/szn-app/donation-app/commit/752942264559dc2c269078ee373ad637683e206e))
+
+
+### Bug Fixes
+
+* remove Tauri capability ([ddd35f7](https://github.com/szn-app/donation-app/commit/ddd35f719ba03ef7c552999b4633a1f49805a5f2))
+
 ## [0.0.17](https://github.com/szn-app/donation-app/compare/web-server@v0.0.16...web-server@v0.0.17) (2024-12-11)
 
 
