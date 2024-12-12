@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.19](https://github.com/szn-app/donation-app/compare/web-server@v0.0.18...web-server@v0.0.19) (2024-12-12)
+
+
+### Bug Fixes
+
+* select proper tauri app category ([0202d17](https://github.com/szn-app/donation-app/commit/0202d17a0774334664090e68e6fd2e396e41fdcc))
+* update package.json (dummy commit 2) ([#45](https://github.com/szn-app/donation-app/issues/45)) ([d2428e7](https://github.com/szn-app/donation-app/commit/d2428e7d76c431fccf2fc7c7b52f1070d067f306))
+* update package.json (dummy commit) ([#43](https://github.com/szn-app/donation-app/issues/43)) ([0b25b49](https://github.com/szn-app/donation-app/commit/0b25b49aa39111d3a51fcb8cfd2df11093cde613))
+
 ## [0.0.18](https://github.com/szn-app/donation-app/compare/web-server@v0.0.17...web-server@v0.0.18) (2024-12-12)
 
 
