@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "capabilities": ["main-capabilities"],
+      "capabilities": [],
       "csp": null
     }
   },
