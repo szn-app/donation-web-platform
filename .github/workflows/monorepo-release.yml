@@ -71,7 +71,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          release_id=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json id | jq -r '.id')
+          release_id=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json databaseId | jq -r '.id')
           echo "::set-output name=release_id::$release_id"
 
       - name: Install dependencies for tauri 
