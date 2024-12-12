@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/szn-app/donation-app/compare/donation-app@v0.3.4...donation-app@v0.3.5) (2024-12-12)
+
+
+### Bug Fixes
+
+* update package.json (dummy commit) ([#43](https://github.com/szn-app/donation-app/issues/43)) ([0b25b49](https://github.com/szn-app/donation-app/commit/0b25b49aa39111d3a51fcb8cfd2df11093cde613))
+
 ## [0.3.4](https://github.com/szn-app/donation-app/compare/donation-app@v0.3.3...donation-app@v0.3.4) (2024-12-11)
 
 
