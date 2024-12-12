@@ -75,6 +75,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         with:
-          projectPath: "service/web-server"
+          projectPath: "service/web-server/src-tauri"
           tagName: "web-server@v0.0.21" # tag to find the release for (each github tag may be associated with a single release only)
           args: ${{ matrix.args }} # build specific formats
