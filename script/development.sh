@@ -3,7 +3,7 @@ misc() {
 }
 
 ## IMPORTANT! used in .github/workflows/*
-release_build_react_spa() { 
+build_react_spa() { 
     pushd ./service/web-server
 
     pnpm install --frozen-lockfile
