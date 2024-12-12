@@ -71,8 +71,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
-          release_id=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json databaseId | jq -r '.id')
+          release_id=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json databaseId | jq -r '.databaseId')
           echo "::set-output name=release_id::$release_id"
+          if [[ -z "$release_id" ]]; then
+            echo "Error: release id retrieval failed for tagname: ${{ needs.release-please.outputs.web-server--tag_name }}"
+            exit 1;
+          else 
+            echo "release_id=$release_id"
+          fi
 
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
