@@ -65,6 +65,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # find release ID given the associated tag and pass it to Tauri build in following step (bc it seems like tauri-action fails to find the release id sometimes)
+      - name: Find Release ID
+        id: find_release_id
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          release_id=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json id | jq -r '.id')
+          echo "::set-output name=release_id::$release_id"
+
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
         working-directory: ./
@@ -108,5 +117,5 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         with:
           projectPath: "service/web-server"
-          tagName: "${{ needs.release-please.outputs.web-server--tag_name }}" # tag to find the release for (each github tag may be associated with a single release only)
+          tagName: "${{ steps.find_release_id.outputs.release_id }}" # tag to find the release for (each github tag may be associated with a single release only)
           args: ${{ matrix.args }} # build specific formats
