@@ -72,6 +72,7 @@ jobs:
         
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
+        working-directory: ./
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         with:
