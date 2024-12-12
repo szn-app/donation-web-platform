@@ -8,7 +8,7 @@
       "merge": true
     }
   ],
-  "separate-pull-requests": true,
+  "separate-pull-requests": false,
   "commit-search-depth": 50, 
   "release-search-depth": 50,
   "always-link-local": true,
