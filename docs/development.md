@@ -1,6 +1,8 @@
 
 # Development 
 
+Development PRs can be automerged (`gh merge ... --auto`), while release PRs should aggregate releases and merged manually. 
+
 ## commits (following [Conventional Commit message](https://www.conventionalcommits.org/) and SemVer)
 - `feat: ...` → minor release; `fix: ...` → patch release; or with scopes `feat(frontend):`
 - `feat!: ...` or `fix!: ...` or any other type → major release (BREAKING CHANGE).
@@ -12,7 +14,6 @@
 ## tests: 
 - direct `main` branch commits skips testing. 
 - PR requests trigger tests (either on direct commits or merges from other branch).
-
 
 ## develop github acitons workflow 
 - https://nektosact.com/ locally test workflows
