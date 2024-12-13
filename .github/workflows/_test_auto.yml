@@ -6,8 +6,7 @@ on:
   workflow_dispatch:  
 
 permissions:
-    pull-requests: write 
-    contents: write
+  pull-requests: write
 
 jobs:
   auto_merge:
@@ -18,8 +17,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: merge PR
-        run: |
-            gh pr merge 59 --squash --auto -t "feat(dummy): message update from Rust code"
+        shell: bash
+        run: | 
+            gh pr merge "60" --squash --auto -t "feat(dummy): message update from Rust code"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
