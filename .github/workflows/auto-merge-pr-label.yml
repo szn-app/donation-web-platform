@@ -1,0 +1,61 @@
+# automatically merge development PRs (features, hotfixes, etc.)
+
+name: auto-merge-pull-request
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+  workflow_dispatch:  
+      
+jobs:
+  auto_merge:
+    # avoid automerging release PRs
+    if: ${{!contains(github.head_ref, 'release-please')}}
+    # condition: if PR originate from a `feature/*` or `hotfix/*` branches, etc.
+    # if: startsWith(github.head_ref, 'hotfix/') || startsWith(github.head_ref, 'feature/')
+
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write 
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: add auto-merge label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToAdd = ['auto-merge'];
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: labelsToAdd,
+            });      
+
+      # - name: merge PR
+      #   run: |
+      #     gh pr review --approve "${{ github.event.pull_request.html_url }}"
+      #     gh pr merge "${{ github.event.pull_request.html_url }}" --squash --auto -t "${{ github.event.pull_request.title }}"
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+      # - name: add comment on PR
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: 'PR was automatically merged by GitHub Actions.'
+      #       })
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      
+            
+            
