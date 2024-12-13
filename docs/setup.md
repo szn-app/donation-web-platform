@@ -4,3 +4,4 @@
 
 - update squash message settings for pull request on github to "pull request title & commit": https://github.blog/changelog/2022-05-11-default-to-pr-titles-for-squash-merge-commit-messages/
 - toggle General > "allow automerge" option in repo settings.
+- - toggle Github Actions permissions: Actions > workflow permissions > Allow GitHub Actions to create and approve pull requests  + Read and write permissions; repeat settings for organization-level if required. 
