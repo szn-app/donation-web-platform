@@ -5,9 +5,7 @@ name: _test_auto
 on:
   workflow_dispatch:  
 
-permissions:
-    pull-requests: write 
-    contents: write
+permissions: write-all
 
 jobs:
   auto_merge:
@@ -19,7 +17,7 @@ jobs:
 
       - name: merge PR
         run: |
-            gh pr merge 59 --squash --auto -t "feat(dummy): message update from Rust code"
+            gh pr merge 59 --squash -t "feat(dummy): message update from Rust code"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
