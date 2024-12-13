@@ -5,7 +5,7 @@ mergeable:
     validate: 
       - do: baseRef
         must_include:
-        regex: 'master|main'
+          regex: 'master|main'
     pass:
       - do: merge
         merge_method: "squash"
