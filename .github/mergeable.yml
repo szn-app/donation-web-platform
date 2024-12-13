@@ -5,13 +5,15 @@ mergeable:
   - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
     name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all checks"
     validate: 
-      - do: baseRef
-        must_include:
-          regex: 'master|main'
-          message: 'Auto-merging is only enabled for default branch'
-      - do: label
-        must_include:
-          regex: 'auto-merge'
+      - do: and
+        validate: 
+          - do: baseRef
+            must_include:
+              regex: 'master|main'
+              message: 'Auto-merging is only enabled for default branch'
+          - do: label
+            must_include:
+              regex: 'auto-merge'
     pass:
       - do: merge
         merge_method: "squash"
