@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    #   - name: checkout code
-    #     uses: actions/checkout@v4
+      - name: checkout code
+        uses: actions/checkout@v4
 
     #   - name: merge PR
     #     shell: bash
@@ -28,13 +28,7 @@ jobs:
     #         gh pr merge "https://github.com/szn-app/donation-app/pull/60" --squash --auto -t "feat(dummy): message update from Rust code"
     #     env:
     #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v2.2.0
-        with:
-            github-token: "${{ secrets.GITHUB_TOKEN }}"
-            
+                      
       - name: Approve a PR
         run: gh pr review --approve "$PR_URL"
         env:
