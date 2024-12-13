@@ -29,15 +29,15 @@ jobs:
     #     env:
     #       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                       
-      - name: Approve a PR
-        run: gh pr review --approve "$PR_URL"
-        env:
-            PR_URL: "https://github.com/szn-app/donation-app/pull/60"
-            GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    #   - name: Approve a PR
+    #     run: gh pr review --approve "$PR_URL"
+    #     env:
+    #         PR_URL: "${{ github.event.pull_request.html_url }}"
+    #         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --merge "$PR_URL"
+        run: gh pr merge --auto --merge "$PR_URL"  --squash --auto -t "${{ github.event.pull_request.title }}"
         env:
-            PR_URL: "https://github.com/szn-app/donation-app/pull/60"
+            PR_URL: "${{ github.event.pull_request.html_url }}"
             GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
             
