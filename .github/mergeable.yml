@@ -15,5 +15,7 @@ mergeable:
             must_include:  # Ensure the label "auto-merge" exists
               regex: '^auto-merge$'  # Use exact match with anchors 
     pass:
-      - do: merge
-        merge_method: "squash" 
+      # - do: merge
+      #   merge_method: "squash" 
+      - do: labels
+        add: 'merging'
