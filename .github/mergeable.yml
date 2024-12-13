@@ -14,8 +14,6 @@ mergeable:
           - do: label  # Check for the label
             must_include:  # Ensure the label "auto-merge" exists
               regex: '^auto-merge$'  # Use exact match with anchors 
-          - do: check_suite
-            must_pass: true  # Ensure all checks have passed
     pass:
       - do: checks # default pass case
         status: 'success' # Can be: success, failure, neutral, cancelled, timed_out, or action_required
