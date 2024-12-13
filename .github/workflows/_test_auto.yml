@@ -4,12 +4,14 @@ name: _test_auto
 
 on:
   workflow_dispatch:  
-      
+
+permissions:
+    pull-requests: write 
+    contents: write
+
 jobs:
   auto_merge:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write 
 
     steps:
       - name: checkout code
