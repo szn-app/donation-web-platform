@@ -2,7 +2,7 @@
 
 version: 2
 mergeable:
-  - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
+  - when: pull_request.opened, pull_request.reopened, pull_request.synchronize, status.*, check_suite.*
     name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all checks"
     validate: []
       # - do: and  # Ensure all conditions are met for merging
