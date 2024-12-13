@@ -4,22 +4,22 @@ version: 2
 mergeable:
   - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
     name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all checks"
-    validate: 
-      - do: and  # Ensure all conditions are met for merging
-        validate: 
-          - do: baseRef  # Check the base branch
-            must_include:
-              regex: 'master|main'  # Only allow merging to default branch
-              message: 'Auto-merging is only enabled for default branch'
-          - do: label  # Check for the label
-            must_include:  # Ensure the label "auto-merge" exists
-              regex: '^auto-merge$'  # Use exact match with anchors 
+    validate: []
+      # - do: and  # Ensure all conditions are met for merging
+      #   validate: 
+      #     - do: baseRef  # Check the base branch
+      #       must_include:
+      #         regex: 'master|main'  # Only allow merging to default branch
+      #         message: 'Auto-merging is only enabled for default branch'
+      #     - do: label  # Check for the label
+      #       must_include:  # Ensure the label "auto-merge" exists
+      #         regex: '^auto-merge$'  # Use exact match with anchors 
     pass:
-      - do: checks # default pass case
-        status: 'success' # Can be: success, failure, neutral, cancelled, timed_out, or action_required
-        payload:
-          title: 'Mergeable Run have been Completed!'
-          summary: "All the validators have returned 'pass'! \n Here are some stats of the run: \n {{validationCount}} validations were ran"
+      # - do: checks # default pass case
+      #   status: 'success' # Can be: success, failure, neutral, cancelled, timed_out, or action_required
+      #   payload:
+      #     title: 'Mergeable Run have been Completed!'
+      #     summary: "All the validators have returned 'pass'! \n Here are some stats of the run: \n {{validationCount}} validations were ran"
       # - do: merge
       #   merge_method: "squash" 
       - do: labels
