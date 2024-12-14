@@ -27,8 +27,8 @@ mergeable:
       - do: merge
         merge_method: "squash" 
         
-    # fail:
-    #   - do: checks
-    #     status: 'failure'
-    #     payload: 
-    #       title: "validator returned false"
+    fail:
+      - do: checks
+        status: 'failure'
+        payload: 
+          title: "validator returned false"
