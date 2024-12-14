@@ -81,6 +81,8 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_WORKFLOW }}
     
       - name: add label 'ready-to-merge'
         uses: actions/github-script@v7
@@ -107,6 +109,9 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_WORKFLOW }}
+          ref: '${{github.head_ref}}'
 
       - name: update PR branch with merge commit
         run: |
