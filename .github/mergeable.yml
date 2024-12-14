@@ -3,7 +3,7 @@
 version: 2
 mergeable:
   - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
-    name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all required Github checks"
+    name: "Automatically merge pull requests labeled with 'automerge' once it passes all required Github checks"
     validate: 
       - do: and  # Ensure all conditions are met for merging
         validate: 
@@ -26,10 +26,8 @@ mergeable:
         payload:
           title: 'Mergeable Run have been Completed!'
           summary: "All the validators have returned 'pass'! \n Here are some stats of the run: \n {{validationCount}} validations were ran"
-      # - do: merge
-      #   merge_method: "squash" 
-      - do: labels
-        add: 'merging'
+      - do: merge
+        merge_method: "squash" 
         
     error:
       - do: comment
