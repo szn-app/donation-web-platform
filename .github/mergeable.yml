@@ -11,9 +11,6 @@ mergeable:
             must_include:
               regex: 'master|main'  # Only allow merging to default branch
               message: 'Auto-merging is only enabled for default branch'
-          - do: label  # Check for the label
-            must_include:  # Ensure the label "auto-merge" exists
-              regex: '^automerge$'  # Use exact match with anchors 
           - do: headRef
             must_exclude:
               regex: '^release-please'
