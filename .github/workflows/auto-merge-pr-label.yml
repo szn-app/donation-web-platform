@@ -17,7 +17,8 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write 
+      pull-requests: write
+      statuses: write
 
     steps:
       - name: checkout code
@@ -76,6 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write 
+      statuses: write
     
     steps:
       - name: checkout code
