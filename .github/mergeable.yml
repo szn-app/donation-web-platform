@@ -42,3 +42,11 @@ mergeable:
       - do: labels
         add: 'failed'
       - do: close
+
+
+  - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
+    name: "Automatically merge pull requests once it passes all checks"
+    validate: []
+    pass:
+      - do: labels
+        add: 'should-add-only-after-checks'
