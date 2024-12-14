@@ -27,7 +27,7 @@ jobs:
       - name: add automerge label
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_WORKFLOW }}
           script: |
             const labelsToAdd = ['automerge'];
             github.rest.issues.addLabels({
@@ -42,7 +42,7 @@ jobs:
       #     gh pr review --approve "${{ github.event.pull_request.html_url }}"
       #     gh pr merge "${{ github.event.pull_request.html_url }}" --squash --auto -t "${{ github.event.pull_request.title }}"
       #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
     
       # - name: add comment on PR
       #   uses: actions/github-script@v6
@@ -55,7 +55,7 @@ jobs:
       #         body: 'PR was automatically merged by GitHub Actions.'
       #       })
       #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
 
   # IMPORTANT! must setup "enforce-all-checks" as a required job in repo's setrule settings.
   enforce-all-checks:
@@ -66,7 +66,7 @@ jobs:
       - name: verify non-required triggered GitHub Checks passedGitHub Checks
         uses: poseidon/wait-for-status-checks@v0.6.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_WORKFLOW }}
           ignore_pattern: Mergeable*
 
   label-ready-to-merge: 
@@ -84,7 +84,7 @@ jobs:
       - name: add label 'ready-to-merge'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_WORKFLOW }}
           script: |
             const labelsToAdd = ['ready-to-merge'];
             github.rest.issues.addLabels({

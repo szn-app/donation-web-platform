@@ -5,3 +5,4 @@
 - update squash message settings for pull request on github to "pull request title & commit": https://github.blog/changelog/2022-05-11-default-to-pr-titles-for-squash-merge-commit-messages/
 - toggle General > "allow automerge" option in repo settings.
 - setup automerge using Mergeable Github App; setup "enforce-all-checks" as required setrule for the repo's release branch.
+- Use PAT to trigger events from Github API (bots/actions/apps): in github workflows events from bots do not trigger futher events unless using a PAT (rather than relying on Github_Token).  https://github.com/orgs/community/discussions/57484
