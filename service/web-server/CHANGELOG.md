@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.32](https://github.com/szn-app/donation-app/compare/web-server@v0.0.31...web-server@v0.0.32) (2024-12-14)
+
+
+### Features
+
+* **ci:** dummy ci change ([#101](https://github.com/szn-app/donation-app/issues/101)) ([a90a3dd](https://github.com/szn-app/donation-app/commit/a90a3dddb106edd3f0e3ba61849e0971f257547b))
+
 ## [0.0.31](https://github.com/szn-app/donation-app/compare/web-server-v0.0.30...web-server@v0.0.31) (2024-12-14)
 
 
