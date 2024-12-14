@@ -4,14 +4,14 @@ name: automerge-pull-request
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
     branches: [main]
   workflow_dispatch:  
       
 jobs:
-  add_label_auto_merge:
+  label_auto_merge:
     # avoid automerging release PRs
-    if: ${{!contains(github.head_ref, 'release-please')}}
+    if: ${{!contains(github.head_ref, 'release-please') && github.event.action != 'reopened' }}
     # condition: if PR originate from a `feature/*` or `hotfix/*` branches, etc.
     # if: startsWith(github.head_ref, 'hotfix/') || startsWith(github.head_ref, 'feature/')
 
@@ -70,6 +70,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ignore_pattern: Mergeable*
 
+  label-ready-to-merge: 
+    if: ${{ github.event.action != 'reopened' }}
+    needs: enforce-all-checks
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write 
+    
+    steps:
       - name: checkout code
         uses: actions/checkout@v4
 
@@ -85,7 +93,7 @@ jobs:
               issue_number: context.issue.number,
               labels: labelsToAdd,
             });      
-    
+
           
                 
     
