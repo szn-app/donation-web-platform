@@ -15,6 +15,10 @@ mergeable:
             must_exclude:
               regex: '^release-please'
               message: 'Auto-merging is disabled for branches prefixed with "release-please"'
+          - do: label
+            must_include:
+              regex: 'automerge'
+              message: 'add label automerge'
 
     pass:
       - do: checks # default pass case
