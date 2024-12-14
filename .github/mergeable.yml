@@ -24,19 +24,19 @@ mergeable:
           message: 'add label ready-to-merge'
           
     pass: 
-      - do: check
+      - do: checks
         status: 'success'
       - do: merge
         merge_method: "squash" 
         
     fail:
-      - do: check
+      - do: checks
         status: 'failure'
         payload: 
           title: "validator returned false"
 
     error:
-      - do: check
+      - do: checks
         status: 'error'
         payload: 
           title: "validator errored"
