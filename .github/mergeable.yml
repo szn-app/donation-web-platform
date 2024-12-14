@@ -6,23 +6,20 @@ mergeable:
     name: "Automatically merge pull requests labeled with 'automerge' once it passes all required Github checks"
 
     validate: 
-      - and: 
-        - do: baseRef  # Check the base branch
-          must_include:
-            regex: 'master|main'  # Only allow merging to default branch
-            message: 'Auto-merging is only enabled for default branch'
-        - do: headRef
-          must_exclude:
-            regex: '^release-please'
-            message: 'Auto-merging is disabled for branches prefixed with "release-please"'
-        - do: label
-          must_include:
-            regex: 'automerge'
-            message: 'add label automerge'
-        - do: label
-          must_include:
-            regex: 'ready-to-merge'
-            message: 'add label ready-to-merge'
+      - do: and
+        validate: 
+          - do: baseRef  # Check the base branch
+            must_include:
+              regex: 'master|main'  # Only allow merging to default branch
+          - do: headRef
+            must_exclude:
+              regex: '^release-please'
+          - do: label
+            must_include:
+              regex: 'automerge'
+          - do: label
+            must_include:
+              regex: 'ready-to-merge'
           
     pass: 
       - do: checks
