@@ -9,7 +9,7 @@ on:
   workflow_dispatch:  
       
 jobs:
-  auto_merge:
+  add_label_auto_merge:
     # avoid automerging release PRs
     if: ${{!contains(github.head_ref, 'release-please')}}
     # condition: if PR originate from a `feature/*` or `hotfix/*` branches, etc.
