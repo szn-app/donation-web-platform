@@ -28,7 +28,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const labelsToAdd = ['auto-merge'];
+            const labelsToAdd = ['automerge'];
             github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
