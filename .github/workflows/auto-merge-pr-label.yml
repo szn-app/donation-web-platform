@@ -62,6 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       checks: read
+
     steps:
       - name: verify non-required triggered GitHub Checks passedGitHub Checks
         uses: poseidon/wait-for-status-checks@v0.6.0
@@ -69,13 +70,13 @@ jobs:
           token: ${{ secrets.PAT_WORKFLOW }}
           ignore_pattern: Mergeable*
 
-  label-ready-to-merge: 
+  label-ready-to-merge:
     if: ${{ github.event.action != 'reopened' }}
     needs: enforce-all-checks
-    runs-on: ubuntu-latest
-    permissions:
+    permissions: 
       pull-requests: write 
       statuses: write
+    runs-on: ubuntu-latest
     
     steps:
       - name: checkout code
@@ -95,8 +96,8 @@ jobs:
             });      
 
   automerge:
+    needs: enforce-all-checks
     if: ${{!contains(github.head_ref, 'release-please')}}
-    needs: label-ready-to-merge
     runs-on: ubuntu-latest
     permissions: 
         contents: write
