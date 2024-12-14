@@ -1,6 +1,6 @@
 # automatically merge development PRs (features, hotfixes, etc.)
 
-name: auto-merge-pull-request
+name: automerge-pull-request
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:  
       
 jobs:
-  auto_merge:
+  add_label_auto_merge:
     # avoid automerging release PRs
     if: ${{!contains(github.head_ref, 'release-please')}}
     # condition: if PR originate from a `feature/*` or `hotfix/*` branches, etc.
@@ -23,7 +23,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v4
 
-      - name: add auto-merge label
+      - name: add automerge label
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -67,5 +67,23 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ignore_pattern: Mergeable*
+
+      - name: checkout code
+        uses: actions/checkout@v4
+    
+      - name: add label 'ready-to-merge'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labelsToAdd = ['ready-to-merge'];
+            github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: labelsToAdd,
+            });      
+
+          
                 
     
