@@ -12,5 +12,33 @@ mergeable:
           regex: '^release-please'
           message: 'Auto-merging is disabled for branches prefixed with "release-please"'
     pass:
-      - do: merge
-        merge_method: "squash"
+      - do: checks # default pass case
+        status: 'success' # Can be: success, failure, neutral, cancelled, timed_out, or action_required
+        payload:
+          title: 'Mergeable Run have been Completed!'
+          summary: "All the validators have returned 'pass'! \n Here are some stats of the run: \n {{validationCount}} validations were ran"
+      - do: comment
+        payload:
+          body: >
+           <h2>passed validator</h2>
+           :+1:
+      - do: labels
+        add: 'passed'
+    fail:
+      - do: comment
+        payload:
+          body: >
+            :warning:
+            <h2>validator checks failed</h2>
+      - do: labels
+        add: 'failed'
+      - do: close
+    error:
+      - do: comment
+        payload:
+          body: >
+            :warning:
+            <h2>Error validators</h2>
+      - do: labels
+        add: 'failed'
+      - do: close
