@@ -105,6 +105,15 @@ jobs:
         statuses: write
 
     steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: update PR branch with merge commit
+        run: |
+          git fetch origin main
+          git merge origin/main 
+          git push origin HEAD
+
       - name: automerge PR
         run: |
           pr=${{github.event.number}}
@@ -112,4 +121,3 @@ jobs:
           gh pr merge $pr --squash --auto -t "$pr_title"
         env:
           GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
-      
