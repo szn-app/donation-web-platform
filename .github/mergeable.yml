@@ -1,52 +1,45 @@
+### Github App: mergeable.readthedocs.io 
+
 version: 2
 mergeable:
   - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
-    name: "Automatically merge pull requests once it passes all checks"
+    name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all checks"
     validate: 
-      - do: baseRef
-        must_include:
-          regex: 'master|main'
-          message: 'Auto-merging is only enabled for default branch'    
-      - do: headRef
-        must_exclude:
-          regex: '^release-please'
-          message: 'Auto-merging is disabled for branches prefixed with "release-please"'
+      - do: and  # Ensure all conditions are met for merging
+        validate: 
+          - do: baseRef  # Check the base branch
+            must_include:
+              regex: 'master|main'  # Only allow merging to default branch
+              message: 'Auto-merging is only enabled for default branch'
+          - do: label  # Check for the label
+            must_include:  # Ensure the label "auto-merge" exists
+              regex: '^auto-merge$'  # Use exact match with anchors 
+          - do: headRef
+            must_exclude:
+              regex: '^release-please'
+              message: 'Auto-merging is disabled for branches prefixed with "release-please"'
+
     pass:
       - do: checks # default pass case
         status: 'success' # Can be: success, failure, neutral, cancelled, timed_out, or action_required
         payload:
           title: 'Mergeable Run have been Completed!'
           summary: "All the validators have returned 'pass'! \n Here are some stats of the run: \n {{validationCount}} validations were ran"
-      - do: comment
-        payload:
-          body: >
-           <h2>passed validator</h2>
-           :+1:
+      # - do: merge
+      #   merge_method: "squash" 
       - do: labels
-        add: 'passed'
-    fail:
-      - do: comment
-        payload:
-          body: >
-            :warning:
-            <h2>validator checks failed</h2>
-      - do: labels
-        add: 'failed'
-      - do: close
+        add: 'merging'
+        
     error:
       - do: comment
         payload:
           body: >
             :warning:
             <h2>Error validators</h2>
-      - do: labels
-        add: 'failed'
-      - do: close
 
-
-  - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
-    name: "Automatically merge pull requests once it passes all checks"
-    validate: []
-    pass:
-      - do: labels
-        add: 'should-add-only-after-checks'
+    fail:
+      - do: comment
+        payload:
+          body: >
+            :warning:
+            <h2>validator checks failed</h2>

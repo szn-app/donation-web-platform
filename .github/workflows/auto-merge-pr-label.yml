@@ -56,6 +56,15 @@ jobs:
       #   env:
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      
-            
-            
+  # IMPORTANT! must setup "enforce-all-checks" as a required job in repo's setrule settings.
+  enforce-all-checks:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: read
+    steps:
+      - name: verify non-required triggered GitHub Checks passedGitHub Checks
+        uses: poseidon/wait-for-status-checks@v0.6.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+                
+    

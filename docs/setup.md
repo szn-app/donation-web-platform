@@ -4,4 +4,4 @@
 
 - update squash message settings for pull request on github to "pull request title & commit": https://github.blog/changelog/2022-05-11-default-to-pr-titles-for-squash-merge-commit-messages/
 - toggle General > "allow automerge" option in repo settings.
-- setup automerge using Mergeable Github App.
+- setup automerge using Mergeable Github App; setup "enforce-all-checks" as required setrule for the repo's release branch.
