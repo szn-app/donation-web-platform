@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.6](https://github.com/szn-app/donation-app/compare/donation-app@v0.3.5...donation-app@v0.3.6) (2024-12-14)
+
+
+### Features
+
+* **dummy:** title for entry page ([#86](https://github.com/szn-app/donation-app/issues/86)) ([7a5868a](https://github.com/szn-app/donation-app/commit/7a5868a030cc2e0693e39770d7b68384bd6f30e8))
+
 ## [0.3.5](https://github.com/szn-app/donation-app/compare/donation-app@v0.3.4...donation-app@v0.3.5) (2024-12-12)
 
 

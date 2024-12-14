@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.28](https://github.com/szn-app/donation-app/compare/web-server-v0.0.27...web-server@v0.0.28) (2024-12-14)
+
+
+### Features
+
+* **dummy:** message update from Rust code ([#69](https://github.com/szn-app/donation-app/issues/69)) ([b8a5969](https://github.com/szn-app/donation-app/commit/b8a5969827235d7e4d2408ed407aabd7b56d479e))
+* **dummy:** message update from Rust code ([#71](https://github.com/szn-app/donation-app/issues/71)) ([783ab67](https://github.com/szn-app/donation-app/commit/783ab6737c9fdc32c59e002b362fc184f9537920))
+* **dummy:** title for entry page ([#74](https://github.com/szn-app/donation-app/issues/74)) ([b24dc43](https://github.com/szn-app/donation-app/commit/b24dc43727bc2b558e88ff94b6b79b081a32b85c))
+* **dummy:** title for entry page ([#75](https://github.com/szn-app/donation-app/issues/75)) ([84c0d8a](https://github.com/szn-app/donation-app/commit/84c0d8a6aa6e9fecf78a9a3a61ba6986dbea76ce))
+* **dummy:** title for entry page ([#76](https://github.com/szn-app/donation-app/issues/76)) ([82181ad](https://github.com/szn-app/donation-app/commit/82181adb91a141126e24531156845cc352442ca3))
+* **dummy:** title for entry page ([#77](https://github.com/szn-app/donation-app/issues/77)) ([4993d86](https://github.com/szn-app/donation-app/commit/4993d863f5ea45320ca163cea891ed1b44dedea2))
+* **dummy:** title for entry page ([#80](https://github.com/szn-app/donation-app/issues/80)) ([95aa9e8](https://github.com/szn-app/donation-app/commit/95aa9e84c6826e4f360588bafc96ff2e9ff55546))
+* **dummy:** title for entry page ([#86](https://github.com/szn-app/donation-app/issues/86)) ([7a5868a](https://github.com/szn-app/donation-app/commit/7a5868a030cc2e0693e39770d7b68384bd6f30e8))
+* **dummy:** title for entry page ([#88](https://github.com/szn-app/donation-app/issues/88)) ([00fa3cb](https://github.com/szn-app/donation-app/commit/00fa3cb7125fe7e1925d93f266acd28235576bcd))
+* **dummy:** update message from Rust ([#72](https://github.com/szn-app/donation-app/issues/72)) ([ddb1871](https://github.com/szn-app/donation-app/commit/ddb18719d2e317de3267f940a78378a263340555))
+* **dummy:** update message from Rust ([#73](https://github.com/szn-app/donation-app/issues/73)) ([877fcbd](https://github.com/szn-app/donation-app/commit/877fcbdf7417cb69140535094cade8e1ab487f57))
+
 ## [0.0.27](https://github.com/szn-app/donation-app/compare/web-server-v0.0.26...web-server@v0.0.27) (2024-12-13)
 
 
