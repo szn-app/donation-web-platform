@@ -6,3 +6,6 @@
 - toggle General > "allow automerge" option in repo settings.
 - setup automerge using Mergeable Github App; setup "enforce-all-checks" as required setrule for the repo's release branch.
 - Use PAT to trigger events from Github API (bots/actions/apps): in github workflows events from bots do not trigger futher events unless using a PAT (rather than relying on Github_Token).  https://github.com/orgs/community/discussions/57484
+- repo setting > Rulesets > Require status checks to pass > add job "enforce-all-checks" 
+- repo setting > Rulesets > Require branches to be up to date before merging. 
+- 

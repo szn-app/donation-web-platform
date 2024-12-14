@@ -94,6 +94,20 @@ jobs:
               labels: labelsToAdd,
             });      
 
-          
-                
-    
+  automerge:
+    if: ${{!contains(github.head_ref, 'release-please')}}
+    needs: label-ready-to-merge
+    runs-on: ubuntu-latest
+    permissions: 
+        pull-requests: write
+        statuses: write
+
+    steps:
+      - name: automerge PR
+        run: |
+          pr=${{github.event.number}}
+          pr_title=$(gh pr view "$pr" --json title | jq -r '.title')
+          gh pr merge $pr --squash --auto -t "$pr_title"
+        env:
+          GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+      
