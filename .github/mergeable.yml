@@ -3,7 +3,7 @@
 version: 2
 mergeable:
   - when: pull_request.*, pull_request_review.*, status.*, check_suite.*
-    name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all checks"
+    name: "Automatically merge pull requests labeled with 'auto-merge' once it passes all required Github checks"
     validate: 
       - do: and  # Ensure all conditions are met for merging
         validate: 
