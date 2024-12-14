@@ -38,9 +38,3 @@ mergeable:
         status: 'error'
         payload: 
           title: "validator errored"
-
-    error:
-      - do: checks
-        status: 'error'
-        payload: 
-          title: "validator errored"
