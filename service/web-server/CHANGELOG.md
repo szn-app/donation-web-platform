@@ -1,19 +1,5 @@
 # Changelog
 
-## [0.0.33](https://github.com/szn-app/donation-app/compare/web-server-v0.0.32...web-server@v0.0.33) (2024-12-15)
-
-
-### Features
-
-* **ci:** dummy ci change ([#101](https://github.com/szn-app/donation-app/issues/101)) ([a90a3dd](https://github.com/szn-app/donation-app/commit/a90a3dddb106edd3f0e3ba61849e0971f257547b))
-* **ci:** dummy ci change ([#97](https://github.com/szn-app/donation-app/issues/97)) ([20b51ad](https://github.com/szn-app/donation-app/commit/20b51adda1ae6b68444da2b2c2725075882fc9ac))
-* **dummy-5:** title for entry page ([#91](https://github.com/szn-app/donation-app/issues/91)) ([e52f82c](https://github.com/szn-app/donation-app/commit/e52f82c914e7d9fafd9fca9428efdfed59716f47))
-* **dummy:** title for entry page ([b514045](https://github.com/szn-app/donation-app/commit/b514045f3f6c3b65ad65c3ddd8146df3cb5ad7f7))
-* **dummy:** title for entry page ([a5c7ee0](https://github.com/szn-app/donation-app/commit/a5c7ee0bf86853b933b6afc5ecb950d30df627a7))
-* **dummy:** title for entry page ([#86](https://github.com/szn-app/donation-app/issues/86)) ([7a5868a](https://github.com/szn-app/donation-app/commit/7a5868a030cc2e0693e39770d7b68384bd6f30e8))
-* **dummy:** title for entry page ([#88](https://github.com/szn-app/donation-app/issues/88)) ([00fa3cb](https://github.com/szn-app/donation-app/commit/00fa3cb7125fe7e1925d93f266acd28235576bcd))
-* **dummy:** title for entry page ([#96](https://github.com/szn-app/donation-app/issues/96)) ([f6420ea](https://github.com/szn-app/donation-app/commit/f6420eaa0b62e3204cb20b32c441da70d7dbcd64))
-
 ## [0.0.32](https://github.com/szn-app/donation-app/compare/web-server@v0.0.31...web-server@v0.0.32) (2024-12-14)
 
 
