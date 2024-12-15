@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.10](https://github.com/szn-app/donation-app/compare/donation-app-v0.3.9...donation-app@v0.3.10) (2024-12-15)
+
+
+### Features
+
+* **ci:** dummy ci change ([#97](https://github.com/szn-app/donation-app/issues/97)) ([20b51ad](https://github.com/szn-app/donation-app/commit/20b51adda1ae6b68444da2b2c2725075882fc9ac))
+* dummy feature rust ([cc9564f](https://github.com/szn-app/donation-app/commit/cc9564fafc8537c6dba7c65f2d5d50ecdee743a5))
+* dummy feature rust ([28b0285](https://github.com/szn-app/donation-app/commit/28b02853b021ef2f993eee3b7cb64932bd818bfc))
+
 ## [0.3.8](https://github.com/szn-app/donation-app/compare/donation-app-v0.3.7...donation-app@v0.3.8) (2024-12-15)
 
 
