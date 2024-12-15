@@ -19,8 +19,6 @@
   "draft": false,
   "prerelease": false, 
   
-  "group-pull-request-title-pattern": "chore: release ${version}",
-  "pull-request-title-pattern": "chore: release${component} ${version}",
   "pull-request-header": "🤖 Release created:", 
   "pull-request-footer": "_release-please generated PR_",
 
