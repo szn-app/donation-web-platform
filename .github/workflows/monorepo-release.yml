@@ -12,6 +12,8 @@ permissions:
   
 jobs:
   release-please:
+     # avoid push events triggered by release-please PRs merges
+    if: ${{ !contains(github.ref_name, 'release-please') }}
     runs-on: ubuntu-latest
     
     outputs:
@@ -19,6 +21,10 @@ jobs:
       web-server--tag_name: ${{ steps.release-step.outputs['service/web-server--tag_name'] }}
 
     steps:
+      - name: print
+        run: |
+          echo "${{github.ref_name}}"
+
       - uses: googleapis/release-please-action@v4
         id: release-step
         with: 
