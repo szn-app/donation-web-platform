@@ -117,6 +117,9 @@ jobs:
         run: |
           git fetch origin main
           git merge origin/main 
+          
+      - name: Push changes
+        run: |
           git push origin HEAD
 
       - name: automerge PR
