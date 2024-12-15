@@ -1,5 +1,6 @@
+### automerge pull requests
 
-name: automerge-pull-request
+name: automerge
 
 on:
   pull_request:

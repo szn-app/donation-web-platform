@@ -75,7 +75,7 @@ example_workflow_with_release_please_manually_triggered() {
         git pull && git push origin main 
     }
 
-    local release_please_workflow=monorepo-release.yml
+    local release_please_workflow=release.yml
 
     local feature_branch=branch_feature_x
     create_feature_pr $feature_branch

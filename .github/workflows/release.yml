@@ -1,4 +1,6 @@
-name: monorepo-release (release-please)
+### monorepo release workflow using release-please tool
+
+name: release
 
 on:
   push:
