@@ -1,6 +1,6 @@
 # automatically merge development PRs (features, hotfixes, etc.)
 
-name: automerge-pull-request
+name: enforce-all-checks
 
 on:
   pull_request:
