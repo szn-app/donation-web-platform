@@ -6,10 +6,8 @@ on:
     # unlabeled is required to support release-please (which for some reason doesn't trigger the other events when creating PR)
     types: 
       - labeled
-      - unlabeled
       - synchronize
       - opened
-      - edited
       - ready_for_review
       - reopened
       - unlocked
