@@ -24,7 +24,7 @@ on:
 
 jobs: 
     automerge:
-        if: ${{!contains(github.head_ref, 'release-please')}} && contains(github.event.pull_request.labels.*.name, 'automerge')
+        if: ${{!contains(github.head_ref, 'release-please') && contains(github.event.pull_request.labels.*.name, 'automerge') }}
         runs-on: ubuntu-latest
         permissions: 
             contents: write
@@ -37,10 +37,11 @@ jobs:
             uses: "pascalgn/automerge-action@v0.16.4"
             env:
               GITHUB_TOKEN: "${{ secrets.PAT_WORKFLOW }}"
-              MERGE_LABELS: "ready-to-merge"
+              MERGE_LABELS: "automerge,ready-to-merge"
               MERGE_REMOVE_LABELS: "ready-to-merge"
               MERGE_METHOD: "squash"
               MERGE_COMMIT_MESSAGE: 'pull-request-title'
+              UPDATE_METHOD: "rebase"
               # LOG: "TRACE" 
               
           - name: feedback
