@@ -1,0 +1,82 @@
+
+name: automerge-pull-request
+
+on:
+  pull_request:
+    # unlabeled is required to support release-please (which for some reason doesn't trigger the other events when creating PR)
+    types: 
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+    branches: [main]
+  pull_request_review:
+    types:
+      - submitted
+  check_suite:
+    types:
+      - completed
+  workflow_dispatch:  
+
+
+jobs: 
+    automerge:
+        if: ${{!contains(github.head_ref, 'release-please')}} && contains(github.event.pull_request.labels.*.name, 'automerge')
+        runs-on: ubuntu-latest
+        permissions: 
+            contents: write
+            pull-requests: write
+            statuses: write
+    
+        steps:
+          - name: automerge
+            id: automerge
+            uses: "pascalgn/automerge-action@v0.16.4"
+            env:
+              GITHUB_TOKEN: "${{ secrets.PAT_WORKFLOW }}"
+              MERGE_LABELS: "ready-to-merge"
+              MERGE_REMOVE_LABELS: "ready-to-merge"
+              MERGE_METHOD: "squash"
+              MERGE_COMMIT_MESSAGE: 'pull-request-title'
+              LOG: "TRACE" 
+          - name: feedback
+            if: ${{ steps.automerge.outputs.mergeResult == 'merged' }}
+            run: |
+              echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }} merged!"
+
+    
+          # - name: checkout code
+          #   uses: actions/checkout@v4
+          #   with:
+          #     token: ${{ secrets.PAT_WORKFLOW }}
+          #     ref: '${{github.head_ref}}'
+    
+          # - name: update PR branch with merge commit
+          #   run: |
+          #     git fetch origin main
+          #     git rebase origin/main 
+              
+          # - name: Push changes
+          #   run: |
+          #     {
+          #       current_branch=$(git rev-parse --abbrev-ref HEAD)
+          #       if [[ "$current_branch" == "main" ]]; then
+          #         echo "ERROR: should not be on main branch."
+          #         echo "Please switch to a feature branch before force push."
+          #         exit 1
+          #       fi
+          #     }
+          #     git push origin HEAD -f
+    
+          # - name: automerge PR
+          #   run: |
+          #     pr=${{github.event.number}}
+          #     pr_title=$(gh pr view "$pr" --json title | jq -r '.title')
+          #     gh pr merge $pr --squash --auto -t "$pr_title"
+          #   env:
+          #     GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+    

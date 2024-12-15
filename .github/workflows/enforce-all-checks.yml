@@ -4,7 +4,7 @@ name: automerge-pull-request
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled] # unlabeled is required to support release-please (which for some reason doesn't trigger the other events when creating PR)
+    types: [opened, synchronize] # unlabeled is required to support release-please (which for some reason doesn't trigger the other events when creating PR)
     branches: [main]
   workflow_dispatch:  
       
@@ -68,7 +68,7 @@ jobs:
         uses: poseidon/wait-for-status-checks@v0.6.0
         with:
           token: ${{ secrets.PAT_WORKFLOW }}
-          ignore_pattern: Mergeable*
+          ignore_pattern: automerge*
 
   label-ready-to-merge:
     if: ${{ github.event.action != 'reopened' }}
@@ -97,43 +97,4 @@ jobs:
               labels: labelsToAdd,
             });      
 
-  automerge:
-    needs: enforce-all-checks
-    if: ${{!contains(github.head_ref, 'release-please')}}
-    runs-on: ubuntu-latest
-    permissions: 
-        contents: write
-        pull-requests: write
-        statuses: write
-
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT_WORKFLOW }}
-          ref: '${{github.head_ref}}'
-
-      - name: update PR branch with merge commit
-        run: |
-          git fetch origin main
-          git rebase origin/main 
-          
-      - name: Push changes
-        run: |
-          {
-            current_branch=$(git rev-parse --abbrev-ref HEAD)
-            if [[ "$current_branch" == "main" ]]; then
-              echo "ERROR: should not be on main branch."
-              echo "Please switch to a feature branch before force push."
-              exit 1
-            fi
-          }
-          git push origin HEAD -f
-
-      - name: automerge PR
-        run: |
-          pr=${{github.event.number}}
-          pr_title=$(gh pr view "$pr" --json title | jq -r '.title')
-          gh pr merge $pr --squash --auto -t "$pr_title"
-        env:
-          GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
+ 
