@@ -116,7 +116,7 @@ jobs:
       - name: update PR branch with merge commit
         run: |
           git fetch origin main
-          git merge origin/main 
+          git rebase origin/main 
           
       - name: Push changes
         run: |
