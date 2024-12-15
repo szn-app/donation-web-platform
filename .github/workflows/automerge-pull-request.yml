@@ -22,7 +22,6 @@ on:
       - completed
   workflow_dispatch:  
 
-
 jobs: 
     automerge:
         if: ${{!contains(github.head_ref, 'release-please')}} && contains(github.event.pull_request.labels.*.name, 'automerge')
@@ -42,7 +41,8 @@ jobs:
               MERGE_REMOVE_LABELS: "ready-to-merge"
               MERGE_METHOD: "squash"
               MERGE_COMMIT_MESSAGE: 'pull-request-title'
-              LOG: "TRACE" 
+              # LOG: "TRACE" 
+              
           - name: feedback
             if: ${{ steps.automerge.outputs.mergeResult == 'merged' }}
             run: |
