@@ -24,7 +24,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-          
+      
+      - name: Configure Git
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -62,6 +67,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies for tauri 
         if: matrix.platform == 'ubuntu-latest'

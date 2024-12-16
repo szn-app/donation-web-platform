@@ -31,6 +31,11 @@ jobs:
             statuses: write
     
         steps:
+          - name: Set Git User and Email
+            run: |
+              git config --global user.name "github-actions[bot]"
+              git config --global user.email "github-actions[bot]@users.noreply.github.com"
+  
           - name: automerge
             id: automerge
             uses: "pascalgn/automerge-action@v0.16.4"

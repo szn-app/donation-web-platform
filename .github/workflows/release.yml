@@ -21,6 +21,11 @@ jobs:
       web-server--tag_name: ${{ steps.release-step.outputs['service/web-server--tag_name'] }}
 
     steps:
+      - name: Set Git User and Email
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - uses: googleapis/release-please-action@v4
         id: release-step
         with: 
@@ -66,6 +71,11 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
 
       # find release ID given the associated tag and pass it to Tauri build in following step (bc it seems like tauri-action fails to find the release id sometimes)
       - name: Find Release ID
