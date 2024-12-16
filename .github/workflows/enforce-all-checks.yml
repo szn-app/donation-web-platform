@@ -32,7 +32,7 @@ jobs:
       - name: add automerge label
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PAT_WORKFLOW }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const labelsToAdd = ['automerge'];
             github.rest.issues.addLabels({
@@ -92,7 +92,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_WORKFLOW }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Configure Git
         run: |
@@ -102,7 +102,7 @@ jobs:
       - name: add label 'ready-to-merge'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PAT_WORKFLOW }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const labelsToAdd = ['ready-to-merge'];
             github.rest.issues.addLabels({
