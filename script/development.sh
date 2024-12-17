@@ -1,5 +1,8 @@
 misc() { 
-   cargo create-tauri-app 
+    # modify permission
+    find ./ -maxdepth 4 -name "script.sh" -exec chmod +x {} \;
+
+    cargo create-tauri-app 
 }
 
 ## IMPORTANT! used in .github/workflows/*
@@ -27,12 +30,14 @@ develop_tauri_android() {
 develop_pnpm_react() { 
     cd web-server
     pnpm install
+    # run application development
     WEBKIT_DISABLE_COMPOSITING_MODE=1 cargo tauri dev
 }
 
 build() {
     pnpm install
     NO_STRIP=true cargo tauri build 
+    # run application
     WEBKIT_DISABLE_COMPOSITING_MODE=1 ./src-tauri/target/release/bundle/appimage/*.AppImage
 }
 
