@@ -126,11 +126,13 @@ jobs:
 
       - name: compress frontend assets
         working-directory: ./
-        run: zip -r frontend.zip ./service/web-server/dist
+        run: |
+          mkdir -p target/ 
+          zip -r ./target/frontend.zip ./service/web-server/dist
 
       - name: upload frontend assets
         working-directory: ./
-        run: gh release upload ${{ steps.find_release_id.outputs.release_id }} ./frontend.zip 
+        run: gh release upload ${{ needs.release-please.outputs.web-server--tag_name }} ./target/frontend.zip 
         env: 
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
 
