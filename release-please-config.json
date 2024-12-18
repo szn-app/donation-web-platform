@@ -13,7 +13,7 @@
   "release-search-depth": 50,
   "always-link-local": true,
   "include-v-in-tag": true,
-  "tag-separator": ":",
+  "tag-separator": "@",
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "draft": false,

@@ -84,8 +84,8 @@ jobs:
 
       - name: Install zip
         run: |
-          sudo apt-get update
-          sudo apt-get install zip
+          sudo apt update -y
+          sudo apt install zip -y
 
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
@@ -146,8 +146,9 @@ jobs:
           docker tag $TAG ghcr.io/szn-app/donation-app/$TAG
           docker push ghcr.io/szn-app/donation-app/$TAG
           VERSION_TAG=${{ needs.release-please.outputs.web-server--tag_name }}
-          docker tag $TAG ghcr.io/szn-app/donation-app/$VERSION_TAG
-          docker push ghcr.io/szn-app/donation-app/$VERSION_TAG
+          MAPPED_VERSION="${VERSION_TAG//@/:}"
+          docker tag $TAG ghcr.io/szn-app/donation-app/$MAPPED_VERSION
+          docker push ghcr.io/szn-app/donation-app/$MAPPED_VERSION
 
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
