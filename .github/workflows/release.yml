@@ -143,7 +143,13 @@ jobs:
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
           release_desc=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json body | jq -r '.body')
-          new_desc="$release_desc \n\n___\n### Container:\n * [web-server:latest](ghcr.io/szn-app/donation-app/web-server:latest)"
+          new_desc=$(cat <<EOF
+          $release_desc
+          ___
+          ### Container:
+          * [web-server:latest](ghcr.io/szn-app/donation-app/web-server:latest)
+          EOF
+          )
           gh release edit ${{ needs.release-please.outputs.web-server--tag_name }} --notes "$new_desc"
         env: 
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
