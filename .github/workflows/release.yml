@@ -82,6 +82,11 @@ jobs:
             echo "release_id=$release_id"
           fi
 
+      - name: Install zip
+        run: |
+          sudo apt-get update
+          sudo apt-get install zip
+
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
         working-directory: ./
@@ -118,7 +123,17 @@ jobs:
         run: |
           chmod +x ./script.sh
           ./script.sh build_react_spa
-        
+
+      - name: compress frontend assets
+        working-directory: ./
+        run: zip -r frontend.zip ./service/web-server/dist
+
+      - name: upload frontend assets
+        working-directory: ./
+        run: gh release upload ${{ steps.find_release_id.outputs.release_id }} ./frontend.zip 
+        env:
+          GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
+
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
         env:
