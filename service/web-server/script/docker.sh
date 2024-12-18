@@ -1,5 +1,6 @@
 build() { 
-    docker build -t web-server .
+    # NOTE: uses buildx (instead of the legacy build)
+    docker build . -t web-server:latest
 }
 
 run() {

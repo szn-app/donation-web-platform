@@ -108,3 +108,10 @@ delete_tag() {
     git push origin :$tag
     git tag -d $tag
 }
+
+# NOTE: Dockerfile labels should associate package release to github repo (otherwise a manual web interface association is required)
+github_container_registry_deploy() {
+    TAG=web-server:latest
+    docker tag $TAG ghcr.io/szn-app/donation-app/$TAG
+    docker push ghcr.io/szn-app/donation-app/$TAG
+}

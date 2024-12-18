@@ -88,3 +88,8 @@ setup_monorepo() {
     release-please github-release --token=$GITHUB_TOKEN --repo-url=szn-app/donation-app
 
 }
+
+setup_docker_github_container_registry() {
+    CR_PAT='token'
+    echo $CR_PAT | docker login ghcr.io -u 'username' --password-stdin # using PAT token    
+}

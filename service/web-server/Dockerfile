@@ -17,6 +17,10 @@ RUN chmod +x /bin/nginx.sh
 
 # image hosting application
 FROM nginx:alpine AS final
+# ISSUE: github container registry doesn't pick up org.opencontainers.image.source value to associate automatically the image with the repo.
+LABEL org.opencontainers.image.source="https://github.com/szn-app/donation-app"
+LABEL org.opencontainers.image.description="donation-app microservice"
+LABEL org.opencontainers.image.licenses="GPL-3.0"
 WORKDIR /usr/share/nginx/html
 
 COPY --from=build /bin/nginx.sh /bin/
