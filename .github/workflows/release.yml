@@ -84,8 +84,8 @@ jobs:
 
       - name: Install zip
         run: |
-          sudo apt-get update
-          sudo apt-get install zip
+          sudo apt update -y
+          sudo apt install zip -y
 
       - name: Install dependencies for tauri 
         if: startsWith(matrix.platform, 'ubuntu')
