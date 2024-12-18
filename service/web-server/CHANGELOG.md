@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.52](https://github.com/szn-app/donation-app/compare/web-server@v0.0.51...web-server@v0.0.52) (2024-12-18)
+
+
+### Features
+
+* **dummy:** change title ([192c3d9](https://github.com/szn-app/donation-app/commit/192c3d918d7d7366396cb85b17e2966aecf4df7c))
+* **dummy:** empty commit ([0626ab7](https://github.com/szn-app/donation-app/commit/0626ab740912a5c90a098e25ae24df8503e00772))
+
 ## [0.0.51](https://github.com/szn-app/donation-app/compare/web-server-v0.0.50...web-server@v0.0.51) (2024-12-18)
 
 
