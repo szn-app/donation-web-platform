@@ -131,8 +131,23 @@ jobs:
       - name: upload frontend assets
         working-directory: ./
         run: gh release upload ${{ steps.find_release_id.outputs.release_id }} ./frontend.zip 
-        env:
+        env: 
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
+
+      - name: build web-server container
+        run: | 
+          chmod +x ./script.sh
+          ./script.sh build_container
+      
+      - name: upload container to Github Container Registry
+        run: |
+          echo "${{ secrets.PAT_GITHUB_CONTAINER_REGISTRY }}" | docker login ghcr.io -u ${{github.actor}} -p 
+          TAG=web-server:latest
+          docker tag $TAG ghcr.io/szn-app/donation-app/$TAG
+          docker push ghcr.io/szn-app/donation-app/$TAG
+          VERSION_TAG=${{ needs.release-please.outputs.web-server--tag_name }}
+          docker tag $TAG ghcr.io/szn-app/donation-app/$VERSION_TAG
+          docker push ghcr.io/szn-app/donation-app/$VERSION_TAG
 
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
