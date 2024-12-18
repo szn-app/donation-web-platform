@@ -83,6 +83,7 @@ jobs:
           fi
 
       - name: Install zip
+        if: startsWith(matrix.platform, 'ubuntu')
         run: |
           sudo apt update -y
           sudo apt install zip -y
@@ -125,23 +126,27 @@ jobs:
           ./script.sh build_react_spa
 
       - name: compress frontend assets
+        if: startsWith(matrix.platform, 'ubuntu')
         working-directory: ./
         run: |
           mkdir -p target/ 
           zip -r ./target/frontend.zip ./service/web-server/dist
 
       - name: upload frontend assets
+        if: startsWith(matrix.platform, 'ubuntu')
         working-directory: ./
         run: gh release upload ${{ needs.release-please.outputs.web-server--tag_name }} ./target/frontend.zip 
         env: 
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
 
       - name: build web-server container
+        if: startsWith(matrix.platform, 'ubuntu')
         run: | 
           chmod +x ./script.sh
           ./script.sh build_container
       
       - name: upload container to Github Container Registry
+        if: startsWith(matrix.platform, 'ubuntu')
         run: |
           echo "${{ secrets.PAT_GITHUB_CONTAINER_REGISTRY }}" | docker login ghcr.io -u ${{github.actor}} -p 
           TAG=web-server:latest
