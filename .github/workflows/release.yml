@@ -161,7 +161,7 @@ jobs:
       - name: Update release description
         run: |
           new_desc="${{ steps.find_release_id.outputs.release_desc }}\n\n___\n### Container:\n * [web-server:latest](ghcr.io/szn-app/donation-app/web-server:latest)"
-          gh release edit ${{ steps.find_release_id.outputs.release_id }} --body "$new_desc"
+          gh release edit ${{ steps.find_release_id.outputs.release_id }} --notes "$new_desc"
         env: 
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
 
