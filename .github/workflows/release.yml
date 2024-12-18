@@ -140,6 +140,7 @@ jobs:
           docker push ghcr.io/szn-app/donation-app/$MAPPED_VERSION
 
       - name: Update release description
+        if: startsWith(matrix.platform, 'ubuntu')
         run: |
           release_desc=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json body | jq -r '.body')
           new_desc="$release_desc \n\n___\n### Container:\n * [web-server:latest](ghcr.io/szn-app/donation-app/web-server:latest)"
