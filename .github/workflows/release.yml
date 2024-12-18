@@ -147,7 +147,7 @@ jobs:
           $release_desc
           ___
           ### Container:
-          * [web-server:latest](ghcr.io/szn-app/donation-app/web-server:latest)
+          * [web-server:latest](https://ghcr.io/szn-app/donation-app/web-server:latest)
           EOF
           )
           gh release edit ${{ needs.release-please.outputs.web-server--tag_name }} --notes "$new_desc"
