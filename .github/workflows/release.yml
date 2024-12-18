@@ -75,7 +75,7 @@ jobs:
         run: |
           release_id=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json databaseId | jq -r '.databaseId')
           release_desc=$(gh release view ${{ needs.release-please.outputs.web-server--tag_name }} --json body | jq -r '.body')
-          echo "::set-output name=release_id::$release_id"
+          echo "name=release_id::$release_id" >> $GITHUB_OUTPUT
           if [[ -z "$release_id" ]]; then
             echo "Error: release id retrieval failed for tagname: ${{ needs.release-please.outputs.web-server--tag_name }}"
             exit 1;
