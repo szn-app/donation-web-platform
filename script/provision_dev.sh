@@ -93,3 +93,22 @@ setup_docker_github_container_registry() {
     CR_PAT='token'
     echo $CR_PAT | docker login ghcr.io -u 'username' --password-stdin # using PAT token    
 }
+
+kubernetes() {
+    docker --version && kubectl version && minikube version
+
+    docker context ls && kubectl config get-contexts
+    docker context use default
+    minikube config set driver docker
+
+    minikube start --driver=docker
+
+
+    minikube kubectl -- get po -A # for a separate version kubectl install
+    # or 
+    kubectl cluster-info 
+    kubectl get nodes
+
+    minikube dashboard --url
+    minikube addons enable ingress
+}
