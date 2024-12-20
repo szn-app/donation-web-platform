@@ -8,9 +8,12 @@ resources:
 # [BUG in Kustomize https://github.com/kubernetes-sigs/kustomize/issues/5047] specifiying namespace ruins configMapGenerator name resolution
 # namespace: donation-app
 
+nameSuffix: -v1
 # adds labels to all resources (including selector and template fields)
-commonLabels: 
-  app: web-server
+labels: 
+  - pairs: 
+      app: web-server
+    includeSelectors: true
 
 patches:
   - target:
