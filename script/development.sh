@@ -83,6 +83,11 @@ minikube() {
     kubectl config view && kubectl get namespace && kubectl config get-contexts
 
     (cd manifest/development && kubectl apply -k .)
-    minikube tunnel
+    minikube ip 
+    # expose service to host: 
+    minikube tunnel 
     minikube service dev-web-server --url  --namespace=donation-app
+
+    nslookup donation-app.test $(minikube ip) # query dns server running in minikube cluaster
+    ping donation-app.test
 }

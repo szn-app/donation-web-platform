@@ -94,8 +94,24 @@ setup_docker_github_container_registry() {
     echo $CR_PAT | docker login ghcr.io -u 'username' --password-stdin # using PAT token    
 }
 
-kubernetes() {
+kubernetes_dev() {
+test_domain_dns_systemd_resolved() {
+# add minikube dns to linux as a dns server https://minikube.sigs.k8s.io/docs/handbook/addons/ingress-dns/#Linux
+sudo mkdir -p /etc/systemd/resolved.conf.d
+sudo tee /etc/systemd/resolved.conf.d/minikube.conf << EOF
+[Resolve]
+DNS=$(minikube ip)
+Domains=~test
+EOF
+sudo systemctl restart systemd-resolved
+}
+
     docker --version && kubectl version && minikube version
+    minikube addons enable dashboard
+    minikube addons enable ingress # NGINX Ingress controller
+    minikube addons enable ingress-dns 
+    kubectl get pods -n ingress-nginx # verify Ingress controller running
+    test_domain_dns_systemd_resolved
 
     docker context ls && kubectl config get-contexts
     docker context use default
@@ -110,5 +126,4 @@ kubernetes() {
     kubectl get nodes
 
     minikube dashboard --url
-    minikube addons enable ingress
 }
