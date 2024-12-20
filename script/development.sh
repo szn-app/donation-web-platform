@@ -83,6 +83,8 @@ minikube() {
     kubectl config view && kubectl get namespace && kubectl config get-contexts
 
     (cd manifest/development && kubectl apply -k .)
+    kubectl get all
+ 
     minikube ip 
     # expose service to host: 
     minikube tunnel 

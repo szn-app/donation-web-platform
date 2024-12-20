@@ -5,21 +5,26 @@ resources:
 - ../base
 
 namePrefix: dev- 
+namespace: donation-app
 
 images:
 - name: web-server
   newTag: latest
 
+configMapGenerator:
+- name: properties-map
+  env: config.properties
+
 patches:
-  - patch: |
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: web-server
-        
-      spec:
-        template:
-          spec:
-            containers:
-            - name: nginx
-              imagePullPolicy: Never
+- patch: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web-server
+      
+    spec:
+      template:
+        spec:
+          containers:
+          - name: nginx
+            imagePullPolicy: Never

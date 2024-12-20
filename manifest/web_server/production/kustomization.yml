@@ -4,13 +4,17 @@ kind: Kustomization
 resources: 
 - ../base
 
-namespace: donation-app
 namePrefix: prod- 
+namespace: donation-app
 
 images:
 - name: web-server
   newName: ghcr.io/szn-app/donation-app/web-server
   newTag: latest
+
+configMapGenerator:
+  - name: properties-map
+    env: config.properties
 
 patches: 
   - patch: |

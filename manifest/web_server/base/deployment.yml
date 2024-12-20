@@ -4,14 +4,8 @@ kind: Deployment
 metadata:
   name: web-server
 spec:
-  selector:
-    matchLabels:
-      app: web-server
   replicas: 1
   template: 
-    metadata:
-      labels:
-        app: web-server
     spec: 
       containers:
         - name: nginx
@@ -19,4 +13,7 @@ spec:
           ports: 
           - containerPort: 80
             name: http-web-server
+          envFrom: 
+          - configMapRef:
+              name: properties-map
 
