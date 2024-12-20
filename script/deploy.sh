@@ -115,3 +115,12 @@ github_container_registry_deploy() {
     docker tag $TAG ghcr.io/szn-app/donation-app/$TAG
     docker push ghcr.io/szn-app/donation-app/$TAG
 }
+
+kustomize_kubectl() { 
+    kubectl kustomize ./
+
+    kubectl apply -k ./ # kubectl kustomize ./ | kubectl apply -f -
+    kubectl get -k ./
+    kubectl describe -k ./
+    kubectl diff -k ./
+}

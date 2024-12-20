@@ -72,3 +72,17 @@ feature_pull_request() {
 
     # NOTE: automerge is applied only on PRs from branches that are prefix with "feature/*" or "hotfix/*".
 }
+
+minikube() {
+    # bind docker images directly inside minikube
+    eval $(minikube docker-env)
+    (cd service/web-server && ./script.sh build_container)
+
+    kubectl create namespace donation-app   
+    kubectl config set-context --current --namespace=donation-app
+    kubectl config view && kubectl get namespace && kubectl config get-contexts
+
+    (cd manifest/development && kubectl apply -k .)
+    minikube tunnel
+    minikube service dev-web-server --url  --namespace=donation-app
+}

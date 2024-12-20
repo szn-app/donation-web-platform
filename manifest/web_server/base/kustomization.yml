@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources: 
+- deployment.yml
+- service.yml
+
+namespace: donation-app
+
+patches:
+  - target:
+      kind: Deployment
+      name: web-server
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: _ # required field but not used
+
+      spec: 
+        template:  
+          spec: 
+            containers:
+              - name: nginx
+                resources:
+                  requests:
+                    memory: "128Mi"
+                    cpu: "100m" # 50% of core
+                  limits: 
+                    memory: "256Mi"
+                    cpu: "250m"
