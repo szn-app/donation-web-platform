@@ -1,0 +1,5 @@
+nameReference:
+- kind: ServiceName
+  fieldSpecs:
+  - path: spec/rules/*/http/paths/0/backend/serviceName
+    kind: Ingress
