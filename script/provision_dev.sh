@@ -95,7 +95,19 @@ setup_docker_github_container_registry() {
 }
 
 kubernetes_dev() {
-test_domain_dns_systemd_resolved() {
+    # optional installation for more command options compared to `kubectl kustomize <...>` (kubectly kustomize preinstalled plugin)
+    install_kustomize() { 
+        TMP=$(mktemp -d)
+        pushd $TMP
+            curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+            sudo mv kustomize /usr/local/bin/kustomize
+        popd
+        rm -r $TMP
+        kustomize version
+    }
+
+install_domain_dns_systemd_resolved_for_test_domains() {
 # add minikube dns to linux as a dns server https://minikube.sigs.k8s.io/docs/handbook/addons/ingress-dns/#Linux
 sudo mkdir -p /etc/systemd/resolved.conf.d
 sudo tee /etc/systemd/resolved.conf.d/minikube.conf << EOF
@@ -106,7 +118,11 @@ EOF
 sudo systemctl restart systemd-resolved
 }
 
-    docker --version && kubectl version && minikube version
+    # installations required
+    install_kustomize
+    docker --version && kubectl version && minikube version 
+    kustomize version
+
     minikube addons enable dashboard
     minikube addons enable ingress # NGINX Ingress controller
     minikube addons enable ingress-dns 
@@ -127,3 +143,6 @@ sudo systemctl restart systemd-resolved
 
     minikube dashboard --url
 }
+
+
+
