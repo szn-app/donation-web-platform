@@ -7,3 +7,11 @@ resources:
 
 namespace: donation-app
 
+patches:
+  - target:
+      kind: Ingress
+      name: ingress
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: donation-app.test
