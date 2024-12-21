@@ -123,4 +123,8 @@ kustomize_kubectl() {
     kubectl get -k ./
     kubectl describe -k ./
     kubectl diff -k ./
+
+    ### generate combined configuration
+    kubectl kustomize ./manifest/gateway/development > ./tmp/combined_manifest.yml
+    cat ./tmp/combined_manifest.yml | kubectl apply -f -
 }
