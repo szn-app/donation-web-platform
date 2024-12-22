@@ -27,3 +27,12 @@ patches:
           containers:
           - name: nginx
             imagePullPolicy: Never
+
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web-server
+
+    spec:
+      replicas: 1

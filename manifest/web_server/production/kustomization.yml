@@ -16,13 +16,16 @@ configMapGenerator:
     env: config.properties
 
 patches: 
+
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment
       metadata:
         name: web-server
-
+        
       spec:
-        replicas: 2
-
-      
+        template:
+          spec:
+            containers:
+            - name: nginx
+              imagePullPolicy: Always
