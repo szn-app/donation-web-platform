@@ -1,0 +1,17 @@
+### Ingress passes all traffic over to Gateway, in order to support development functionality provided by ingress-dns (with effect of resolving dns to gateway)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+
+metadata:
+  name: ingress-expose-gateway
+  namespace: nginx-gateway
+  annotations: #  https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+spec:
+  ingressClassName: nginx
+  defaultBackend: 
+    service: 
+      name: nginx-gateway
+      port: 
+        name: http

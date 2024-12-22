@@ -87,9 +87,28 @@ minikube() {
  
     minikube ip 
     # expose service to host: 
-    minikube tunnel 
+    minikube tunnel # expose all possible resources (e.g. loadbalancers)
     minikube service dev-web-server --url  --namespace=donation-app
 
     nslookup donation-app.test $(minikube ip) # query dns server running in minikube cluaster
+    export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
+    curl --resolve donation-app.test:80:$GW donation-app.test
     ping donation-app.test
+
+    # using ingress 
+    kubectl describe ingress ingress -n donation-app
+
+
+    # using gateway 
+    {
+        export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
+        kubectl apply -k ./manifest/gateway/development
+        minikube tunnel # otherwise, with ingress-dns and ingress.yml re-route to gateway will make accessing gateway through domain resolution directly with minikube ip
+        minikube dashboard
+        kubectl describe gateway -n donation-app
+        kubectl describe httproute -n donation-app
+        dig donation
+        curl --resolve donation-app.test:80:$GW donation-app.test
+
+    }
 }

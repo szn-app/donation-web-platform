@@ -107,13 +107,29 @@ kubernetes_dev() {
         kustomize version
     }
 
+    install_kubernetes_CRD_and_controllers() { 
+        # Ingress k8s resource controllers
+        minikube addons enable ingress # NGINX Ingress controller
+        minikube addons enable ingress-dns 
+
+        # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
+        kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+
+        # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
+        kubectl apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+        kubectl apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+        kubectl get pods -n nginx-gateway
+    }
+
+
+# add hosts DNS resolution in Fedora: resolve *.test to $(minikube ip)
 install_domain_dns_systemd_resolved_for_test_domains() {
 # add minikube dns to linux as a dns server https://minikube.sigs.k8s.io/docs/handbook/addons/ingress-dns/#Linux
 sudo mkdir -p /etc/systemd/resolved.conf.d
 sudo tee /etc/systemd/resolved.conf.d/minikube.conf << EOF
 [Resolve]
 DNS=$(minikube ip)
-Domains=~test
+Domains=test
 EOF
 sudo systemctl restart systemd-resolved
 }
@@ -124,10 +140,10 @@ sudo systemctl restart systemd-resolved
     kustomize version
 
     minikube addons enable dashboard
-    minikube addons enable ingress # NGINX Ingress controller
-    minikube addons enable ingress-dns 
+    install_kubernetes_CRD_and_controllers
     kubectl get pods -n ingress-nginx # verify Ingress controller running
-    test_domain_dns_systemd_resolved
+    install_domain_dns_systemd_resolved_for_test_domains
+    # NOTE: careful of minikube dns caching and limitations, if dns name is not resolved after a change, an entire restart of minikube and probably disable/enable addons is required. 
 
     docker context ls && kubectl config get-contexts
     docker context use default

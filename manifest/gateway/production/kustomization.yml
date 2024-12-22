@@ -9,9 +9,9 @@ namespace: donation-app
 
 patches:
   - target:
-      kind: Ingress
-      name: ingress
+      kind: HTTPRoute
+      name: http-web
     patch: |-
       - op: replace
-        path: /spec/rules/0/host
+        path: /spec/hostnames/0
         value: donation-app.com
