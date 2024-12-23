@@ -32,8 +32,8 @@ patches:
               - name: nginx
                 resources:
                   requests:
-                    memory: "128Mi"
-                    cpu: "100m" # 50% of core
+                    cpu: "10m" 
+                    memory: "20Mi"
                   limits: 
-                    memory: "256Mi"
-                    cpu: "250m"
+                    cpu: "50m"
+                    memory: "100Mi"
