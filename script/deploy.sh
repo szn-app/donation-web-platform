@@ -1,3 +1,4 @@
+#!/bin/bash
 
 manual_service_tag_version() { 
     local service="${1:-web-server}" 

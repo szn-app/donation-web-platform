@@ -1,3 +1,25 @@
+#!/bin/bash
+
+record_version() { 
+    NODE_VERSION=$(node -v | cut -d 'v' -f2)
+    PNPM_VERSION=$(pnpm --version | cut -d ' ' -f2)
+    RUST_VERSION=$(rustc --version | awk '{print $2}') 
+    CARGO_VERSION=$(cargo --version | awk '{print $2}')
+    MINIKUBE_VERSION=$(/usr/bin/minikube version --short)  
+    KUBERNETES_VERSION=$(kubectl version | awk '{printf "\t%s:\t%s\n", $1" "$2, $3}')
+    DOCKER_VERSION=$(docker version --format '{{.Server.Version}}')
+
+    echo "Node.js version: ${NODE_VERSION}" > version.txt
+    echo "pnpm version: ${PNPM_VERSION}" >> version.txt
+    echo "Rust version: ${RUST_VERSION}" >> version.txt
+    echo "Cargo version: ${CARGO_VERSION}" >> version.txt
+    echo "Minikube version: ${MINIKUBE_VERSION}" >> version.txt
+    printf "Kubernetes version: \n%s\n" "$KUBERNETES_VERSION" >> version.txt
+    echo "Docker version: ${DOCKER_VERSION}" >> version.txt
+
+    cat ./version.txt
+}
+
 provision_tauri() {
     if [[ $OSTYPE == 'linux-gnu' && -f /etc/redhat-release ]]; then 
         sudo dnf install lsb_release -y

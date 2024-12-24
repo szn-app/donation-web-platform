@@ -2,3 +2,9 @@ Node.js version: 22.11.0
 pnpm version: 9.14.4
 Rust version: 1.83.0
 Cargo version: 1.83.0
+Minikube version: v1.34.0
+Kubernetes version: 
+	Client Version::	v1.32.0
+	Kustomize Version::	v5.5.0
+	Server Version::	v1.31.0
+Docker version: 27.4.1
