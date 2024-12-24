@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# [obsolete]
 manual_service_tag_version() { 
     local service="${1:-web-server}" 
     local version="${2:-0.1.0}" 
@@ -23,6 +24,7 @@ manual_service_tag_version() {
     popd
 }
 
+# [obsolete]
 manual_release_package() {
     local service="${1:-web-server}" 
     local version="${2:-0.1.0}" 
