@@ -26,3 +26,15 @@ tmp/
 /target
 /build
 /dist
+
+.terraform/
+# ignore sensitive terraform values
+terraform.tfvars
+kube.config
+*_kubeconfig.yaml
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
+*.pem # Private keys
+*.key # Private keys
