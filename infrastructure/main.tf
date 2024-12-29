@@ -90,7 +90,8 @@ module "kube-hetzner" {
 
   create_kubeconfig = false
 
-  export_values = true
+  export_values = false # do not export local files 
+  create_kustomization = false # do not create local file for kustomization backup
 }
 
 

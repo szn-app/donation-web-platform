@@ -37,10 +37,10 @@ hetzner() {
         terraform apply kube.tfplan
 
         # create kubeconfig (NOTE: do not version control)
-        terraform output --raw kubeconfig > kubeconfig.yaml
+        terraform output --raw kubeconfig > ~/.ssh/k8s-project-credentials.kubeconfig.yaml
 
         ### verify: 
-        kubectl --kubeconfig kubeconfig.yaml get all -A 
+        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get all -A 
         hcloud all list
         terraform state list
         terraform state show type_of_resource.label_of_resource
