@@ -61,10 +61,10 @@ variable "instance_size" {
     type = map(string)
 
     default = {
-        small = "CX22", 
-        medium = "CX32",
-        large = "CX42",
-        extralarge = "CX52"
+        small = "cx22", 
+        medium = "cx32",
+        large = "cx42",
+        extralarge = "cx52"
     }
     description = "Hetzner cloud server types of shared Intel vCPU - https://www.hetzner.com/cloud/#pricing"
 }

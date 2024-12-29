@@ -40,9 +40,10 @@ module "kube-hetzner" {
       name        = "agent-small",
       server_type = "cx22",
       location    = "fsn1",
+      placement_group = "worker"
       labels      = local.label.worker,
       taints      = [],
-      count       = 1
+      count       = 0
       # kubelet_args = ["kube-reserved=cpu=50m,memory=300Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
     },
   ]

@@ -38,3 +38,5 @@ kube.config
 
 *.pem # Private keys
 *.key # Private keys
+
+*.txt.tmp

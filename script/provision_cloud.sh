@@ -28,7 +28,7 @@ hetzner() {
     terraform init --upgrade # installed terraform module dependecies
     terraform validate
 
-    terraform plan -no-color -out kubernetes_cluster.tfplan > plan_readable.txt
+    terraform plan -no-color -out kubernetes_cluster.tfplan > plan_readable.txt.tmp
     terraform apply kubernetes_cluster.tfplan
 
     # create kubeconfig (NOTE: shouldn't be version controlled)
