@@ -7,6 +7,7 @@
 hetzner() { 
     hcloud version && kubectl version && packer --version
     tofu --version && terraform version # either tools should work
+    helm version
 
     ssh-keygen -t ed25519
 
@@ -37,13 +38,17 @@ hetzner() {
         terraform apply kube.tfplan
 
         # create kubeconfig (NOTE: do not version control)
-        terraform output --raw kubeconfig > ~/.ssh/k8s-project-credentials.kubeconfig.yaml
+        terraform output --raw kubeconfig > ~/.ssh/k8s-project-credentials.kubeconfig.yaml && chmod 600 ~/.ssh/k8s-project-credentials.kubeconfig.yaml
 
         ### verify: 
         kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get all -A 
         hcloud all list
         terraform state list
         terraform state show type_of_resource.label_of_resource
+
+        helm list -A --all-namespaces --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
+        helm get values --all nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
+        helm get manifest nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
 
         popd
         # terraform destroy
