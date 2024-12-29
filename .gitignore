@@ -31,7 +31,7 @@ tmp/
 # ignore sensitive terraform values
 terraform.tfvars
 kube.config
-*_kubeconfig.yaml
+*kubeconfig.yaml
 *.tfstate
 *.tfstate.backup
 *.tfplan

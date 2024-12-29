@@ -5,7 +5,6 @@
 
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
 hetzner() { 
-
     hcloud version && kubectl version && packer --version
     tofu --version && terraform version # either tools should work
 
@@ -21,29 +20,26 @@ hetzner() {
     hcloud context create "k8s"
     
     ### set variables using "terraform.tfvars" or CLI argument or env variables
-    export TF_VAR_hcloud_token=""
-    export TF_VAR_ssh_private_key=""
-    export TF_VAR_ssh_public_key=""
+    # export TF_VAR_hcloud_token=""
+    # export TF_VAR_ssh_private_key=""
+    # export TF_VAR_ssh_public_key=""
     
     terraform init --upgrade # installed terraform module dependecies
     terraform validate
 
-    terraform plan -no-color -out kubernetes_cluster.tfplan > plan_readable.txt.tmp
-    terraform apply kubernetes_cluster.tfplan
+    terraform plan -no-color -out kube.tfplan > plan_readable.txt.tmp
+    terraform apply kube.tfplan
 
-    # create kubeconfig (NOTE: shouldn't be version controlled)
-    terraform output --raw kubeconfig > clustername_kubeconfig.yaml
+    # create kubeconfig (NOTE: do not version control)
+    terraform output --raw kubeconfig > kubeconfig.yaml
 
-    kubectl get namespaces --kubeconfig=k3s_kubeconfig.yaml
-    kubectl get nodes --kubeconfig=k3s_kubeconfig.yaml
+    ### verify: 
+    kubectl --kubeconfig kubeconfig.yaml get all -A 
     hcloud all list
-    terraform output kubeconfig
-    terraform output -json kubeconfig | jq
     terraform state list
     terraform state show type_of_resource.label_of_resource
 
     # connect to deployed cluster
-    kubectl --kubeconfig clustername_kubeconfig.yaml
 
     exit 0; 
     terraform destroy
