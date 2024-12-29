@@ -17,30 +17,36 @@ hetzner() {
         "${tmp_script}"
         rm "${tmp_script}"
     }
-    hcloud context create "k8s"
+    hcloud context create "k8s-project"
     
-    ### set variables using "terraform.tfvars" or CLI argument or env variables
-    # export TF_VAR_hcloud_token=""
-    # export TF_VAR_ssh_private_key=""
-    # export TF_VAR_ssh_public_key=""
+
+    ### handle terraform 
+    {
+        pushd infrastructure
+
+        ### set variables using "terraform.tfvars" or CLI argument or env variables
+        # export TF_VAR_hcloud_token=""
+        # export TF_VAR_ssh_private_key=""
+        # export TF_VAR_ssh_public_key=""
+
+        export TF_TOKEN_app_terraform_io=""  
+        terraform init --upgrade # installed terraform module dependecies
+        terraform validate
+
+        terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
+        terraform apply kube.tfplan
+
+        # create kubeconfig (NOTE: do not version control)
+        terraform output --raw kubeconfig > kubeconfig.yaml
+
+        ### verify: 
+        kubectl --kubeconfig kubeconfig.yaml get all -A 
+        hcloud all list
+        terraform state list
+        terraform state show type_of_resource.label_of_resource
+
+        popd
+        # terraform destroy
+    }
     
-    terraform init --upgrade # installed terraform module dependecies
-    terraform validate
-
-    terraform plan -no-color -out kube.tfplan > plan_readable.txt.tmp
-    terraform apply kube.tfplan
-
-    # create kubeconfig (NOTE: do not version control)
-    terraform output --raw kubeconfig > kubeconfig.yaml
-
-    ### verify: 
-    kubectl --kubeconfig kubeconfig.yaml get all -A 
-    hcloud all list
-    terraform state list
-    terraform state show type_of_resource.label_of_resource
-
-    # connect to deployed cluster
-
-    exit 0; 
-    terraform destroy
 }
