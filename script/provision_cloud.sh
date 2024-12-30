@@ -9,6 +9,7 @@ hetzner() {
     tofu --version && terraform version # either tools should work
     helm version
 
+    # will also be used to log into the machines using ssh
     ssh-keygen -t ed25519
 
     {
@@ -49,6 +50,12 @@ hetzner() {
         helm list -A --all-namespaces --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
         helm get values --all nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
         helm get manifest nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
+
+        ### ssh into remove machines
+        ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv4.ip')
+        ssh -p 2220 root@$ip_address
+        ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv6.ip' | sed 's/\/.*/1/')
+        ssh -p 2220 root@$ip_address 
 
         popd
         # terraform destroy
