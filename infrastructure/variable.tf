@@ -31,7 +31,22 @@ variable "ssh_public_key" {
     sensitive = true 
 }
 
+variable "kubeconfig-credentials-path" { 
+    type = string 
+    sensitive = true
+    default = "~/.ssh/k8s-project-credentials.kubeconfig.yaml"
+}
+
+variable "microos_x86_snapshot_id" {
+    type = string
+}
+
+variable "microos_arm_snapshot_id" {
+    type = string 
+}
+
 # zones > regions
+# Hetzner locations see https://docs.hetzner.com/cloud/general/locations/
 variable "network_location" { 
     type = list(object({
         zone = string, 

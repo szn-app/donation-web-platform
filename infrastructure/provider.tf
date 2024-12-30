@@ -10,10 +10,10 @@ terraform {
       version = "1.49.1"
     }
  
-    # helm = {
-    #   source  = "hashicorp/helm"
-    #   version = ">= 2.17.0"
-    # }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 2.17.0"
+    }
 
   }
   
@@ -32,11 +32,11 @@ provider "hcloud" {
   token = var.hcloud_token
 }
 
-# Helm Provider
-# provider "helm" {
-#   kubernetes {
-#     config_path = "./k3s_kubeconfig.yaml"
-#   }
-# }
+# Helm Provider - allows to deploy helm pacakges
+provider "helm" {
+  kubernetes {
+    config_path = var.kubeconfig-credentials-path
+  }
+}
 
 

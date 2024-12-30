@@ -37,12 +37,14 @@ hetzner() {
 
         terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
         terraform apply kube.tfplan
+        # terraform destroy
 
         # create kubeconfig (NOTE: do not version control)
         terraform output --raw kubeconfig > ~/.ssh/k8s-project-credentials.kubeconfig.yaml && chmod 600 ~/.ssh/k8s-project-credentials.kubeconfig.yaml
 
         ### verify: 
         kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get all -A 
+        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get configmap -A
         hcloud all list
         terraform state list
         terraform state show type_of_resource.label_of_resource
@@ -58,7 +60,6 @@ hetzner() {
         ssh -p 2220 root@$ip_address 
 
         popd
-        # terraform destroy
     }
     
 }
