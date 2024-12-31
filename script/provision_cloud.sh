@@ -47,6 +47,7 @@ hetzner() {
         kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get configmap -A
         kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml api-resources
         hcloud all list
+        terraform show
         terraform state list
         terraform state show type_of_resource.label_of_resource
 

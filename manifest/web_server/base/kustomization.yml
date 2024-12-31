@@ -37,3 +37,23 @@ patches:
                   limits: 
                     cpu: "50m"
                     memory: "100Mi"
+
+  # NOTE: taint keys are defined in the Terraform file
+  - target:
+      kind: Deployment
+      name: web-server
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: _ # required field but not used
+
+      spec:
+        template: 
+          spec:  
+            tolerations:
+              - key: "node.kubernetes.io/role"
+                operator: "Equal"
+                value: "peak-workloads"
+                effect: "NoExecute"
+

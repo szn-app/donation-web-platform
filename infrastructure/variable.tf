@@ -7,6 +7,7 @@ locals {
 
   label = {
     control_plane = ["role=control-plane", "size=${var.instance_size.small}", "region=${var.network_location[0].region[0]}"], 
+    control_plane_arm = ["role=control-plane", "size=${var.instance_size.small_arm}", "region=${var.network_location[0].region[0]}"], 
     worker = ["role=worker", "size=${var.instance_size.small}", "region=${var.network_location[0].region[0]}"]
 
   }
@@ -80,6 +81,11 @@ variable "instance_size" {
         medium = "cx32",
         large = "cx42",
         extralarge = "cx52"
+
+        small_arm = "cax11", 
+        medium_arm = "cax21",
+        large_arm = "cax31",
+        extralarge_arm = "cax41"
     }
     description = "Hetzner cloud server types of shared Intel vCPU - https://www.hetzner.com/cloud/#pricing"
 }
