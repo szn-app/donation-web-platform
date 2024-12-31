@@ -23,31 +23,40 @@ module "kube-hetzner" {
   ssh_public_key = file(var.ssh_public_key)
   ssh_private_key = file(var.ssh_private_key)
 
-  cluster_name = "prod-k3s"
+  automatically_upgrade_k3s = true
+  initial_k3s_channel="v1.31"
+  automatically_upgrade_os = true
+  system_upgrade_enable_eviction = true
+  system_upgrade_use_drain = true
+  allow_scheduling_on_control_plane = false
+
+  cluster_name = "kubernetes-production"
 
   network_region = var.network_location[0].zone 
   # DNS provided by Hetzner https://docs.hetzner.com/dns-console/dns/general/recursive-name-servers/.
   dns_servers = [
-    "185.12.64.1", # Hetzner DNS
-    "8.8.8.8", # Google DNS
-    "2a01:4ff:ff00::add:1", # Hetzner DNS
+    "1.1.1.1",  # Cloudflare
+    "8.8.8.8",  # Google DNS
+    "2606:4700:4700::1111"  # IPv6 Cloudflare DNS
+    # "185.12.64.1", # Hetzner DNS
+    # "2a01:4ff:ff00::add:1", # Hetzner DNS
   ]
 
   # https://www.hetzner.com/cloud/load-balancer
   load_balancer_type     = "lb11"
   load_balancer_location = "fsn1"
+  enable_klipper_metal_lb = "false"
   # Disables the public network of the load balancer. (default: false).
   # load_balancer_disable_public_network = true
 
-  # Use the klipperLB (similar to metalLB), instead of the default Hetzner load balancer
-  enable_klipper_metal_lb = "true" # when true: assumes `allow_scheduling_on_control_plane`=true
-
-  cni_plugin = "flannel"
-
-  ingress_controller = "nginx" # TODO: change to none after verifying that it works and replacing it with application ingress loadbalancer
-
-  system_upgrade_use_drain = false
-  allow_scheduling_on_control_plane = true
+  cni_plugin = "cilium"
+  disable_kube_proxy = true # replace 'kube-proxy' with 'cilium'
+  disable_network_policy = true
+  cilium_routing_mode = "native"
+  # NOTE: if Cilium UI enabled it can be accessed using ssh tunnel
+  cilium_hubble_enabled = false
+  ingress_controller = "none"
+  # ingress_target_namespace = "gateway"
 
   control_plane_nodepools = [
     {
@@ -57,7 +66,7 @@ module "kube-hetzner" {
       placement_group = "controller"
       labels      = local.label.control_plane,
       taints      = [],
-      count       = 1 # TODO: change to 3 after testing
+      count       = 1 # TODO: 3 nodes for HA
       # kubelet_args = ["kube-reserved=cpu=250m,memory=1500Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
     }
   ]
@@ -70,7 +79,7 @@ module "kube-hetzner" {
       placement_group = "worker"
       labels      = local.label.worker,
       taints      = [],
-      count       = 0 # TODO: increase # of workers and avoid scheduling on controllers
+      count       = 2
       # kubelet_args = ["kube-reserved=cpu=50m,memory=300Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
     },
   ]

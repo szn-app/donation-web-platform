@@ -120,6 +120,8 @@ github_container_registry_deploy() {
 }
 
 kustomize_kubectl() { 
+    kubectl create namespace donation-app
+
     kubectl kustomize ./
 
     kubectl apply -k ./ # kubectl kustomize ./ | kubectl apply -f -
