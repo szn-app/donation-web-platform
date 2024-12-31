@@ -6,4 +6,4 @@ resources:
 - http-route--web-server.yml
 
 configurations: 
-- config-name-reference.yml
+- name-reference.kustomize-config.yml
