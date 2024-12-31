@@ -9,6 +9,7 @@ hetzner() {
     tofu --version && terraform version # either tools should work
     helm version
 
+    # [manual, then move to ~/.ssh] 
     # will also be used to log into the machines using ssh
     ssh-keygen -t ed25519
 
@@ -37,7 +38,8 @@ hetzner() {
 
         terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
         terraform apply kube.tfplan
-        # terraform destroy
+        t=$(mktemp) && terraform output --raw kubeconfig > "$t" && post_cluster_install "$t"
+        # terraform destroy # when completely redploying
 
         # create kubeconfig (NOTE: do not version control)
         terraform output --raw kubeconfig > ~/.ssh/k8s-project-credentials.kubeconfig.yaml && chmod 600 ~/.ssh/k8s-project-credentials.kubeconfig.yaml
@@ -57,6 +59,7 @@ hetzner() {
         helm get manifest nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
 
         ### ssh into remove machines
+        # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
         ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv4.ip')
         ssh -p 2220 root@$ip_address
         ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv6.ip' | sed 's/\/.*/1/')
@@ -65,4 +68,16 @@ hetzner() {
         popd
     }
     
+}
+
+post_cluster_install() { 
+    [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
+
+    # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
+    kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+
+    # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
+    kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+    kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+    kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
 }
