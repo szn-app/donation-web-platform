@@ -9,7 +9,8 @@ spec:
 
   hostnames:
     - donation-app.test
-  
+    - spa.donation-app.com
+
   rules:
     - backendRefs:
         - name: web-server

@@ -11,4 +11,5 @@
 - Organization github setting > Default package settings > Inherit access from source repository. + > package creation > public
 - setup Firefox exception for local *.test domains avoiding SSL certificate warning in the browser. Add new string in about:config > security.exception.siteList = *.test
 - For github packages turn on "Inherit access from source repository (recommended)" from pacakge settings.
+- Manual Cloudflare infrastructure setup required. 
 - 
