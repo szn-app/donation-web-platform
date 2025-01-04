@@ -8,10 +8,68 @@ resources:
 namespace: donation-app
 
 patches:
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/0/hostname
+        value: "wosoom.com"
+      - op: replace
+        path: /spec/listeners/1/hostname
+        value: "*.wosoom.com"
+      - op: replace
+        path: /spec/listeners/2/hostname
+        value: "wosoom.com"
+      - op: replace
+        path: /spec/listeners/3/hostname
+        value: "api.wosoom.com"
+
+  - target: 
+      kind: Gateway
+      name: gateway
+    patch: |- 
+      - op: replace
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: "production-cluster-issuer"
+
+  # - target:
+  #     kind: HTTPRoute
+  #     name: http-web-server
+  #   patch: |-
+  #     - op: replace
+  #       path: /spec/hostnames/0
+  #       value: wosoom.com
+
   - target:
       kind: HTTPRoute
-      name: http-web
+      name: http-redirect
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: donation-app.com
+        value: wosoom.com
+
+  - target:
+      kind: HTTPRoute
+      name: http-redirect-subdomain
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "*.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: https-web-server
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: wosoom.com
+
+  - target:
+      kind: HTTPRoute
+      name: https-api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "api.wosoom.com"

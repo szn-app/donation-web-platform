@@ -2,8 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources: 
+- namespace.yml
 - gateway.yml
-- http-route--web-server.yml
+- cert-manager-cluster-issuer.yml
+- http-route.yml
+- https-route.yml
 
 configurations: 
 - name-reference.kustomize-config.yml

@@ -119,12 +119,14 @@ github_container_registry_deploy() {
     docker push ghcr.io/szn-app/donation-app/$TAG
 }
 
-kustomize_kubectl() { 
-    kubectl create namespace donation-app
+kustomize_kubectl() {
+    export kubeconfig="~/.ssh/k8s-project-credentials.kubeconfig.yaml"
+    # kubectl create namespace donation-app
+
 
     kubectl kustomize ./
 
-    kubectl apply -k ./ # kubectl kustomize ./ | kubectl apply -f -
+    kubectl --kubeconfig $kubeconfig apply -k ./ # kubectl kustomize ./ | kubectl apply -f -
     kubectl get -k ./
     kubectl describe -k ./
     kubectl diff -k ./
@@ -132,4 +134,20 @@ kustomize_kubectl() {
     ### generate combined configuration
     kubectl kustomize ./manifest/gateway/development > ./tmp/combined_manifest.yml
     cat ./tmp/combined_manifest.yml | kubectl apply -f -
+
+    # verify cluster certificate issued successfully 
+    {
+        kubectl --kubeconfig $kubeconfig get clusterissuer -A # two issuers: staging & production issuers
+        kubectl --kubeconfig $kubeconfig describe challenge -A # ephemeral challenge appearing during certificate issuance process
+        kubectl --kubeconfig $kubeconfig get order -A # should be STATE = pending → STATE = valid
+        kubectl --kubeconfig $kubeconfig get certificate -A # should be READY = True
+
+        # check dns + web server response with tls staging certificate
+        domain_name=""
+        curl -I http://$domain_name
+        curl --insecure -I https://$domain_name
+    }
+
+    cloud_load_balancer_ip=""
+    curl --header "Host: donation-app.com" $cloud_load_balancer_ip
 }

@@ -39,6 +39,8 @@ hetzner() {
         terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
         terraform apply kube.tfplan
         t=$(mktemp) && terraform output --raw kubeconfig > "$t" && post_cluster_install "$t"
+        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml rollout restart deployment cert-manager -n cert-manager
+
         # terraform destroy # when completely redploying
 
         # create kubeconfig (NOTE: do not version control)
@@ -73,11 +75,63 @@ hetzner() {
 post_cluster_install() { 
     [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
 
-    # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
-    kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+    install_gateway_api() { 
+        # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
+        kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
 
-    # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
-    kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
-    kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
-    kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
+        # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
+        kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+        kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+        kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
+    }
+
+    install_cert_manager() { 
+        # https://cert-manager.io/docs/installation/helm/
+        helm --kubeconfig $kubeconfig repo add jetstack https://charts.jetstack.io --force-update
+        helm --kubeconfig $kubeconfig install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.2 --set crds.enabled=true \
+            --set config.apiVersion="controller.config.cert-manager.io/v1alpha1" \
+            --set config.kind="ControllerConfiguration" \
+            --set config.enableGatewayAPI=true
+
+        # verify installation https://cert-manager.io/docs/installation/kubectl/#verify
+        {
+            t=$(mktemp) && cat <<EOF > "$t"
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager-test
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: test-selfsigned
+  namespace: cert-manager-test
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-cert
+  namespace: cert-manager-test
+spec:
+  dnsNames:
+    - example.com
+  secretName: selfsigned-cert-tls
+  issuerRef:
+    name: test-selfsigned
+EOF
+            
+            kubectl --kubeconfig $kubeconfig apply -f $t 
+            while ! kubectl --kubeconfig $kubeconfig describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"; do
+              echo "Retry checking for successfully issued certificate. sleep 5s..."; 
+              sleep 5
+            done
+            
+            kubectl --kubeconfig $kubeconfig delete -f $t
+        }
+    }
+
+    install_gateway_api
+    install_cert_manager   
 }

@@ -155,6 +155,15 @@ module "kube-hetzner" {
   # NOTE: `extra_kustomize_deployment_commands` doesn't get to run unless there is ./extra-manifests/kustomization.yaml.tpl file this is a bug and error prone better to use post-terraform shell scripts with the kubeconfig file for connection
   extra_kustomize_deployment_commands = <<-EOT
   EOT
+
+  # NOTE: using the built in helm pacakge of kube-hetzner module
+  enable_cert_manager = false
+  # enable cert-manager feature for Gateway API 
+  # https://cert-manager.io/docs/usage/gateway/
+#   cert_manager_values = <<EOT
+#   EOT 
+
+
 }
 
 

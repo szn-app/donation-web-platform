@@ -9,13 +9,6 @@ resources:
 - ingress.yml
 
 patches:
-  - target:
-      kind: HTTPRoute
-      name: http-web
-    patch: |-
-      - op: replace
-        path: /spec/hostnames/0
-        value: donation-app.test
   
   # set namespace if doesn't exist on resource
   - target:

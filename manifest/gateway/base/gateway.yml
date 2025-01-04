@@ -4,9 +4,56 @@ kind: Gateway
 
 metadata:
   name: gateway
+  annotations:
+    cert-manager.io/cluster-issuer: staging-cluster-issuer # when testing to avoid Let's Encrypt rate limit of `production-cluster-issuer`
+
 spec:
   gatewayClassName: nginx
+  # NOTE: order is important as kustomize targets indecies of listners
   listeners:
+
     - name: http
-      port: 80
       protocol: HTTP
+      port: 80
+      hostname: "donation-app.test"
+      allowedRoutes:
+        namespaces: 
+          from: All # required for letsecrypt 
+
+    - name: http-subdomain-all
+      protocol: HTTP
+      port: 80
+      hostname: "*.donation-app.test"
+      allowedRoutes:
+        namespaces: 
+          from: All # required for letsecrypt 
+
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt 
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - kind: Secret
+          name: tls-certificate-donation-app
+          group: ""
+
+    - name: https-api
+      protocol: HTTPS
+      port: 443
+      hostname: "api.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt 
+      tls:
+        mode: Terminate
+        certificateRefs:
+        - kind: Secret
+          name: tls-certificate-donation-app
+          group: ""
+
+

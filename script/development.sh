@@ -68,7 +68,7 @@ minikube() {
     eval $(minikube docker-env)
     (cd service/web-server && ./script.sh build_container)
 
-    kubectl create namespace donation-app   
+    # kubectl create namespace donation-app 
     kubectl config set-context --current --namespace=donation-app
     kubectl config view && kubectl get namespace && kubectl config get-contexts
 
@@ -81,13 +81,14 @@ minikube() {
     minikube service dev-web-server --url  --namespace=donation-app
 
     nslookup donation-app.test $(minikube ip) # query dns server running in minikube cluaster
+    dig donation-app.test
     export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
     curl --resolve donation-app.test:80:$GW donation-app.test
     ping donation-app.test
 
     # using ingress 
     kubectl describe ingress ingress -n donation-app
-
+    
 
     # using gateway 
     {
