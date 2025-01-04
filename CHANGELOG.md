@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.2](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.1...donation-app@v0.4.2) (2025-01-04)
+
+
+### Features
+
+* **routing:** setup routing for api subdomain and root with https redirect ([e10765e](https://github.com/szn-app/donation-app/commit/e10765e7a92dfc74fc72c8c81698b84b13d50822))
+* **tls:** generate certificates using cert-manager ([e10765e](https://github.com/szn-app/donation-app/commit/e10765e7a92dfc74fc72c8c81698b84b13d50822))
+
+
+### Bug Fixes
+
+* web server service as ClusterIP instead of LoadBalancer ([53bab67](https://github.com/szn-app/donation-app/commit/53bab67953fd69474a5c93362303b89782a6bdc8))
+
 ## [0.4.1](https://github.com/szn-app/donation-app/compare/donation-app-v0.4.0...donation-app@v0.4.1) (2024-12-18)
 
 
