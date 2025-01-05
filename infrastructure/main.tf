@@ -36,7 +36,7 @@ module "kube-hetzner" {
   # NOTE: checkout also longhorn_values > node-down-pod-deletion-policy
   system_upgrade_enable_eviction = true
   system_upgrade_use_drain = true
-  allow_scheduling_on_control_plane = false
+  allow_scheduling_on_control_plane = true
 
   automatically_upgrade_os = false # NOTE: must be turned off for single control node setup.
   kured_options = {
@@ -184,14 +184,14 @@ module "kube-hetzner" {
   # enable longhorn and dependency drivers
   enable_iscsid = true
   enable_longhorn = true # add Longhorn as storage class in kuberenetes
-  longhorn_helmchart_bootstrap = false # if to run on control-plane nodes too
+  longhorn_helmchart_bootstrap = true # if to run on control-plane nodes too
   longhorn_fstype = "ext4" # "xfs"
   longhorn_replica_count = 3 # defaults to 3
   # effects of options: only run on labelled nodes; # adjust to autoscaler if active in the cluster; /var/lib/longhorn local storage path (NOTE: /mnt/longhorn is the default for Hetzner cloud volume mount in kube-hetzner module); cleanup & prevent volume locks by setting policy: ensure pod is moved to an healthy node if current node is down;
   longhorn_values = <<EOT
 defaultSettings:
   createDefaultDiskLabeledNodes: true 
-  defaultDataPath: /mnt/longhorn
+  defaultDataPath: /var/lib/longhorn
   kubernetesClusterAutoscalerEnabled: true 
   node-down-pod-deletion-policy: delete-both-statefulset-and-deployment-pod
 persistence:

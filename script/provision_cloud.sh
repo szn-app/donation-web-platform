@@ -206,7 +206,7 @@ EOF
   },
   {
     "name": "hcloud-volume-mounted",
-    "path": "/mnt/longhorn",
+    "path": "/var/longhorn",
     "allowScheduling": true,
     "storageReserved": 1073741824,
     "tags": [ "network-storage-volume" ]
@@ -228,6 +228,55 @@ EOT
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
+  name: longhorn-network-storage
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "3"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  diskSelector: "network-storage-volume"
+  nodeSelector: "agent_node" # where label=agent_node as volumes only mounted on agents
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-ext4
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "3"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-xfs
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "3"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "xfs"
+  dataLocality: "best-effort"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
   name: longhorn-local-ext4-strict-locality
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
@@ -244,66 +293,18 @@ parameters:
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: longhorn-local-ext4
-provisioner: driver.longhorn.io
-allowVolumeExpansion: true
-reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
-parameters:
-  numberOfReplicas: "2"
-  staleReplicaTimeout: "2880" # 48 hours in minutes
-  fromBackup: ""
-  fsType: "ext4"
-  dataLocality: "best-effort"
-  diskSelector: "local-storage-disk"
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
   name: longhorn-local-ext4-disabled-locality
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
 parameters:
-  numberOfReplicas: "2"
+  numberOfReplicas: "3"
   staleReplicaTimeout: "2880" # 48 hours in minutes
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "disabled"
   diskSelector: "local-storage-disk"
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: longhorn-local-xfs
-provisioner: driver.longhorn.io
-allowVolumeExpansion: true
-reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
-parameters:
-  numberOfReplicas: "2"
-  staleReplicaTimeout: "2880" # 48 hours in minutes
-  fromBackup: ""
-  fsType: "xfs"
-  dataLocality: "best-effort"
-  diskSelector: "local-storage-disk"
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: longhorn-network-storage
-provisioner: driver.longhorn.io
-allowVolumeExpansion: true
-reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
-parameters:
-  numberOfReplicas: "2"
-  staleReplicaTimeout: "2880" # 48 hours in minutes
-  fromBackup: ""
-  fsType: "ext4"
-  dataLocality: "best-effort"
-  diskSelector: "network-storage-volume"
 EOF
    
       kubectl --kubeconfig $kubeconfig apply -f $t
