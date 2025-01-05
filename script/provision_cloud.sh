@@ -62,6 +62,8 @@ hetzner() {
         helm list -A --all-namespaces --kubeconfig $kubeconfig
         helm get values --all nginx -n nginx --kubeconfig $kubeconfig
         helm get manifest nginx -n nginx --kubeconfig $kubeconfig
+        
+        journalctl -r -n 200
 
         ### ssh into remove machines
         # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
@@ -241,7 +243,8 @@ parameters:
   fsType: "ext4"
   dataLocality: "best-effort"
   diskSelector: "network-storage-volume"
-  nodeSelector: "agent_node" # where label=agent_node as volumes only mounted on agents
+  nodeSelector:
+    role: "worker" # where label is worker as volumes only mounted on agents
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
