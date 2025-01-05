@@ -41,26 +41,27 @@ hetzner() {
         terraform apply kube.tfplan
         t=$(mktemp) && terraform output --raw kubeconfig > "$t"
         post_cluster_install "$t"
-        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml rollout restart deployment cert-manager -n cert-manager
+        kubectl --kubeconfig $t rollout restart deployment cert-manager -n cert-manager
 
         # terraform destroy # when completely redploying
 
         # create kubeconfig (NOTE: do not version control)
-        terraform output --raw kubeconfig > ~/.ssh/k8s-project-credentials.kubeconfig.yaml && chmod 600 ~/.ssh/k8s-project-credentials.kubeconfig.yaml
+        export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
+        t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
 
         ### verify: 
-        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get all -A 
-        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml get configmap -A
-        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml api-resources
-        kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml api-versions
+        kubectl --kubeconfig $kubeconfig get all -A 
+        kubectl --kubeconfig $kubeconfig get configmap -A
+        kubectl --kubeconfig $kubeconfig api-resources
+        kubectl --kubeconfig $kubeconfig api-versions
         hcloud all list
         terraform show
         terraform state list
         terraform state show type_of_resource.label_of_resource
 
-        helm list -A --all-namespaces --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
-        helm get values --all nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
-        helm get manifest nginx -n nginx --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml
+        helm list -A --all-namespaces --kubeconfig $kubeconfig
+        helm get values --all nginx -n nginx --kubeconfig $kubeconfig
+        helm get manifest nginx -n nginx --kubeconfig $kubeconfig
 
         ### ssh into remove machines
         # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
