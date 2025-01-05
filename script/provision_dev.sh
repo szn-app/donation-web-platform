@@ -90,6 +90,19 @@ setup_android_sdk_variables() {
     export NDK_HOME="$ANDROID_HOME/ndk/$(ls -1 $ANDROID_HOME/ndk)"
 }
 
+### TODO: this is temporary nodes check if it works 
+android_studio_for_Tauri() { 
+	sudo yum install zlib.i686 ncurses-libs.i686 bzip2-libs.i686
+	
+	## [manual] download and install androind studio rpm
+	tar -zxvf android-studio-2024.2.1.12-linux.tar.gz
+	mv androind-studio /usr/local
+	cd /usr/local/android-studio/bin/
+	chmod +x ./studio.sh
+	./studio
+	
+	## then install the SDKs required for Tauri from the android studio settings (SDK manager)
+}
 
 setup_nodejs_for_react_development_environment() { 
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
