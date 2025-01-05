@@ -32,13 +32,15 @@ hetzner() {
         # export TF_VAR_ssh_private_key=""
         # export TF_VAR_ssh_public_key=""
 
+        export TF_LOG=DEBUG
         export TF_TOKEN_app_terraform_io=""  
         terraform init --upgrade # installed terraform module dependecies
         terraform validate
 
         terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
         terraform apply kube.tfplan
-        t=$(mktemp) && terraform output --raw kubeconfig > "$t" && post_cluster_install "$t"
+        t=$(mktemp) && terraform output --raw kubeconfig > "$t"
+        post_cluster_install "$t"
         kubectl --kubeconfig ~/.ssh/k8s-project-credentials.kubeconfig.yaml rollout restart deployment cert-manager -n cert-manager
 
         # terraform destroy # when completely redploying
@@ -74,6 +76,56 @@ hetzner() {
 
 post_cluster_install() { 
     [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
+
+    # https://github.com/kubernetes/dashboard
+    install_kubernetes_dashboard() {
+      helm --kubeconfig $kubeconfig repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+      helm --kubeconfig $kubeconfig upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+
+      # https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
+      t=$(mktemp) && cat <<EOF > "$t" 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+  annotations:
+    kubernetes.io/service-account.name: "admin-user"   
+type: kubernetes.io/service-account-token  
+EOF
+      kubectl --kubeconfig $kubeconfig apply -f $t 
+
+      verify_dashboard() { 
+        # get token 
+        export USER_TOKEN=$(kubectl --kubeconfig "$kubeconfig" get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d)
+        echo $USER_TOKEN
+
+        kubectl --kubeconfig "$kubeconfig" port-forward -n kubernetes-dashboard service/kubernetes-dashboard-kong-proxy 8081:443
+      }
+    }
 
     install_gateway_api() { 
         # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
@@ -132,6 +184,150 @@ EOF
         }
     }
 
+    install_storage_class() { 
+      kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
+
+      # create directory for volume
+
+      # add storage config through annotation (creating Longhorn 'disks')
+      # check storageReserve ratio values https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b 
+      # /var/lib/longhorn => instruct longhorn to create default 'disk' in path (customized in terraform file)
+      # /mnt/longhorn => # network storage mount point (default from kube-hetzner module)
+      # 25% of 40 GB local storage ~= 2^30 * 10 (NOTE: Hetzner GiB or GB ?) 
+      # 10% of 10GB ~= 2^30 * 1 attached dedicated hcloud volumes
+      config=$(cat <<EOT
+[
+  {
+    "name": "longhorn-local-storage",
+    "path": "/var/lib/longhorn",
+    "allowScheduling": true,
+    "storageReserved": 10737418240,
+    "tags": [ "local-storage-disk" ]
+  },
+  {
+    "name": "hcloud-volume-mounted",
+    "path": "/mnt/longhorn",
+    "allowScheduling": true,
+    "storageReserved": 1073741824,
+    "tags": [ "network-storage-volume" ]
+  }
+]
+EOT
+)
+
+      agent_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
+      for node_name in "${agent_node_names[@]}"; do
+        echo "annotating node $node_name" 
+        kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+      done 
+
+      ###
+      
+      # storage classes definitions
+      t=$(mktemp) && cat <<EOF > "$t"
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-ext4-strict-locality
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "strict-local"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-ext4
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-ext4-disabled-locality
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "disabled"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-xfs
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "xfs"
+  dataLocality: "best-effort"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-network-storage
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "2"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  diskSelector: "network-storage-volume"
+EOF
+   
+      kubectl --kubeconfig $kubeconfig apply -f $t
+
+      # [manually] verify that cloud volumes are attached to each nodes at /mnt/longhorn and check longhorn disk in /var/lib/longhorn
+      verify_mount_inside_server() {
+        kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
+
+        lsblk 
+        mount | grep longhorn
+        df -h
+        du -sh /var/lib/longhorn # disk usage
+
+        # for debugging purposes if persistent volumes are not being created
+        kubectl --kubeconfig "$kubeconfig" logs -n longhorn-system -l app=longhorn-manager
+        kubectl --kubeconfig "$kubeconfig" get events -n longhorn-system
+        kubectl --kubeconfig "$kubeconfig" get pv -o yaml
+
+        # expose longhorn UI dashboard 
+        kubectl --kubeconfig "$kubeconfig" port-forward -n longhorn-system service/longhorn-frontend 8082:80
+      }
+    }
+
     install_gateway_api
     install_cert_manager   
+    install_storage_class
 }
