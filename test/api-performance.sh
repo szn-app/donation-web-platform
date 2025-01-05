@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # quick api performance test
 # copy over functions to shell script and run by name
 
