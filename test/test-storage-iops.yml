@@ -1,0 +1,66 @@
+### testing read/write IOPS
+# https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: dbench-pv-claim
+spec:
+
+  ### storage classes defined by kube-hetzner module and related dependencies
+  # storageClassName: local-path # k3s native storage driver
+  # storageClassName: hcloud-volumes
+  # storageClassName: longhorn # kube-hetzner module's default longhorn
+
+  ### custom storage class definitions
+  storageClassName: longhorn-local-ext4
+  # storageClassName: longhorn-local-xfs
+  # storageClassName: longhorn-network-storage
+  # storageClassName: longhorn-local-ext4-strict-locality
+  # storageClassName: longhorn-local-ext4-disabled-locality
+
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dbench
+spec:
+  template:
+    spec:
+      containers:
+      - name: dbench
+        image: storageos/dbench:latest
+        imagePullPolicy: Always
+        env:
+
+          - name: DBENCH_MOUNTPOINT
+            value: /data
+            
+          # - name: DBENCH_QUICK
+          #   value: "yes"
+
+          # - name: FIO_SIZE
+          #   value: 1G
+          
+          # - name: FIO_OFFSET_INCREMENT
+          #   value: 256M
+          
+          # - name: FIO_DIRECT
+          #   value: "0"
+
+        volumeMounts:
+        - name: dbench-pv
+          mountPath: /data
+      restartPolicy: Never
+      volumes:
+      - name: dbench-pv
+        persistentVolumeClaim:
+          claimName: dbench-pv-claim
+  backoffLimit: 4

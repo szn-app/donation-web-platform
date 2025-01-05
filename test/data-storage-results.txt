@@ -1,0 +1,59 @@
+# Rancher's local-path
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 26.4k/23.4k. BW: 1230MiB/s / 1144MiB/s
+Average Latency (usec) Read/Write: 371.31/413.94
+Sequential Read/Write: 3262MiB/s / 2431MiB/s
+Mixed Random Read/Write IOPS: 11.5k/3789
+
+# Rancher's local-path - run #2
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 25.1k/21.3k. BW: 1349MiB/s / 1051MiB/s
+Average Latency (usec) Read/Write: 443.36/393.60
+Sequential Read/Write: 3237MiB/s / 2425MiB/s
+Mixed Random Read/Write IOPS: 16.6k/5491
+
+---
+
+# longhorn-local-ext4-strict-locality
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 3890/2693. BW: 173MiB/s / 119MiB/s
+Average Latency (usec) Read/Write: 1517.65/1633.38
+Sequential Read/Write: 282MiB/s / 235MiB/s
+Mixed Random Read/Write IOPS: 2596/882
+
+---
+
+# hcloud-volumes
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 14.5k/6613. BW: 720MiB/s / 486MiB/s
+Average Latency (usec) Read/Write: 1072.47/
+Sequential Read/Write: 2034MiB/s / 1673MiB/s
+Mixed Random Read/Write IOPS: 7272/2443
+
+---
+
+# longhorn
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 2534/1702. BW: 104MiB/s / 74.9MiB/s
+Average Latency (usec) Read/Write: 2603.18/
+Sequential Read/Write: 169MiB/s / 118MiB/s
+Mixed Random Read/Write IOPS: 1727/562
+
+---
+
+# longhorn-local-ext4
+Random Read/Write IOPS: 3734/1948. BW: 151MiB/s / 98.2MiB/s
+Average Latency (usec) Read/Write: 1850.46/2603.15
+Sequential Read/Write: 246MiB/s / 199MiB/s
+Mixed Random Read/Write IOPS: 2383/796
+
