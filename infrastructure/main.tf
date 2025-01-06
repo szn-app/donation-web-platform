@@ -81,7 +81,7 @@ module "kube-hetzner" {
       server_type = var.instance_size.small,
       location    = var.network_location[0].region[0],
       placement_group = "controller"
-      labels      = local.label.control_plane,
+      labels      = concat(local.label.control_plane, ["node.longhorn.io/create-default-disk=config"]),
       taints      = [],
       # kubelet_args = ["kube-reserved=cpu=250m,memory=1500Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
 
@@ -94,7 +94,7 @@ module "kube-hetzner" {
       server_type = var.instance_size.small_arm,
       location    = var.network_location[0].region[0],
       placement_group = "controller"
-      labels      = local.label.control_plane_arm,
+      labels      = concat(local.label.control_plane_arm, ["node.longhorn.io/create-default-disk=config"]),
       taints      = [],
     }
   ]
@@ -184,6 +184,7 @@ module "kube-hetzner" {
   # enable longhorn and dependency drivers
   enable_iscsid = true
   enable_longhorn = true # add Longhorn as storage class in kuberenetes
+  # TODO: the module doesn't install all required dependeices on control nodes and prevents Longhorn from being able to create disks and schedule on cotnrol nodes
   longhorn_helmchart_bootstrap = true # if to run on control-plane nodes too
   longhorn_fstype = "ext4" # "xfs"
   longhorn_replica_count = 3 # defaults to 3

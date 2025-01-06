@@ -189,7 +189,6 @@ EOF
     install_storage_class() { 
       kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
 
-      # create directory for volume
 
       # add storage config through annotation (creating Longhorn 'disks')
       # check storageReserve ratio values https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b 
@@ -197,7 +196,8 @@ EOF
       # /mnt/longhorn => # network storage mount point (default from kube-hetzner module)
       # 25% of 40 GB local storage ~= 2^30 * 10 (NOTE: Hetzner GiB or GB ?) 
       # 10% of 10GB ~= 2^30 * 1 attached dedicated hcloud volumes
-      config=$(cat <<EOT
+      {
+        config=$(cat <<EOT
 [
   {
     "name": "longhorn-local-storage",
@@ -217,11 +217,32 @@ EOF
 EOT
 )
 
-      agent_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
-      for node_name in "${agent_node_names[@]}"; do
-        echo "annotating node $node_name" 
-        kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
-      done 
+        agent_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
+        for node_name in "${agent_node_names[@]}"; do
+          echo "annotating node $node_name" 
+          kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+        done 
+
+        config=$(cat <<EOT
+[
+  {
+    "name": "longhorn-local-storage",
+    "path": "/var/lib/longhorn",
+    "allowScheduling": true,
+    "storageReserved": 10737418240,
+    "tags": [ "local-storage-disk" ]
+  }
+]
+EOT
+)
+
+        control_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] ) | .metadata.name'))
+        for node_name in "${control_node_names[@]}"; do
+          echo "annotating node $node_name" 
+          kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+        done 
+
+      }
 
       # Longhorn add tags for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
       {
