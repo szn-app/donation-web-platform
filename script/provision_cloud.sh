@@ -38,39 +38,38 @@ hetzner() {
         terraform validate
 
         terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
-        terraform apply kube.tfplan
-        t=$(mktemp) && terraform output --raw kubeconfig > "$t"
-        post_cluster_install "$t"
-        kubectl --kubeconfig $t rollout restart deployment cert-manager -n cert-manager
-
-        # terraform destroy # when completely redploying
-
-        # create kubeconfig (NOTE: do not version control)
+        terraform apply kube.tfplan # terraform destroy # when completely redploying
+        
+        # create kubeconfig (NOTE: do not version control this credentials file)
         export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
         t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
 
-        ### verify: 
-        kubectl --kubeconfig $kubeconfig get all -A 
-        kubectl --kubeconfig $kubeconfig get configmap -A
-        kubectl --kubeconfig $kubeconfig api-resources
-        kubectl --kubeconfig $kubeconfig api-versions
-        hcloud all list
-        terraform show
-        terraform state list
-        terraform state show type_of_resource.label_of_resource
+        post_cluster_install "$kubeconfig"
+        kubectl --kubeconfig $kubeconfig rollout restart deployment cert-manager -n cert-manager
 
-        helm list -A --all-namespaces --kubeconfig $kubeconfig
-        helm get values --all nginx -n nginx --kubeconfig $kubeconfig
-        helm get manifest nginx -n nginx --kubeconfig $kubeconfig
-        
-        journalctl -r -n 200
+        verify_installation() {
+          kubectl --kubeconfig $kubeconfig get all -A 
+          kubectl --kubeconfig $kubeconfig get configmap -A
+          kubectl --kubeconfig $kubeconfig api-resources
+          kubectl --kubeconfig $kubeconfig api-versions
+          hcloud all list
+          terraform show
+          terraform state list
+          terraform state show type_of_resource.label_of_resource
 
-        ### ssh into remove machines
-        # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
-        ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv4.ip')
-        ssh -p 2220 root@$ip_address
-        ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv6.ip' | sed 's/\/.*/1/')
-        ssh -p 2220 root@$ip_address 
+          helm list -A --all-namespaces --kubeconfig $kubeconfig
+          helm get values --all nginx -n nginx --kubeconfig $kubeconfig
+          helm get manifest nginx -n nginx --kubeconfig $kubeconfig
+          
+          journalctl -r -n 200
+
+          ### ssh into remove machines
+          # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
+          ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv4.ip')
+          ssh -p 2220 root@$ip_address
+          ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv6.ip' | sed 's/\/.*/1/')
+          ssh -p 2220 root@$ip_address 
+        }
 
         popd
     }
@@ -224,10 +223,31 @@ EOT
         kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
       done 
 
+      # Longhorn add tags for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
+      {
+        NAMESPACE="longhorn-system" # Namespace for Longhorn
+        LABEL_KEY="role" # Label key to match in Kubernetes nodes
+
+        # Iterate through nodes and apply tags
+        for node in $(kubectl --kubeconfig $kubeconfig get nodes -o jsonpath='{.items[*].metadata.name}'); do
+          # Get the value of the label
+          LABEL_VALUE=$(kubectl --kubeconfig $kubeconfig get node $node -o jsonpath="{.metadata.labels['$LABEL_KEY']}")
+
+          if [ -n "$LABEL_VALUE" ]; then
+            echo "Applying Longhorn tag '$LABEL_VALUE' to node '$node'"
+
+            # Patch the Longhorn node with the label value as a tag
+            kubectl --kubeconfig $kubeconfig -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
+          else
+            echo "Node '$node' does not have label '$LABEL_KEY', skipping."
+          fi
+        done  
+      }
+
       ###
       
       # storage classes definitions
-      t=$(mktemp) && cat <<EOF > "$t"
+      t="$(mktemp).yaml" && cat <<-EOF > "$t"
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -238,13 +258,12 @@ reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
   numberOfReplicas: "3"
-  staleReplicaTimeout: "2880" # 48 hours in minutes
+  staleReplicaTimeout: "2880"
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"
   diskSelector: "network-storage-volume"
-  nodeSelector:
-    role: "worker" # where label is worker as volumes only mounted on agents
+  nodeSelector: "worker" # where Longhorn node tag (internal Longhorn info) is set to worker (as volumes only mounted on agents)
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -327,11 +346,17 @@ EOF
         kubectl --kubeconfig "$kubeconfig" get events -n longhorn-system
         kubectl --kubeconfig "$kubeconfig" get pv -o yaml
 
+        # check nodes as registered by Longhorn and which tags Longhorn internally sees for each of the nodes
+        kubectl --kubeconfig "$kubeconfig" -n longhorn-system get nodes.longhorn.io
+        node_name="" 
+        kubectl --kubeconfig "$kubeconfig" -n longhorn-system get nodes.longhorn.io $node_name -o yaml
+
         # expose longhorn UI dashboard 
         kubectl --kubeconfig "$kubeconfig" port-forward -n longhorn-system service/longhorn-frontend 8082:80
       }
     }
 
+    install_kubernetes_dashboard
     install_gateway_api
     install_cert_manager   
     install_storage_class

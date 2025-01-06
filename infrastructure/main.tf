@@ -119,7 +119,7 @@ module "kube-hetzner" {
       server_type = var.instance_size.medium,
       location    = var.network_location[0].region[0],
       placement_group = "worker"
-      labels      = local.label.worker,
+      labels      = concat(local.label.worker, ["node.longhorn.io/create-default-disk=config"]),
       taints      = [],
       longhorn_volume_size = 10
     },
@@ -130,7 +130,7 @@ module "kube-hetzner" {
       server_type = var.instance_size.large,
       location    = var.network_location[0].region[0],
       placement_group = "worker"
-      labels      = local.label.worker,
+      labels      = concat(local.label.worker, ["node.longhorn.io/create-default-disk=config"]),
       taints      = [],
       longhorn_volume_size = 10
     },

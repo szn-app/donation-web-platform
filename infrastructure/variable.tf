@@ -5,6 +5,7 @@ locals {
     project = ""
   }
 
+  # NOTE: "role=<value>" is a custom key that postinstall custom scripts will synchronize the role label to Longhorn internal node tags
   label = {
     control_plane = ["role=control-plane", "size=${var.instance_size.small}", "region=${var.network_location[0].region[0]}"], 
     control_plane_arm = ["role=control-plane", "size=${var.instance_size.small_arm}", "region=${var.network_location[0].region[0]}"], 
