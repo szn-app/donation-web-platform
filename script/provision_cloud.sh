@@ -1,7 +1,7 @@
 #!/bin/bash
 
 install_gateway_api() { 
-    [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
+    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
     # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
     kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
@@ -13,7 +13,7 @@ install_gateway_api() {
 }
 
 install_storage_class() { 
-  [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
+  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
   kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
 
@@ -209,7 +209,7 @@ EOF
 
 # https://github.com/kubernetes/dashboard
 install_kubernetes_dashboard() {
-  [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
+  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
   helm --kubeconfig $kubeconfig repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
   helm --kubeconfig $kubeconfig upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
@@ -260,7 +260,7 @@ EOF
 }
 
 install_cert_manager() { 
-    [ -z "$1" ] && { echo "Error: No arguments provided."; exit 1; } || kubeconfig="$1" 
+    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
     # https://cert-manager.io/docs/installation/helm/
     helm --kubeconfig $kubeconfig repo add jetstack https://charts.jetstack.io --force-update
@@ -311,77 +311,82 @@ EOF
 }
 
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
-hetzner() { 
+hetzner_cloud_provision() { 
     hcloud version && kubectl version && packer --version
     tofu --version && terraform version # either tools should work
     helm version
 
-    # TODO: automate
-    # [manual, then move to ~/.ssh] 
-    # will also be used to log into the machines using ssh
-    ssh-keygen -t ed25519
+    manually() {
+      # TODO: automate
+      # [manual, then move to ~/.ssh] 
+      # will also be used to log into the machines using ssh
+      ssh-keygen -t ed25519
 
-    {
-        tmp_script=$(mktemp)
-        curl -sSL -o "${tmp_script}" https://raw.githubusercontent.com/kube-hetzner/terraform-hcloud-kube-hetzner/master/scripts/create.sh
-        chmod +x "${tmp_script}" 
-        "${tmp_script}"
-        rm "${tmp_script}"
-    }
-    hcloud context create "k8s-project"
-    
+      # create snapshots with kube-hetzner binaries
+      {
+          tmp_script=$(mktemp)
+          curl -sSL -o "${tmp_script}" https://raw.githubusercontent.com/kube-hetzner/terraform-hcloud-kube-hetzner/master/scripts/create.sh
+          chmod +x "${tmp_script}" 
+          "${tmp_script}"
+          rm "${tmp_script}"
+      }
+      hcloud context create "k8s-project"
+
+      ### set variables using "terraform.tfvars" or CLI argument or env variables
+      # export TF_VAR_hcloud_token=""
+      # export TF_VAR_ssh_private_key=""
+      # export TF_VAR_ssh_public_key=""
+      
+      export TF_TOKEN_app_terraform_io=""  
+    }    
 
     ### handle terraform 
     {
-        pushd infrastructure
+      pushd infrastructure
 
-        ### set variables using "terraform.tfvars" or CLI argument or env variables
-        # export TF_VAR_hcloud_token=""
-        # export TF_VAR_ssh_private_key=""
-        # export TF_VAR_ssh_public_key=""
+      export TF_LOG=DEBUG
+      terraform init --upgrade # installed terraform module dependecies
+      terraform validate
 
-        export TF_LOG=DEBUG
-        export TF_TOKEN_app_terraform_io=""  
-        terraform init --upgrade # installed terraform module dependecies
-        terraform validate
+      t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
+      terraform apply -auto-approve $t_plan
+      # terraform destroy # when completely redploying
+      
+      # create kubeconfig (NOTE: do not version control this credentials file)
+      export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
+      t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
 
-        terraform plan -no-color -out kube.tfplan > output_plan.txt.tmp
-        terraform apply kube.tfplan # terraform destroy # when completely redploying
+      sleep 10 
+      
+      install_kubernetes_dashboard  "$kubeconfig"
+      install_gateway_api "$kubeconfig"
+      install_cert_manager "$kubeconfig"
+      install_storage_class "$kubeconfig"
+
+      verify_installation() {
+        kubectl --kubeconfig $kubeconfig get all -A 
+        kubectl --kubeconfig $kubeconfig get configmap -A
+        kubectl --kubeconfig $kubeconfig api-resources
+        kubectl --kubeconfig $kubeconfig api-versions
+        hcloud all list
+        terraform show
+        terraform state list
+        terraform state show type_of_resource.label_of_resource
+
+        helm list -A --all-namespaces --kubeconfig $kubeconfig
+        helm get values --all nginx -n nginx --kubeconfig $kubeconfig
+        helm get manifest nginx -n nginx --kubeconfig $kubeconfig
         
-        # create kubeconfig (NOTE: do not version control this credentials file)
-        export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
-        t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
+        journalctl -r -n 200
 
-        install_kubernetes_dashboard  "$kubeconfig"
-        install_gateway_api "$kubeconfig"
-        install_cert_manager "$kubeconfig"
-        install_storage_class "$kubeconfig"
+        ### ssh into remove machines
+        # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
+        ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv4.ip')
+        ssh -p 2220 root@$ip_address
+        ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv6.ip' | sed 's/\/.*/1/')
+        ssh -p 2220 root@$ip_address 
+      }
 
-        verify_installation() {
-          kubectl --kubeconfig $kubeconfig get all -A 
-          kubectl --kubeconfig $kubeconfig get configmap -A
-          kubectl --kubeconfig $kubeconfig api-resources
-          kubectl --kubeconfig $kubeconfig api-versions
-          hcloud all list
-          terraform show
-          terraform state list
-          terraform state show type_of_resource.label_of_resource
-
-          helm list -A --all-namespaces --kubeconfig $kubeconfig
-          helm get values --all nginx -n nginx --kubeconfig $kubeconfig
-          helm get manifest nginx -n nginx --kubeconfig $kubeconfig
-          
-          journalctl -r -n 200
-
-          ### ssh into remove machines
-          # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server
-          ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv4.ip')
-          ssh -p 2220 root@$ip_address
-          ip_address=$(hcloud server list --output json | jq -r '.[0].public_net.ipv6.ip' | sed 's/\/.*/1/')
-          ssh -p 2220 root@$ip_address 
-        }
-
-        popd
+      popd
     }
-    
 }
