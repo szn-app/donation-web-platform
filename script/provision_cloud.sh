@@ -344,7 +344,9 @@ EOF
         # for debugging purposes if persistent volumes are not being created
         kubectl --kubeconfig "$kubeconfig" logs -n longhorn-system -l app=longhorn-manager
         kubectl --kubeconfig "$kubeconfig" get events -n longhorn-system
+        kubectl --kubeconfig "$kubeconfig" get sc
         kubectl --kubeconfig "$kubeconfig" get pv -o yaml
+        kubectl --kubeconfig "$kubeconfig" get pvc
 
         # check nodes as registered by Longhorn and which tags Longhorn internally sees for each of the nodes
         kubectl --kubeconfig "$kubeconfig" -n longhorn-system get nodes.longhorn.io

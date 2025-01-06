@@ -27,6 +27,14 @@ Average Latency (usec) Read/Write: 1517.65/1633.38
 Sequential Read/Write: 282MiB/s / 235MiB/s
 Mixed Random Read/Write IOPS: 2596/882
 
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 1990/1578. BW: 96.3MiB/s / 64.2MiB/s
+Average Latency (usec) Read/Write: 3509.21/4586.66
+Sequential Read/Write: 134MiB/s / 100MiB/s
+Mixed Random Read/Write IOPS: 1262/425
+
 ---
 
 # hcloud-volumes
@@ -51,9 +59,20 @@ Mixed Random Read/Write IOPS: 1727/562
 
 ---
 
+==================
+= Dbench Summary =
+==================
 # longhorn-local-ext4
 Random Read/Write IOPS: 3734/1948. BW: 151MiB/s / 98.2MiB/s
 Average Latency (usec) Read/Write: 1850.46/2603.15
 Sequential Read/Write: 246MiB/s / 199MiB/s
 Mixed Random Read/Write IOPS: 2383/796
+
+==================
+= Dbench Summary =
+==================
+Random Read/Write IOPS: 3629/1606. BW: 159MiB/s / 91.6MiB/s
+Average Latency (usec) Read/Write: 2595.87/3559.49
+Sequential Read/Write: 266MiB/s / 183MiB/s
+Mixed Random Read/Write IOPS: 2010/678
 
