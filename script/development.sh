@@ -102,4 +102,7 @@ minikube() {
         curl --resolve donation-app.test:80:$GW donation-app.test
 
     }
+
+    kubectl apply -k ./manifest/entrypoint/development
+
 }

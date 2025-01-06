@@ -120,23 +120,23 @@ github_container_registry_deploy() {
 }
 
 kustomize_kubectl() {
-    export kubeconfig="~/.ssh/k8s-project-credentials.kubeconfig.yaml"
-    # kubectl create namespace donation-app
+    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+    pushd ./manifest 
 
-
-    kubectl kustomize ./
-
-    kubectl --kubeconfig $kubeconfig apply -k ./ # kubectl kustomize ./ | kubectl apply -f -
-    kubectl get -k ./
-    kubectl describe -k ./
-    kubectl diff -k ./
-
-    ### generate combined configuration
-    kubectl kustomize ./manifest/gateway/development > ./tmp/combined_manifest.yml
-    cat ./tmp/combined_manifest.yml | kubectl apply -f -
+    kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production
+    echo "Services deployed to the cluster. NOTE: wait few minutes to complete startup and propagate TLS certificate generation"
 
     # verify cluster certificate issued successfully 
-    {
+    verify() {
+        ### generate combined configuration
+        kubectl kustomize ./manifest/gateway/development > ./tmp/combined_manifest.yml
+        cat ./tmp/combined_manifest.yml | kubectl apply -f -
+
+        kubectl kustomize ./
+        kubectl get -k ./
+        kubectl describe -k ./
+        kubectl diff -k ./
+
         kubectl --kubeconfig $kubeconfig get clusterissuer -A # two issuers: staging & production issuers
         kubectl --kubeconfig $kubeconfig describe challenge -A # ephemeral challenge appearing during certificate issuance process
         kubectl --kubeconfig $kubeconfig get order -A # should be STATE = pending → STATE = valid
@@ -146,8 +146,9 @@ kustomize_kubectl() {
         domain_name=""
         curl -I http://$domain_name
         curl --insecure -I https://$domain_name
+        cloud_load_balancer_ip=""
+        curl --header "Host: donation-app.com" $cloud_load_balancer_ip
     }
 
-    cloud_load_balancer_ip=""
-    curl --header "Host: donation-app.com" $cloud_load_balancer_ip
+    popd 
 }
