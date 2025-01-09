@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.62](https://github.com/szn-app/donation-app/compare/web-server@v0.0.61...web-server@v0.0.62) (2025-01-09)
+
+
+### Bug Fixes
+
+* Tauri build fix by removing unused imports ([fedb4c9](https://github.com/szn-app/donation-app/commit/fedb4c936994bbb2e5a12d161b58d7c086035242))
+
 ## [0.0.61](https://github.com/szn-app/donation-app/compare/web-server@v0.0.60...web-server@v0.0.61) (2025-01-09)
 
 
