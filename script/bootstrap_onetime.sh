@@ -16,4 +16,5 @@ install_shadcn_for_vite() {
     # [manual] setup configs and paths resolution
 
     pnpm dlx shadcn@latest init
+    pnpm dlx shadcn@latest add button
 }   
