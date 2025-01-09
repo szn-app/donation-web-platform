@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.3](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.2...donation-app@v0.4.3) (2025-01-09)
+
+
+### Features
+
+* integrate Tailwind css and Prettier ([62e20fd](https://github.com/szn-app/donation-app/commit/62e20fd40587d7e46fe8ef8986a7974ee25efa9e))
+* layout example shadcn components ([6345a65](https://github.com/szn-app/donation-app/commit/6345a65a310ab56fb1608867592028039c83eebc))
+
 ## [0.4.2](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.1...donation-app@v0.4.2) (2025-01-04)
 
 
