@@ -119,6 +119,7 @@ github_container_registry_deploy() {
     docker push ghcr.io/szn-app/donation-app/$TAG
 }
 
+# export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
 kustomize_kubectl() {
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
     pushd ./manifest 

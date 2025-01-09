@@ -21,11 +21,10 @@ target/
 
 tmp/
 
-# Added by cargo
-
 /target
 /build
 /dist
+node_modules
 
 .terraform/
 # ignore sensitive terraform values
