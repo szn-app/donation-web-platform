@@ -34,6 +34,8 @@ develop_pnpm_react() {
     pnpm install
     # run application development
     WEBKIT_DISABLE_COMPOSITING_MODE=1 cargo tauri dev
+    # or 
+    pnpm run dev
 }
 
 build() {
