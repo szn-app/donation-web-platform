@@ -1,6 +1,4 @@
 import "./App.css";
-import ExampleInvokeRust from "./ExampleInvokeRust";
-import { Button } from "./components/ui/button";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,

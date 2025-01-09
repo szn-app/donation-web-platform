@@ -2,14 +2,14 @@ import { useState } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import { invoke } from "@tauri-apps/api/core";
 
-async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  setGreetMsg(await invoke("greet", { name }));
-}
-
 export default function ExampleInvokeRust() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+
+  async function greet() {
+    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+    setGreetMsg(await invoke("greet", { name }));
+  }
 
   return (
     <div className="container flex w-full max-w-lg items-center justify-center rounded bg-white p-10">

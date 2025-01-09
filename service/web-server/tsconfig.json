@@ -25,6 +25,9 @@
     "paths": {
       "@/*": ["./src/*"]
     }
+
+    // do not fail build when unused variables
+    // "noUnusedLocals": false
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
