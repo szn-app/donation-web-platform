@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.61](https://github.com/szn-app/donation-app/compare/web-server@v0.0.60...web-server@v0.0.61) (2025-01-09)
+
+
+### Features
+
+* integrate Tailwind css and Prettier ([62e20fd](https://github.com/szn-app/donation-app/commit/62e20fd40587d7e46fe8ef8986a7974ee25efa9e))
+* layout example shadcn components ([6345a65](https://github.com/szn-app/donation-app/commit/6345a65a310ab56fb1608867592028039c83eebc))
+
 ## [0.0.60](https://github.com/szn-app/donation-app/compare/web-server@v0.0.59...web-server@v0.0.60) (2024-12-18)
 
 
