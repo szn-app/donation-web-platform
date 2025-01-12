@@ -1,14 +1,21 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-resources: 
-- ../base
-- ../../web_server/production
+resources:
+  - ../base
+  - ../../web_server/production
 
-namespace: donation-app
+# namespace: donation-app # using customization transformers instead (which provides more options)
+transformers:
+  - |-
+    apiVersion: builtin
+    kind: NamespaceTransformer
+    metadata:
+      name: _not_important_here
+      namespace: donation-app
+    unsetOnly: true
 
 patches:
-
   - target:
       kind: Gateway
       name: gateway
@@ -16,31 +23,30 @@ patches:
       - op: replace
         path: /spec/listeners/0/hostname
         value: "wosoom.com"
+        
       - op: replace
         path: /spec/listeners/1/hostname
         value: "*.wosoom.com"
+        
       - op: replace
         path: /spec/listeners/2/hostname
         value: "wosoom.com"
+        
       - op: replace
         path: /spec/listeners/3/hostname
         value: "api.wosoom.com"
+        
+      - op: replace
+        path: /spec/listeners/4/hostname
+        value: "*.k8s.wosoom.com"
 
-  - target: 
+  - target:
       kind: Gateway
       name: gateway
-    patch: |- 
+    patch: |-
       - op: replace
         path: /metadata/annotations/cert-manager.io~1cluster-issuer
         value: "production-cluster-issuer"
-
-  # - target:
-  #     kind: HTTPRoute
-  #     name: http-web-server
-  #   patch: |-
-  #     - op: replace
-  #       path: /spec/hostnames/0
-  #       value: wosoom.com
 
   - target:
       kind: HTTPRoute
@@ -73,3 +79,27 @@ patches:
       - op: replace
         path: /spec/hostnames/0
         value: "api.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: https-k8s-dashboard
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "dashboard.k8s.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: https-k8s-longhorn
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "longhorn.k8s.wosoom.com"
+
+  # - target:
+  #     kind: HTTPRoute
+  #     name: http-web-server
+  #   patch: |-
+  #     - op: replace
+  #       path: /spec/hostnames/0
+  #       value: wosoom.com

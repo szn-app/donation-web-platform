@@ -212,7 +212,13 @@ install_kubernetes_dashboard() {
   [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
   helm --kubeconfig $kubeconfig repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-  helm --kubeconfig $kubeconfig upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+  t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
+kong:
+  proxy:
+    http:
+      enabled: true
+EOF
+  helm --kubeconfig $kubeconfig upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard --values $t
 
   # https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
   t=$(mktemp) && cat <<EOF > "$t" 
@@ -251,6 +257,18 @@ EOF
   kubectl --kubeconfig $kubeconfig apply -f $t 
 
   verify_dashboard() { 
+    # verify helm custom values 
+    helm --kubeconfig $kubeconfig show values kubernetes-dashboard/kubernetes-dashboard
+    # helm --kubeconfig $kubeconfig uninstall kubernetes-dashboard   --namespace kubernetes-dashboard
+
+      t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
+kong:
+  proxy:
+    http:
+      enabled: true
+EOF
+    y="$(mktemp).yaml" && helm --kubeconfig $kubeconfig template kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --namespace kubernetes-dashboard --values $t > $y && code $y
+
     # get token 
     export USER_TOKEN=$(kubectl --kubeconfig "$kubeconfig" get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d)
     echo $USER_TOKEN

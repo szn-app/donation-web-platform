@@ -127,6 +127,12 @@ kustomize_kubectl() {
     kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production
     echo "Services deployed to the cluster. NOTE: wait few minutes to complete startup and propagate TLS certificate generation"
 
+    {
+        pushd ./entrypoint/production 
+        t="$(mktemp).yaml" && kubectl --kubeconfig $kubeconfig kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+        popd
+    }
+
     # verify cluster certificate issued successfully 
     verify() {
         ### generate combined configuration
@@ -142,6 +148,8 @@ kustomize_kubectl() {
         kubectl --kubeconfig $kubeconfig describe challenge -A # ephemeral challenge appearing during certificate issuance process
         kubectl --kubeconfig $kubeconfig get order -A # should be STATE = pending → STATE = valid
         kubectl --kubeconfig $kubeconfig get certificate -A # should be READY = True
+        kubectl --kubeconfig $kubeconfig get httproute -A
+        kubectl --kubeconfig $kubeconfig get gateway -A
 
         # check dns + web server response with tls staging certificate
         domain_name=""

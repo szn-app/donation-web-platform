@@ -1,9 +1,9 @@
-
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 
 metadata:
   name: gateway
+  namespace: nginx-gateway
   annotations:
     cert-manager.io/cluster-issuer: staging-cluster-issuer # when testing to avoid Let's Encrypt rate limit of `production-cluster-issuer`
 
@@ -11,22 +11,21 @@ spec:
   gatewayClassName: nginx
   # NOTE: order is important as kustomize targets indecies of listners
   listeners:
-
     - name: http
       protocol: HTTP
       port: 80
       hostname: "donation-app.test"
       allowedRoutes:
-        namespaces: 
-          from: All # required for letsecrypt 
+        namespaces:
+          from: All # required for letsecrypt
 
     - name: http-subdomain-all
       protocol: HTTP
       port: 80
       hostname: "*.donation-app.test"
       allowedRoutes:
-        namespaces: 
-          from: All # required for letsecrypt 
+        namespaces:
+          from: All # required for letsecrypt
 
     - name: https
       protocol: HTTPS
@@ -34,13 +33,13 @@ spec:
       hostname: "donation-app.test"
       allowedRoutes:
         namespaces:
-          from: All # required for letsecrypt 
+          from: All # required for letsecrypt
       tls:
         mode: Terminate
         certificateRefs:
-        - kind: Secret
-          name: tls-certificate-donation-app
-          group: ""
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
 
     - name: https-api
       protocol: HTTPS
@@ -48,12 +47,31 @@ spec:
       hostname: "api.donation-app.test"
       allowedRoutes:
         namespaces:
-          from: All # required for letsecrypt 
+          from: All # required for letsecrypt
       tls:
         mode: Terminate
         certificateRefs:
-        - kind: Secret
-          name: tls-certificate-donation-app
-          group: ""
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
 
+    - name: https-k8s
+      protocol: HTTPS
+      port: 443
+      hostname: "*.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
 
+    - name: http-redirect-ip-access
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
