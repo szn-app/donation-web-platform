@@ -18,3 +18,12 @@ install_shadcn_for_vite() {
     pnpm dlx shadcn@latest init
     pnpm dlx shadcn@latest add button
 }   
+
+install_nextui() {
+    # https://nextui.org/docs/guide/installation#global-installation
+    pnpm add @nextui-org/react framer-motion
+    echo "public-hoist-pattern[]=*@nextui-org/*" > .npmrc && pnpm install
+
+    pnpm add @nextui-org/button
+    # [manual] add component styles to tailwind.config.js
+}

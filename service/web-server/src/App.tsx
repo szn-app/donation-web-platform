@@ -15,8 +15,21 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { DataTableDemo } from "@/app/table";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  Button,
+  useDisclosure,
+} from "@nextui-org/react";
+
+import Example from "@/components/with_avatars_and_multi_line_content";
 
 export default function App() {
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
   return (
     <>
       <SidebarProvider>
@@ -51,7 +64,58 @@ export default function App() {
               </div>
               <div className="bg-muted/50 aspect-video rounded-xl" />
             </div>
-            <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+            <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+              <Button>Press me</Button>
+              <Button onPress={onOpen}>Open Drawer</Button>
+              <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
+                <DrawerContent>
+                  {(onClose) => (
+                    <>
+                      <DrawerHeader className="flex flex-col gap-1">
+                        Drawer Title
+                      </DrawerHeader>
+                      <DrawerBody>
+                        <p>
+                          Lorem ipsum dolor sit amet, consectetur adipiscing
+                          elit. Nullam pulvinar risus non risus hendrerit
+                          venenatis. Pellentesque sit amet hendrerit risus, sed
+                          porttitor quam.
+                        </p>
+                        <p>
+                          Lorem ipsum dolor sit amet, consectetur adipiscing
+                          elit. Nullam pulvinar risus non risus hendrerit
+                          venenatis. Pellentesque sit amet hendrerit risus, sed
+                          porttitor quam.
+                        </p>
+                        <p>
+                          Magna exercitation reprehenderit magna aute tempor
+                          cupidatat consequat elit dolor adipisicing. Mollit
+                          dolor eiusmod sunt ex incididunt cillum quis. Velit
+                          duis sit officia eiusmod Lorem aliqua enim laboris do
+                          dolor eiusmod. Et mollit incididunt nisi consectetur
+                          esse laborum eiusmod pariatur proident Lorem eiusmod
+                          et. Culpa deserunt nostrud ad veniam.
+                        </p>
+                      </DrawerBody>
+                      <DrawerFooter>
+                        <Button
+                          color="danger"
+                          variant="light"
+                          onPress={onClose}
+                        >
+                          Close
+                        </Button>
+                        <Button color="primary" onPress={onClose}>
+                          Action
+                        </Button>
+                      </DrawerFooter>
+                    </>
+                  )}
+                </DrawerContent>
+              </Drawer>
+
+              <Example></Example>
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
