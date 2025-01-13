@@ -1,5 +1,5 @@
 # IMPORTANT! used by release.yml workflow
-build_container() { 
+build_container_web_server() { 
     # NOTE: uses buildx (instead of the legacy build)
     docker build . -t web-server:latest
 }

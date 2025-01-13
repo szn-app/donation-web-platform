@@ -6,28 +6,30 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: 
-  
+  workflow_dispatch:
+
 permissions:
   contents: write
   pull-requests: write
-  
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    
+
     outputs:
       web-server--release_created: ${{ steps.release-step.outputs['service/web-server--release_created'] }}
       web-server--tag_name: ${{ steps.release-step.outputs['service/web-server--tag_name'] }}
+      auth-ui--release_created: ${{ steps.release-step.outputs['service/auth-ui--release_created'] }}
+      auth-ui--tag_name: ${{ steps.release-step.outputs['service/auth-ui--tag_name'] }}
 
     steps:
       - uses: googleapis/release-please-action@v4
         id: release-step
-        with: 
+        with:
           token: ${{ secrets.PAT_WORKFLOW }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-      
+
       - name: Print release outputs for debugging
         continue-on-error: true
         run: |
@@ -37,8 +39,11 @@ jobs:
           echo "debug service/web-server path outputs:"
           echo "${{ steps.release-step.outputs['service/web-server--release_created'] }}"
           echo "${{ steps.release-step.outputs['service/web-server--tag_name'] }}"
+          echo "debug service/auth-ui path outputs:"
+          echo "${{ steps.release-step.outputs['service/auth-ui--release_created'] }}"
+          echo "${{ steps.release-step.outputs['service/auth-ui--tag_name'] }}"
 
-  publish-package:
+  web-server-publish-package:
     needs: [release-please]
     if: ${{ needs.release-please.outputs.web-server--release_created }}
     permissions:
@@ -46,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: 
+        include:
           - platform: "ubuntu-latest"
             args: ""
           - platform: "macos-latest" # for Arm based macs (M1 and above).
@@ -57,12 +62,12 @@ jobs:
             args: ""
 
     runs-on: ${{matrix.platform}}
-    
+
     defaults:
       run:
         shell: bash
         working-directory: ./service/web-server
-        
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -87,18 +92,18 @@ jobs:
         run: |
           sudo apt update -y
           sudo apt install zip -y
-          
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          run_install: false  # Prevent automatic installation of dependencies
+          run_install: false # Prevent automatic installation of dependencies
           version: latest
-          
+
       - name: install NodeJS
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'pnpm'
+          node-version: "lts/*"
+          cache: "pnpm"
           cache-dependency-path: ./service/web-server
 
       - name: install dependencies & build project
@@ -117,16 +122,16 @@ jobs:
       - name: upload frontend assets
         if: startsWith(matrix.platform, 'ubuntu')
         working-directory: ./
-        run: gh release upload ${{ needs.release-please.outputs.web-server--tag_name }} ./target/frontend.zip 
-        env: 
+        run: gh release upload ${{ needs.release-please.outputs.web-server--tag_name }} ./target/frontend.zip
+        env:
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
 
       - name: build web-server container
         if: startsWith(matrix.platform, 'ubuntu')
-        run: | 
+        run: |
           chmod +x ./script.sh
-          ./script.sh build_container
-      
+          ./script.sh build_container_web_server
+
       - name: upload container to Github Container Registry
         if: startsWith(matrix.platform, 'ubuntu')
         run: |
@@ -151,16 +156,16 @@ jobs:
           EOF
           )
           gh release edit ${{ needs.release-please.outputs.web-server--tag_name }} --notes "$new_desc"
-        env: 
+        env:
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
 
-      - name: Install dependencies for tauri 
+      - name: Install dependencies for tauri
         if: startsWith(matrix.platform, 'ubuntu')
         working-directory: ./
-        run: | 
+        run: |
           chmod +x ./script.sh
           ./script.sh install_tauri_dependencies_debian
-  
+
       - name: install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -170,8 +175,8 @@ jobs:
       - name: cache Rust
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: './src-tauri -> target'
-  
+          workspaces: "./src-tauri -> target"
+
       - name: build project (tauri app) & upload artifacts to release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -180,3 +185,69 @@ jobs:
           projectPath: "service/web-server"
           releaseId: ${{ steps.find_release_id.outputs.release_id }} # tag to find the release for (each github tag may be associated with a single release only)
           args: ${{ matrix.args }} # build specific formats
+
+  auth-ui-publish-package:
+    needs: [release-please]
+    if: ${{ needs.release-please.outputs.auth-ui--release_created }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+
+    runs-on: "ubuntu-latest"
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/auth-ui
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # find release ID given the associated tag and pass it to Tauri build in following step (bc it seems like tauri-action fails to find the release id sometimes)
+      - name: Find Release ID
+        id: find_release_id
+        env:
+          GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
+        run: |
+          release_id=$(gh release view ${{ needs.release-please.outputs.auth-ui--tag_name }} --json databaseId | jq -r '.databaseId')
+          echo "release_id=$release_id" >> $GITHUB_OUTPUT
+          if [[ -z "$release_id" ]]; then
+            echo "Error: release id retrieval failed for tagname: ${{ needs.release-please.outputs.auth-ui--tag_name }}"
+            exit 1;
+          else 
+            echo "release_id=$release_id"
+          fi
+
+      - name: build auth-ui container
+        run: |
+          chmod +x ./script.sh 
+          ./script.sh bulid_container_auth_ui
+
+      - name: upload container to Github Container Registry
+        run: |
+          echo "${{ secrets.PAT_GITHUB_CONTAINER_REGISTRY }}" | docker login ghcr.io -u ${{github.actor}} --password-stdin
+          TAG=auth-ui:latest
+          docker tag $TAG ghcr.io/szn-app/donation-app/$TAG
+          docker push ghcr.io/szn-app/donation-app/$TAG
+          VERSION_TAG=${{ needs.release-please.outputs.auth-ui--tag_name }}
+          MAPPED_VERSION="${VERSION_TAG//@/:}"
+          docker tag $TAG ghcr.io/szn-app/donation-app/$MAPPED_VERSION
+          docker push ghcr.io/szn-app/donation-app/$MAPPED_VERSION
+
+      - name: Update release description
+        run: |
+          release_desc=$(gh release view ${{ needs.release-please.outputs.auth-ui--tag_name }} --json body | jq -r '.body')
+          new_desc=$(cat <<EOF
+          $release_desc
+          ___
+          ### Container:
+          * [auth-ui:latest](https://ghcr.io/szn-app/donation-app/auth-ui:latest)
+          EOF
+          )
+          gh release edit ${{ needs.release-please.outputs.auth-ui--tag_name }} --notes "$new_desc"
+        env:
+          GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
