@@ -1,0 +1,28 @@
+# https://k8s.ory.sh/helm/kratos.html
+
+### TODO: setup up config values
+# kratos.config.secrets.default
+# kratos.config.selfservice.default_browser_return_url
+# kratos.config.courier.smtp.connection_uri
+# kratos.config.identity.schemas
+
+# TODO:
+kratos:
+  config:
+    log:
+      level: trace
+
+    dsn: postgresql://kratos:kratos@postgress.cnpg-system.svc.cluster.local:5432/kratos
+
+    flows:
+      error:
+        ui_url: https://auth.wosoom.com/error
+      login:
+        ui_url: https://auth.wosoom.com/login
+      verification:
+        enabled: false
+        ui_url: https://auth.wosoom.com/verification
+      registration:
+        ui_url: https://auth.wosoom.com/registration
+      settings:
+        ui_url: https://auth.wosoom.com/settings

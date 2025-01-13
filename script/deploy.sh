@@ -119,19 +119,48 @@ github_container_registry_deploy() {
     docker push ghcr.io/szn-app/donation-app/$TAG
 }
 
+
+# https://k8s.ory.sh/helm/
+# $`install_ory_stack $kubeconfig`
+# $`install_ory_stack $kubeconfig delete`
+install_ory_stack() { 
+    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+    action=${2:-"install"}
+    pushd ./manifest/auth
+
+        {
+            if [ "$action" == "delete" ]; then
+                kubectl --kubeconfig $kubeconfig delete -f namespace.yml
+                helm uninstall kratos -n auth
+                return 
+            fi
+        }
+
+        helm repo add ory https://k8s.ory.sh/helm/charts
+        helm repo update
+        
+        kubectl --kubeconfig $kubeconfig apply -f namespace.yml
+        helm upgrade --install kratos -n auth -f ory-kratos-values.yml ory/kratos
+
+    popd
+}
+
 # export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
 kustomize_kubectl() {
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+
+    install_ory_stack "$kubeconfig"
+
     pushd ./manifest 
-
-    kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production
+        kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production
+        {
+            pushd ./entrypoint/production 
+            t="$(mktemp).yaml" && kubectl --kubeconfig $kubeconfig kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            popd
+        }
+    popd 
+    
     echo "Services deployed to the cluster. NOTE: wait few minutes to complete startup and propagate TLS certificate generation"
-
-    {
-        pushd ./entrypoint/production 
-        t="$(mktemp).yaml" && kubectl --kubeconfig $kubeconfig kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
-        popd
-    }
 
     # verify cluster certificate issued successfully 
     verify() {
@@ -159,5 +188,4 @@ kustomize_kubectl() {
         curl --header "Host: donation-app.com" $cloud_load_balancer_ip
     }
 
-    popd 
 }
