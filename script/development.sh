@@ -108,3 +108,8 @@ minikube() {
     kubectl apply -k ./manifest/entrypoint/development
 
 }
+
+git_submodule() {
+    # git clone --recursive <this-github-repo>
+    git submodule init && git submodule update
+}

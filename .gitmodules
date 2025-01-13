@@ -1,0 +1,3 @@
+[submodule "service/auth-ui"]
+	path = service/auth-ui
+	url = https://github.com/ory/kratos-selfservice-ui-node.git
