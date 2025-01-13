@@ -24,8 +24,23 @@ spec:
               value: "4455"
             - name: KRATOS_PUBLIC_URL
               value: http://ory-kratos:4433/
+            - name: COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secrets-auth-ui
+                  key: COOKIE_SECRET
+            - name: CSRF_COOKIE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: secrets-auth-ui
+                  key: CSRF_COOKIE_NAME
+            - name: CSRF_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secrets-auth-ui
+                  key: CSRF_COOKIE_SECRET
           envFrom:
             - configMapRef:
                 name: properties-map-auth-ui
-            - secretRef:
-                name: secrets-auth-ui
+            # - secretRef:
+            #     name: secrets-auth-ui
