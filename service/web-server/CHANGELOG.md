@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.64](https://github.com/szn-app/donation-app/compare/web-server@v0.0.63...web-server@v0.0.64) (2025-01-13)
+
+
+### Bug Fixes
+
+* jsx typescript type matching ([5147787](https://github.com/szn-app/donation-app/commit/51477879d37e194796e8bfec3d676f97b573456d))
+
 ## [0.0.63](https://github.com/szn-app/donation-app/compare/web-server@v0.0.62...web-server@v0.0.63) (2025-01-13)
 
 
