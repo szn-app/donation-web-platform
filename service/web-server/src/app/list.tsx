@@ -12,7 +12,7 @@ import {
   Link,
 } from "@nextui-org/react";
 
-export const MailIcon = (props) => {
+export const MailIcon = (props: any) => {
   return (
     <svg
       aria-hidden="true"
@@ -32,7 +32,7 @@ export const MailIcon = (props) => {
   );
 };
 
-export const LockIcon = (props) => {
+export const LockIcon = (props: any) => {
   return (
     <svg
       aria-hidden="true"
@@ -59,10 +59,15 @@ export const LockIcon = (props) => {
 export default function App() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [backdrop, setBackdrop] = React.useState("opaque");
+  const backdrop_s: "opaque" | "blur" | "transparent" | undefined = backdrop as
+    | "opaque"
+    | "blur"
+    | "transparent"
+    | undefined;
 
-  const backdrops = ["opaque", "blur", "transparent"];
+  const backdrops: any = ["opaque", "blur", "transparent"];
 
-  const handleBackdropChange = (backdrop) => {
+  const handleBackdropChange = (backdrop: any) => {
     setBackdrop(backdrop);
     onOpen();
   };
@@ -70,7 +75,7 @@ export default function App() {
   return (
     <>
       <div className="flex gap-2">
-        {backdrops.map((backdrop) => (
+        {backdrops.map((backdrop: any) => (
           <Button
             key={backdrop}
             className="capitalize"
@@ -82,7 +87,7 @@ export default function App() {
           </Button>
         ))}
       </div>
-      <Drawer backdrop={backdrop} isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Drawer backdrop={backdrop_s} isOpen={isOpen} onOpenChange={onOpenChange}>
         <DrawerContent>
           {(onClose) => (
             <>
@@ -92,7 +97,7 @@ export default function App() {
               <DrawerBody>
                 <Input
                   endContent={
-                    <MailIcon className="text-default-400 pointer-events-none flex-shrink-0 text-2xl" />
+                    <MailIcon className="pointer-events-none flex-shrink-0 text-2xl text-default-400" />
                   }
                   label="Email"
                   placeholder="Enter your email"
@@ -100,7 +105,7 @@ export default function App() {
                 />
                 <Input
                   endContent={
-                    <LockIcon className="text-default-400 pointer-events-none flex-shrink-0 text-2xl" />
+                    <LockIcon className="pointer-events-none flex-shrink-0 text-2xl text-default-400" />
                   }
                   label="Password"
                   placeholder="Enter your password"
