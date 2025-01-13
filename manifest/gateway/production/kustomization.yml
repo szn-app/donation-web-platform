@@ -40,6 +40,10 @@ patches:
         path: /spec/listeners/4/hostname
         value: "*.k8s.wosoom.com"
 
+      - op: replace
+        path: /spec/listeners/5/hostname
+        value: "auth.wosoom.com"
+
   - target:
       kind: Gateway
       name: gateway
@@ -95,6 +99,14 @@ patches:
       - op: replace
         path: /spec/hostnames/0
         value: "longhorn.k8s.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: https-auth
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "auth.wosoom.com"
 
   # - target:
   #     kind: HTTPRoute

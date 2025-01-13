@@ -69,6 +69,20 @@ spec:
             name: tls-certificate-donation-app
             group: ""
 
+    - name: https-auth
+      protocol: HTTPS
+      port: 443
+      hostname: "auth.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
+
     - name: http-redirect-ip-access
       protocol: HTTP
       port: 80
