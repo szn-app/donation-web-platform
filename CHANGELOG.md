@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.4](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.3...donation-app@v0.4.4) (2025-01-13)
+
+
+### Features
+
+* add frontend packages and configs ([3fa6cbf](https://github.com/szn-app/donation-app/commit/3fa6cbf723e071dce3788fb4ebd949fcd969edf9))
+* add submodule kratos ui ([d250342](https://github.com/szn-app/donation-app/commit/d2503425b85ad0cf14bce81e5e17ec6aa6cc33c6))
+* auth-ui package registration and release-please workflow to publish container ([ffa5642](https://github.com/szn-app/donation-app/commit/ffa5642950319bab93cb4ae261cda519bc07b8d4))
+* **gateway:** expose internal management interfaces ([3f88cc5](https://github.com/szn-app/donation-app/commit/3f88cc510cd4e695fce2951d802b6fbb0ce1f568))
+* user ui for auth services ([132c8c4](https://github.com/szn-app/donation-app/commit/132c8c4c9c28c2009fd63198dcf5c236f68857f6))
+
 ## [0.4.3](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.2...donation-app@v0.4.3) (2025-01-09)
 
 
