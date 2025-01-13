@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.63](https://github.com/szn-app/donation-app/compare/web-server@v0.0.62...web-server@v0.0.63) (2025-01-13)
+
+
+### Features
+
+* add frontend packages and configs ([3fa6cbf](https://github.com/szn-app/donation-app/commit/3fa6cbf723e071dce3788fb4ebd949fcd969edf9))
+* auth-ui package registration and release-please workflow to publish container ([ffa5642](https://github.com/szn-app/donation-app/commit/ffa5642950319bab93cb4ae261cda519bc07b8d4))
+
 ## [0.0.62](https://github.com/szn-app/donation-app/compare/web-server@v0.0.61...web-server@v0.0.62) (2025-01-09)
 
 
