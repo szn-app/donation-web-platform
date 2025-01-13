@@ -118,21 +118,24 @@ spec:
     - auth.donation-app.test
 
   rules:
-    - backendRefs:
-        - name: kratos-public
-          namespace: auth
-          port: 80
-      matches:
-        - path:
-            type: PathPrefix
-            value: /app
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            pathPrefix: "/" # "/app" to "/" for internal service
+    ### TODO:
+    # - backendRefs:
+    #     - name: ory-kratos
+    #       namespace: auth
+    #       port: 80
+    #   matches:
+    #     - path:
+    #         type: PathPrefix
+    #         value: /app
+    #   filters:
+    #     - type: URLRewrite
+    #       urlRewrite:
+    #         path:
+    #           type: ReplacePrefixMatch
+    #           replacePrefixMatch: "/" # "/app" to "/" for internal service
 
     - backendRefs:
-        - name: kratos-ui
+        - name: auth-ui
           namespace: auth
           port: 80
       matches:

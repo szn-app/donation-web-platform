@@ -1,4 +1,5 @@
 # https://k8s.ory.sh/helm/kratos.html
+# https://www.ory.sh/docs/kratos/reference/configuration
 
 ### TODO: setup up config values
 # kratos.config.secrets.default

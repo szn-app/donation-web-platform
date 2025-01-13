@@ -119,6 +119,47 @@ github_container_registry_deploy() {
     docker push ghcr.io/szn-app/donation-app/$TAG
 }
 
+env_files() { 
+    _related_commands() { 
+        find . -name '.env.template' 
+        sed "s/<username>/your_username/g;s/<password>/your_password/g;s/YOUR_API_KEY/your_actual_api_key/g;s/YOUR_SECRET_KEY/your_actual_secret_key/g" < .env.template > .env
+    }
+
+    # create .env files from default template if doesn't exist
+    create_env_files() {
+            # Find all *.env.template files
+            find . -name "*.env.template" | while IFS= read -r template_file; do
+                    # Extract filename without extension
+                    filename=$(basename "$template_file" | cut -d '.' -f 1)
+                    env_file="$(dirname "$template_file")/$filename.env"
+
+                    # Check if .env file already exists
+                    if [ ! -f "$env_file" ]; then
+                            # Create a new .env file from the template in the same directory
+                            cp "$template_file" "$env_file" 
+                            echo "created env file file://$env_file from $template_file"
+                    fi
+            done
+    }
+
+    generate_secret_auth_ui() {
+    # generate secrets for production
+        auth_ui_secret_file="./manifest/auth_ui/production/secret.env"
+        if [ ! -f "$auth_ui_secret_file" ]; then
+            t=$(mktemp) && cat <<EOF > "$t"
+COOKIE_SECRET=$(openssl rand -base64 32)
+CSRF_COOKIE_NAME=$(shuf -n 1 /usr/share/dict/words | tr -d '\n')_csrf 
+CSRF_COOKIE_SECRET=$(openssl rand -base64 32)       
+EOF
+
+            mv $t $auth_ui_secret_file
+            echo "generated secrets file: file://$auth_ui_secret_file" 
+        fi
+    }
+
+    generate_secret_auth_ui
+    create_env_files
+}
 
 # https://k8s.ory.sh/helm/
 # $`install_ory_stack $kubeconfig`
@@ -126,8 +167,10 @@ github_container_registry_deploy() {
 install_ory_stack() { 
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
     action=${2:-"install"}
-    pushd ./manifest/auth
 
+    kubectl --kubeconfig $kubeconfig apply -f ./manifest/entrypoint/base/namespace.yml
+    
+    pushd ./manifest/auth
         {
             if [ "$action" == "delete" ]; then
                 kubectl --kubeconfig $kubeconfig delete -f namespace.yml
@@ -139,17 +182,20 @@ install_ory_stack() {
         helm repo add ory https://k8s.ory.sh/helm/charts
         helm repo update
         
-        kubectl --kubeconfig $kubeconfig apply -f namespace.yml
+                
         helm upgrade --install kratos -n auth -f ory-kratos-values.yml ory/kratos
-
     popd
+
 }
 
 # export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
 kustomize_kubectl() {
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
-    install_ory_stack "$kubeconfig"
+    env_files
+
+    # TODO: 
+    # install_ory_stack "$kubeconfig"
 
     pushd ./manifest 
         kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production
@@ -163,7 +209,7 @@ kustomize_kubectl() {
     echo "Services deployed to the cluster. NOTE: wait few minutes to complete startup and propagate TLS certificate generation"
 
     # verify cluster certificate issued successfully 
-    verify() {
+    _verify() {
         ### generate combined configuration
         kubectl kustomize ./manifest/gateway/development > ./tmp/combined_manifest.yml
         cat ./tmp/combined_manifest.yml | kubectl apply -f -

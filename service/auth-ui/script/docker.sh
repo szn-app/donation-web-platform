@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ## IMPORTANT! used in .github/workflows/*
 bulid_container_auth_ui() {
     pushd kratos-selfservice-ui-node

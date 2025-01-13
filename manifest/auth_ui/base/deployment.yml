@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: auth-ui
+spec:
+  replicas: 2
+  minReadySeconds: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    spec:
+      containers:
+        - name: auth-ui
+          image: auth-ui:latest
+          ports:
+            - containerPort: 4455
+              name: http-auth-ui
+          env:
+            - name: PORT
+              value: "4455"
+            - name: KRATOS_PUBLIC_URL
+              value: http://ory-kratos:4433/
+          envFrom:
+            - configMapRef:
+                name: properties-map-auth-ui
+            - secretRef:
+                name: secrets-auth-ui

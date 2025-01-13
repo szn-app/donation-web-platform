@@ -12,7 +12,7 @@ images:
     newTag: v0.0.62
 
 configMapGenerator:
-  - name: properties-map
+  - name: properties-map-web-server
     env: config.properties
 
 patches:

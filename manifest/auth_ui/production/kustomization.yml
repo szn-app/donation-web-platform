@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+# namespace: auth # using customization transformers instead (which provides more options)
+transformers:
+  - |-
+    apiVersion: builtin
+    kind: NamespaceTransformer
+    metadata:
+      name: _not_important_here
+      namespace: auth
+    unsetOnly: true
+
+namePrefix: prod-
+
+images:
+  - name: auth-ui
+    newName: ghcr.io/szn-app/donation-app/auth-ui
+    # newTag: v0.0.62
+
+configMapGenerator:
+  - name: properties-map-auth-ui
+    env: .env
+
+secretGenerator:
+  - name: secrets-auth-ui
+    namespace: auth
+    files:
+      - secret.env
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: auth-ui
+        
+      spec:
+        template:
+          spec:
+            containers:
+            - name: auth-ui
+              imagePullPolicy: Always

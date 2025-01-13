@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ../base
   - ../../web_server/production
+  - ../../auth_ui/production
 
 # namespace: donation-app # using customization transformers instead (which provides more options)
 transformers:

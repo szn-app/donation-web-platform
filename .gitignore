@@ -39,3 +39,4 @@ kube.config
 *.key # Private keys
 
 *.txt.tmp
+*.env 
