@@ -19,7 +19,7 @@ namePrefix: prod-
 images:
   - name: auth-ui
     newName: ghcr.io/szn-app/donation-app/auth-ui
-    # newTag: v0.0.62
+    newTag: v1.1.0
 
 configMapGenerator:
   - name: properties-map-auth-ui
