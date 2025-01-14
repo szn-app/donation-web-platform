@@ -19,21 +19,78 @@ kratos:
         - id: default
           url: file:///etc/config/identity.default.schema.json
 
+    serve:
+      # links to generete for kratos-public internal server
+      public:
+        base_url: "https://auth.wosoom.com/app"
+        cors:
+          enabled: true
+          allowed_origins:
+            - https://auth.wosoom.com/
+            - https://wosoom.com/
+            - https://*.wosoom.com/
+          allowed_methods:
+            - GET
+            - OPTIONS
+            - PUT
+            - PATCH
+            - DELETE
+      admin:
+        base_url: http://kratos-admin:80/
+
     selfservice:
-      default_browser_return_url: https://auth.wosoom.com/welcome
+      methods:
+        password: # email/password authentication
+          enabled: true # default enabled
+        totp: # MFA
+          config:
+            issuer: donation-app
+          enabled: true
+        lookup_secret: # backup codes for 2FA
+          enabled: true
+        link: # one-time link authentication
+          enabled: true
+        code: # one-time code authentication
+          enabled: true
+
+      # links to generate for kratos ui pages
+      default_browser_return_url: https://auth.wosoom.com/
+      allowed_return_urls:
+        - https://wosoom.com/
+        - https://auth.wosoom.com/
+        - https://*.wosoom.com/
 
       flows:
-        error:
-          ui_url: https://auth.wosoom.com/error
         login:
           ui_url: https://auth.wosoom.com/login
+          lifespan: 10m
+        logout:
+          after:
+            default_browser_return_url: http://auth.wosoom.com/login
         verification:
-          enabled: false
+          enabled: true
           ui_url: https://auth.wosoom.com/verification
+          # use: code
+          after:
+            default_browser_return_url: http://auth.wosoom.com/welcome
         registration:
           ui_url: https://auth.wosoom.com/registration
+          lifespan: 10m
+          after:
+            password:
+              hooks:
+                - hook: session
+                # - hook: show_verification_ui
         settings:
           ui_url: https://auth.wosoom.com/settings
+          privileged_session_max_age: 15m
+          # required_aal: highest_available
+        recovery:
+          enabled: true
+          ui_url: http://auth.wosoom.com/recovery
+          # use: code
+        error:
+          ui_url: https://auth.wosoom.com/error
 
     courier:
       smtp:
@@ -59,6 +116,8 @@ kratos:
       domain: ".wosoom.com" # allow cookie for root and subdomains
       path: "/"
       same_site: Strict
-      secure: true
 
     # emailTemplates: {}
+
+    feature_flags:
+      use_continue_with_transitions: true # allow flexible flows (e.g. agree on terms in the registration flow, etc.)
