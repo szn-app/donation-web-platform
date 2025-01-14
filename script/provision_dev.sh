@@ -1,5 +1,25 @@
 #!/bin/bash
 
+misc_provision_dev() { 
+    # clone with submodules
+    git clone --recursive https://github.com/szn-app/donation-app
+}
+
+git_submodule() {
+    onetime_intialization() {
+        git submodule add https://github.com/szn-app/fork-kratos-selfservice-ui-node.git service/auth-ui/kratos-selfservice-ui-node
+    }
+
+    example_remove() { 
+        git submodule deinit -f service/auth-ui/kratos-selfservice-ui-node
+        git rm --cached service/auth-ui/kratos-selfservice-ui-node
+        rm -r .git/modules
+        # [manual] remove section from .git/config
+    }
+
+    git submodule init && git submodule update
+}
+
 record_version() { 
     NODE_VERSION=$(node -v | cut -d 'v' -f2)
     PNPM_VERSION=$(pnpm --version | cut -d ' ' -f2)

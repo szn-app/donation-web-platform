@@ -1,9 +1,6 @@
 #!/bin/bash
 
 misc() { 
-    # clone with submodules
-    git clone --recursive https://github.com/szn-app/donation-app
-
     # modify permission
     find ./ -maxdepth 4 -name "script.sh" -exec chmod +x {} \;
 
@@ -110,19 +107,4 @@ minikube() {
 
     kubectl apply -k ./manifest/entrypoint/development
 
-}
-
-git_submodule() {
-    onetime_intialization() {
-        git submodule add https://github.com/ory/kratos-selfservice-ui-node.git service/auth-ui/kratos-selfservice-ui-node
-    }
-
-    example_remove() { 
-        git submodule deinit -f service/auth-ui
-        git rm --cached service/auth-ui
-        rm -r .git/modules
-        # [manual] remove section from .git/config
-    }
-
-    git submodule init && git submodule update
 }
