@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.5](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.4...donation-app@v0.4.5) (2025-01-14)
+
+
+### Bug Fixes
+
+* secret parsing using secretGenerator kustomize property ([4a3b93e](https://github.com/szn-app/donation-app/commit/4a3b93ee508d391059fdecbc6496314547c8e06e))
+
 ## [0.4.4](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.3...donation-app@v0.4.4) (2025-01-13)
 
 
