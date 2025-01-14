@@ -168,16 +168,17 @@ install_ory_stack() {
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
     action=${2:-"install"}
 
+    {
+        if [ "$action" == "delete" ]; then
+            kubectl --kubeconfig $kubeconfig delete -f manifest/entrypoint/base/namespace.yml
+            helm --kubeconfig $kubeconfig uninstall kratos -n auth
+            return 
+        fi
+    }
+
     kubectl --kubeconfig $kubeconfig apply -f ./manifest/entrypoint/base/namespace.yml
     
     pushd ./manifest/auth
-        {
-            if [ "$action" == "delete" ]; then
-                kubectl --kubeconfig $kubeconfig delete -f namespace.yml
-                helm uninstall kratos -n auth
-                return 
-            fi
-        }
 
         helm --kubeconfig $kubeconfig repo add ory https://k8s.ory.sh/helm/charts
         helm --kubeconfig $kubeconfig repo update
@@ -201,8 +202,8 @@ kustomize_kubectl() {
 
     {
         if [ "$action" == "delete" ]; then
-            kubectl --kubeconfig $kubeconfig delete -k ./entrypoint/production
-            install_ory_stack delete
+            kubectl --kubeconfig $kubeconfig delete -k ./manifest/entrypoint/production
+            install_ory_stack $kubeconfig delete
             return 
          elif [ "$action" == "kustomize" ]; then
             pushd manifest/entrypoint/production 
