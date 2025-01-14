@@ -120,7 +120,7 @@ spec:
   rules:
     ### TODO:
     # - backendRefs:
-    #     - name: ory-kratos
+    #     - name: ory-kratos-authenticate
     #       namespace: auth
     #       port: 80
     #   matches:

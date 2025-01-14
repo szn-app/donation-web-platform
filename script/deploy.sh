@@ -191,6 +191,21 @@ install_ory_stack() {
 # export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
 kustomize_kubectl() {
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+    action=${2:-"install"}
+
+    {
+        if [ "$action" == "delete" ]; then
+            kubectl --kubeconfig $kubeconfig delete -k ./entrypoint/production
+            install_ory_stack delete
+            return 
+         elif [ "$action" == "kustomize" ]; then
+            pushd manifest/entrypoint/production 
+            t="$(mktemp).yaml" && kubectl --kubeconfig $kubeconfig kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            popd
+            return
+        fi
+    }
+
 
     env_files
 

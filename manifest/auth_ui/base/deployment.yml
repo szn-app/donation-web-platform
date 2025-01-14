@@ -19,28 +19,42 @@ spec:
           ports:
             - containerPort: 4455
               name: http-auth-ui
+          # https://github.com/ory/kratos-selfservice-ui-node/tree/master?tab=readme-ov-file#configuration
           env:
             - name: PORT
               value: "4455"
             - name: KRATOS_PUBLIC_URL
-              value: http://ory-kratos:4433/
+              value: http://ory-kratos-authenticate:4433/
+            - name: KRATOS_ADMIN_URL
+              value: http://ory-kratos-authenticate:4434/
+            - name: KRATOS_BROWSER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: properties-map-auth-ui
+                  key: KRATOS_BROWSER_URL
+                  optional: false
             - name: COOKIE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: secrets-auth-ui
                   key: COOKIE_SECRET
+                  optional: false
             - name: CSRF_COOKIE_NAME
               valueFrom:
                 secretKeyRef:
                   name: secrets-auth-ui
                   key: CSRF_COOKIE_NAME
+                  optional: false
             - name: CSRF_COOKIE_SECRET
               valueFrom:
                 secretKeyRef:
                   name: secrets-auth-ui
                   key: CSRF_COOKIE_SECRET
+                  optional: false
+            # - name: HYDRA_ADMIN_URL
+            #   value: http://ory-hydra-authorize:4434/
           envFrom:
             - configMapRef:
-                name: properties-map-auth-ui
-            # - secretRef:
-            #     name: secrets-auth-ui
+                name: properties-map-auth-ui # add additional values
+            - secretRef:
+                name: secrets-auth-ui # implicitely
