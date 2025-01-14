@@ -72,7 +72,7 @@ kratos:
           ui_url: https://auth.wosoom.com/verification
           # use: code
           after:
-            default_browser_return_url: http://auth.wosoom.com/welcome
+            default_browser_return_url: http://wosoom.com/
         registration:
           ui_url: https://auth.wosoom.com/registration
           lifespan: 10m
