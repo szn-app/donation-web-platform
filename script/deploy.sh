@@ -179,11 +179,17 @@ install_ory_stack() {
             fi
         }
 
-        helm repo add ory https://k8s.ory.sh/helm/charts
-        helm repo update
+        helm --kubeconfig $kubeconfig repo add ory https://k8s.ory.sh/helm/charts
+        helm --kubeconfig $kubeconfig repo update
         
-                
-        helm upgrade --install kratos -n auth -f ory-kratos-values.yml ory/kratos
+        default_secret="$(openssl rand -hex 16)"
+        cookie_secret="$(openssl rand -hex 16)"
+        cipher_secret="$(openssl rand -hex 16)"
+        helm --kubeconfig $kubeconfig upgrade --install kratos -n auth ory/kratos -f ory-kratos-values.yml -f ory-kratos-config.yml \
+            --set kratos.config.secrets.default[0]="$default_secret" \
+            --set kratos.config.secrets.cookie[0]="$cookie_secret" \
+            --set kratos.config.secrets.cipher[0]="$cipher_secret"        
+            
     popd
 
 }
@@ -209,8 +215,7 @@ kustomize_kubectl() {
 
     env_files
 
-    # TODO: 
-    # install_ory_stack "$kubeconfig"
+    install_ory_stack "$kubeconfig"
 
     pushd ./manifest 
         kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production

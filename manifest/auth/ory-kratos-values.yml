@@ -1,29 +1,57 @@
+# helm values
 # https://k8s.ory.sh/helm/kratos.html
-# https://www.ory.sh/docs/kratos/reference/configuration
+# https://github.com/ory/k8s/blob/master/helm/charts/kratos/values.yaml
 
-### TODO: setup up config values
-# kratos.config.secrets.default
-# kratos.config.selfservice.default_browser_return_url
-# kratos.config.courier.smtp.connection_uri
-# kratos.config.identity.schemas
-
-# TODO:
 kratos:
-  config:
-    log:
-      level: trace
+  automigration: # initContainer running kratos migrate sql will be created.
+    enabled: true
 
-    dsn: postgresql://kratos:kratos@postgress.cnpg-system.svc.cluster.local:5432/kratos
-
-    flows:
-      error:
-        ui_url: https://auth.wosoom.com/error
-      login:
-        ui_url: https://auth.wosoom.com/login
-      verification:
-        enabled: false
-        ui_url: https://auth.wosoom.com/verification
-      registration:
-        ui_url: https://auth.wosoom.com/registration
-      settings:
-        ui_url: https://auth.wosoom.com/settings
+  identitySchemas:
+    "identity.default.schema.json": |-
+      {
+        "$id": "https://schemas.ory.sh/presets/kratos/quickstart/email-password/identity.schema.json",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Person",
+        "type": "object",
+        "properties": {
+          "traits": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "title": "E-Mail",
+                "minLength": 3,
+                "ory.sh/kratos": {
+                  "credentials": {
+                    "password": {
+                      "identifier": true
+                    }
+                  },
+                  "verification": {
+                    "via": "email"
+                  },
+                  "recovery": {
+                    "via": "email"
+                  }
+                }
+              },
+              "name": {
+                "type": "object",
+                "properties": {
+                  "first": {
+                    "title": "First Name",
+                    "type": "string"
+                  },
+                  "last": {
+                    "title": "Last Name",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": ["email"],
+            "additionalProperties": false
+          }
+        }
+      }

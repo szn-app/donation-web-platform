@@ -24,9 +24,9 @@ spec:
             - name: PORT
               value: "4455"
             - name: KRATOS_PUBLIC_URL
-              value: http://ory-kratos-authenticate:4433/
+              value: http://kratos-public:80/
             - name: KRATOS_ADMIN_URL
-              value: http://ory-kratos-authenticate:4434/
+              value: http://kratos-admin:80/
             - name: KRATOS_BROWSER_URL
               valueFrom:
                 configMapKeyRef:
