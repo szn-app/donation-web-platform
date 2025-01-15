@@ -158,7 +158,7 @@ EOF
     }
 
     generate_database_kratos_credentials() {
-        db_secret_file="./manifest/auth/database_secret.env"
+        db_secret_file="./manifest/auth/db_kratos_secret.env"
         if [ ! -f "$db_secret_file" ]; then
             t=$(mktemp) && cat <<EOF > "$t"
 DB_USER="$(shuf -n 1 /usr/share/dict/words | tr -d '\n')"
@@ -167,11 +167,24 @@ EOF
 
             mv $t $db_secret_file
             echo "generated secrets file: file://$db_secret_file" 
+        fi
+    }
 
+    generate_database_hydra_credentials() {
+        db_secret_file="./manifest/auth/db_hydra_secret.env"
+        if [ ! -f "$db_secret_file" ]; then
+            t=$(mktemp) && cat <<EOF > "$t"
+DB_USER="$(shuf -n 1 /usr/share/dict/words | tr -d '\n')"
+DB_PASSWORD="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+EOF
+
+            mv $t $db_secret_file
+            echo "generated secrets file: file://$db_secret_file" 
         fi
     }
 
     generate_database_kratos_credentials
+    generate_database_hydra_credentials
     generate_secret_auth_ui
     create_env_files
 }
@@ -187,6 +200,8 @@ install_ory_stack() {
         if [ "$action" == "delete" ]; then
             helm --kubeconfig $kubeconfig uninstall kratos -n auth
             helm --kubeconfig $kubeconfig uninstall postgres-kratos -n auth
+            helm --kubeconfig $kubeconfig uninstall hydra -n auth
+            helm --kubeconfig $kubeconfig uninstall postgres-hydra -n auth
             return 
         fi
     }
@@ -199,28 +214,53 @@ install_ory_stack() {
         helm --kubeconfig $kubeconfig repo add bitnami https://charts.bitnami.com/bitnami 
         helm --kubeconfig $kubeconfig repo update
 
-        # spin database for user accounts
-        set -a
-        source database_secret.env
-        set +a
-        helm --kubeconfig $kubeconfig upgrade --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f postgresql-values.yml \
-            --set auth.username=${DB_USER} \
-            --set auth.password=${DB_PASSWORD} \
-            --set auth.database=kratos_db
-        # this will generate 'postgres-kratos-postgresql' service
+        {
+            # spin database for user accounts
+            set -a
+            source db_kratos_secret.env
+            set +a
+            helm --kubeconfig $kubeconfig upgrade --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f postgresql-kratos-values.yml \
+                --set auth.username=${DB_USER} \
+                --set auth.password=${DB_PASSWORD} \
+                --set auth.database=kratos_db
+            # this will generate 'postgres-kratos-postgresql' service
 
-        # preprocess file through substituting env values
-        t="$(mktemp).yaml" && envsubst < ory-kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
-        default_secret="$(openssl rand -hex 16)"
-        cookie_secret="$(openssl rand -hex 16)"
-        cipher_secret="$(openssl rand -hex 16)"
-        helm --kubeconfig $kubeconfig upgrade --install kratos -n auth --create-namespace ory/kratos -f ory-kratos-values.yml -f $t \
-            --set kratos.config.secrets.default[0]="$default_secret" \
-            --set kratos.config.secrets.cookie[0]="$cookie_secret" \
-            --set kratos.config.secrets.cipher[0]="$cipher_secret" \
-            --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
-            --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
-            
+            ### install Ory Kratos
+            # preprocess file through substituting env values
+            t="$(mktemp).yml" && envsubst < ory-kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
+            default_secret="$(openssl rand -hex 16)"
+            cookie_secret="$(openssl rand -hex 16)"
+            cipher_secret="$(openssl rand -hex 16)"
+            helm --kubeconfig $kubeconfig upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos-values.yml -f $t \
+                --set kratos.config.secrets.default[0]="$default_secret" \
+                --set kratos.config.secrets.cookie[0]="$cookie_secret" \
+                --set kratos.config.secrets.cipher[0]="$cipher_secret" \
+                --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
+                --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
+        }
+
+        {
+            set -a
+            source db_hydra_secret.env # DB_USER, DB_PASSWORD
+            set +a
+            helm --kubeconfig $kubeconfig upgrade --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f postgresql-hydra-values.yml \
+                --set auth.username=${DB_USER} \
+                --set auth.password=${DB_PASSWORD} \
+                --set auth.database=hydra_db
+            # this will generate 'postgres-hydra-postgresql' service
+
+            ### install Ory Hydra
+            # preprocess file through substituting env values
+            t="$(mktemp).yml" && envsubst < ory-hydra-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
+            system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+            cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+            helm --kubeconfig $kubeconfig upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra-values.yml -f $t \
+                --set kratos.config.secrets.system[0]="$system_secret" \
+                --set kratos.config.secrets.cookie[0]="$cookie_secret" \
+                --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
+                --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
+        }
+
     popd
 
     manual_verify() { 
@@ -241,7 +281,7 @@ install_ory_stack() {
 
         # verify database:
         set -a
-        source manifest/auth/database_secret.env
+        source manifest/auth/db_kratos_secret.env
         set +a
         kubectl --kubeconfig $kubeconfig run -it --rm --image=postgres debug-pod --namespace auth --env DB_USER=$DB_USER --env DB_PASSWORD=$DB_PASSWORD -- /bin/bash
         {

@@ -1,0 +1,43 @@
+# manifest config for the actual app configuration
+# https://www.ory.sh/docs/hydra/reference/configuration
+
+hydra:
+  config:
+    # dev: true
+    # log:
+    #   level: trace
+
+    # dsn: memory # NOTE: use for development only
+    dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-hydra-postgresql:5432/hydra_db?sslmode=disable"
+
+    secrets:
+      system:
+        - secret_must_be_overriden # overwritten using helm --set argument
+      cookie:
+        - secret_must_be_overriden # overwritten using helm --set argument
+    urls:
+      self:
+        issuer: https://auth.wosoom.com/authorize/
+      login: https://auth.wosoom.com/login
+      registration: https://auth.wosoom.com/registration
+      consent: https://auth.wosoom.com/consent
+      logout: https://auth.wosoom.com/logout
+      identity_provider:
+        url: https://auth.wosoom.com/authenticate
+
+    strategies:
+      access_token: jwt
+      jwt:
+        scope_claim: list
+
+    serve:
+      cookies:
+        same_site_mode: Lax
+
+    # oidc:
+    #   subject_identifiers:
+    #     supported_types:
+    #       - pairwise
+    #       - public
+    #     pairwise:
+    #       salt: youReallyNeedToChangeThis

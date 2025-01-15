@@ -4,6 +4,7 @@
 kratos:
   config:
     # NOTE: use for debug only
+    # dev: true
     # log:
     #   level: debug
     #   format: text
@@ -21,7 +22,7 @@ kratos:
     serve:
       # links to generete for kratos-public internal server
       public:
-        base_url: "https://auth.wosoom.com/app"
+        base_url: "https://auth.wosoom.com/authenticate"
         cors:
           enabled: true
           allowed_origins:

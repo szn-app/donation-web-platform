@@ -1,0 +1,28 @@
+primary:
+  volumePermissions:
+    enabled: true
+  persistence:
+    enabled: true
+    storageClass: "longhorn-local-ext4"
+    accessModes:
+      - ReadWriteOnce
+    size: 4Gi
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+
+readReplicas:
+  replicaCount: 2 # Number of replicas for load balancing
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  storageClass: "longhorn-local-ext4-strict-locality"
+  size: "2Gi" # Adjust for replication data
