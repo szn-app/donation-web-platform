@@ -219,7 +219,7 @@ install_ory_stack() {
             set -a
             source db_kratos_secret.env
             set +a
-            helm --kubeconfig $kubeconfig upgrade --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f postgresql-kratos-values.yml \
+            helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f postgresql-kratos-values.yml \
                 --set auth.username=${DB_USER} \
                 --set auth.password=${DB_PASSWORD} \
                 --set auth.database=kratos_db
@@ -243,7 +243,7 @@ install_ory_stack() {
             set -a
             source db_hydra_secret.env # DB_USER, DB_PASSWORD
             set +a
-            helm --kubeconfig $kubeconfig upgrade --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f postgresql-hydra-values.yml \
+            helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f postgresql-hydra-values.yml \
                 --set auth.username=${DB_USER} \
                 --set auth.password=${DB_PASSWORD} \
                 --set auth.database=hydra_db
