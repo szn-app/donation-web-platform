@@ -106,7 +106,7 @@ allowVolumeExpansion: true
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
-  numberOfReplicas: "3"
+  numberOfReplicas: "2"
   staleReplicaTimeout: "2880"
   fromBackup: ""
   fsType: "ext4"

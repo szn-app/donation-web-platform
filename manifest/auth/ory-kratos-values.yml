@@ -3,6 +3,8 @@
 # https://github.com/ory/k8s/blob/master/helm/charts/kratos/values.yaml
 
 kratos:
+  # development: true # NOTE: use for debug only
+
   automigration: # initContainer running kratos migrate sql will be created.
     enabled: true
 
@@ -48,9 +50,14 @@ kratos:
                     "type": "string"
                   }
                 }
+              }, 
+              "phone_number": {
+                "type":"string",
+                "title":"Phone Number",
+                "format": "tel"
               }
             },
-            "required": ["email"],
+            "required": ["email", "phone_number"],
             "additionalProperties": false
           }
         }

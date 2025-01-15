@@ -3,15 +3,14 @@
 
 kratos:
   config:
-    # TODO: production
-    log:
-      level: debug
-      format: text
-      leak_sensitive_values: true
+    # NOTE: use for debug only
+    # log:
+    #   level: debug
+    #   format: text
+    #   leak_sensitive_values: true
 
-    # TODO: production
-    dsn: memory
-    # dsn: postgresql://kratos:kratos@postgress.donation-app.svc.cluster.local:5432/kratos-db
+    # dsn: memory # NOTE: use for development only
+    dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-kratos-postgresql:5432/kratos_db?sslmode=disable"
 
     identity:
       default_schema_id: default
@@ -26,6 +25,7 @@ kratos:
         cors:
           enabled: true
           allowed_origins:
+            # - "*" # NOTE: use for debug only
             - https://auth.wosoom.com/
             - https://wosoom.com/
             - https://*.wosoom.com/

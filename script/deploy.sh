@@ -157,6 +157,21 @@ EOF
         fi
     }
 
+    generate_database_kratos_credentials() {
+        db_secret_file="./manifest/auth/database_secret.env"
+        if [ ! -f "$db_secret_file" ]; then
+            t=$(mktemp) && cat <<EOF > "$t"
+DB_USER="$(shuf -n 1 /usr/share/dict/words | tr -d '\n')"
+DB_PASSWORD="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+EOF
+
+            mv $t $db_secret_file
+            echo "generated secrets file: file://$db_secret_file" 
+
+        fi
+    }
+
+    generate_database_kratos_credentials
     generate_secret_auth_ui
     create_env_files
 }
@@ -170,29 +185,90 @@ install_ory_stack() {
 
     {
         if [ "$action" == "delete" ]; then
-            kubectl --kubeconfig $kubeconfig delete -f manifest/entrypoint/base/namespace.yml
             helm --kubeconfig $kubeconfig uninstall kratos -n auth
+            helm --kubeconfig $kubeconfig uninstall postgres-kratos -n auth
             return 
         fi
     }
-
-    kubectl --kubeconfig $kubeconfig apply -f ./manifest/entrypoint/base/namespace.yml
     
     pushd ./manifest/auth
 
+        # ory stack charts
         helm --kubeconfig $kubeconfig repo add ory https://k8s.ory.sh/helm/charts
+        # postgreSQL
+        helm --kubeconfig $kubeconfig repo add bitnami https://charts.bitnami.com/bitnami 
         helm --kubeconfig $kubeconfig repo update
-        
+
+        # spin database for user accounts
+        set -a
+        source database_secret.env
+        set +a
+        helm --kubeconfig $kubeconfig upgrade --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f postgresql-values.yml \
+            --set auth.username=${DB_USER} \
+            --set auth.password=${DB_PASSWORD} \
+            --set auth.database=kratos_db
+        # this will generate 'postgres-kratos-postgresql' service
+
+        # preprocess file through substituting env values
+        t="$(mktemp).yaml" && envsubst < ory-kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
         default_secret="$(openssl rand -hex 16)"
         cookie_secret="$(openssl rand -hex 16)"
         cipher_secret="$(openssl rand -hex 16)"
-        helm --kubeconfig $kubeconfig upgrade --install kratos -n auth ory/kratos -f ory-kratos-values.yml -f ory-kratos-config.yml \
+        helm --kubeconfig $kubeconfig upgrade --install kratos -n auth --create-namespace ory/kratos -f ory-kratos-values.yml -f $t \
             --set kratos.config.secrets.default[0]="$default_secret" \
             --set kratos.config.secrets.cookie[0]="$cookie_secret" \
-            --set kratos.config.secrets.cipher[0]="$cipher_secret"        
+            --set kratos.config.secrets.cipher[0]="$cipher_secret" \
+            --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
+            --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
             
     popd
 
+    manual_verify() { 
+        kubectl --kubeconfig "$kubeconfig" port-forward -n auth service/kratos-admin 8083:80
+
+        kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash 
+        {
+            $(nslookup kratos-admin)
+            
+            # execute from within `auth` cluster namespace
+            # get an example payload from login and registration
+            flow_id=$(curl -s -X GET -H "Accept: application/json" http://kratos-public/self-service/login/api  | jq -r '.id')
+            curl -s -X GET -H "Accept: application/json" "http://kratos-public/self-service/login/flows?id=$flow_id" | jq
+
+            flow_id=$(curl -s -X GET -H "Accept: application/json" http://kratos-public/self-service/registration/api | jq -r '.id')
+            curl -s -X GET -H "Accept: application/json" "http://kratos-public/self-service/registration/flows?id=$flow_id" | jq
+        }
+
+        # verify database:
+        set -a
+        source manifest/auth/database_secret.env
+        set +a
+        kubectl --kubeconfig $kubeconfig run -it --rm --image=postgres debug-pod --namespace auth --env DB_USER=$DB_USER --env DB_PASSWORD=$DB_PASSWORD -- /bin/bash
+        {
+            export PGPASSWORD=$DB_PASSWORD
+            psql -h "postgres-kratos-postgresql" -U "$DB_USER" -d "kratos_db" -p 5432 -c "\dt" 
+            psql -h "postgres-kratos-postgresql" -U "$DB_USER" -d "kratos_db" -p 5432 -c "SELECT * FROM identities;" 
+        }
+
+        # manage users using Ory Admin API through the CLI tool
+        kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
+        {            
+            export KRATOS_ADMIN_URL="http://kratos-admin" 
+            # https://www.ory.sh/docs/kratos/reference/api
+            curl -X GET "$KRATOS_ADMIN_URL/admin/health/ready"
+            curl -X GET "$KRATOS_ADMIN_URL/admin/identities" -H "Content-Type: application/json" | jq
+            list_all_sessions() {
+                for identity_id in $(curl -X GET "$KRATOS_ADMIN_URL/admin/identities" -H "Content-Type: application/json" | jq -r '.[].id'); do
+                    echo "Sessions for Identity: $identity_id"
+                    curl -X GET "$KRATOS_ADMIN_URL/admin/identities/$identity_id/sessions" -H "Content-Type: application/json" | jq
+                    echo ""
+                done
+            }
+            list_all_sessions
+
+        }
+
+    }
 }
 
 # export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
@@ -253,6 +329,10 @@ kustomize_kubectl() {
         curl --insecure -I https://$domain_name
         cloud_load_balancer_ip=""
         curl --header "Host: donation-app.com" $cloud_load_balancer_ip
+
+        # run ephemeral debug container
+        kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace some_namespace -- /bin/bash 
+        
     }
 
 }

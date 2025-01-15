@@ -184,7 +184,7 @@ module "kube-hetzner" {
   # enable longhorn and dependency drivers
   enable_iscsid = true
   enable_longhorn = true # add Longhorn as storage class in kuberenetes
-  # TODO: the module doesn't install all required dependeices on control nodes and prevents Longhorn from being able to create disks and schedule on cotnrol nodes
+  # TODO: fix[requires PR]: the module doesn't install all required dependeices on control nodes and prevents Longhorn from being able to create disks and schedule on cotnrol nodes (thus leaving network longhorn volumes only for worker nodes )
   longhorn_helmchart_bootstrap = true # if to run on control-plane nodes too
   longhorn_fstype = "ext4" # "xfs"
   longhorn_replica_count = 3 # defaults to 3

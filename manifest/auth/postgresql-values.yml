@@ -1,0 +1,7 @@
+primary:
+  persistence:
+    enabled: true
+    storageClass: "longhorn-local-ext4"
+    accessModes:
+      - ReadWriteOnce
+    size: 4Gi
