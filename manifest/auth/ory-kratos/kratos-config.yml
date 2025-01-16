@@ -62,27 +62,27 @@ kratos:
         code: # one-time code authentication
           enabled: true
         oidc:
-          enabled: true
-          config:
-            providers:
-              # example:
-              # - id: github # this is `<provider-id>` in the Authorization callback URL. DO NOT CHANGE IT ONCE SET!
-              #   provider: github
-              #   client_id: Ov23liPZuCzFCQ8DDu0i # Replace this with the Client ID
-              #   client_secret: 06ca8ea1866072734e6331293370650d03e7b93d # Replace this with the Client secret
-              #   issuer_url: https://api.github.com # Replace this with the providers issuer URL
-              #   mapper_url: "base64://bG9jYWwgY2xhaW1zID0gc3RkLmV4dFZhcignY2xhaW1zJyk7Cgp7CiAgaWRlbnRpdHk6IHsKICAgIHRyYWl0czogewogICAgICBlbWFpbDogY2xhaW1zLmVtYWlsLAogICAgICB1c2VybmFtZTogY2xhaW1zLm5hbWUsCiAgICAgIHBob25lX251bWJlcjoxMjMKICAgIH0sCiAgfSwKfQ=="
-              #   scope:
-              #     - read:user
-              #     - user:email
-              #   requested_claims:
-              #     id_token:
-              #       email:
-              #         essential: true
-              #       username:
-              #         essential: true
-              #       phone_number:
-              #         essential: false
+          enabled: false
+          # example:
+          # config:
+          #   providers:
+          # - id: github # this is `<provider-id>` in the Authorization callback URL. DO NOT CHANGE IT ONCE SET!
+          #   provider: github
+          #   client_id: _ # Replace this with the Client ID
+          #   client_secret: _ # Replace this with the Client secret
+          #   issuer_url: https://api.github.com # Replace this with the providers issuer URL
+          #   mapper_url: "base64://bG9jYWwgY2xhaW1zID0gc3RkLmV4dFZhcignY2xhaW1zJyk7Cgp7CiAgaWRlbnRpdHk6IHsKICAgIHRyYWl0czogewogICAgICBlbWFpbDogY2xhaW1zLmVtYWlsLAogICAgICB1c2VybmFtZTogY2xhaW1zLm5hbWUsCiAgICAgIHBob25lX251bWJlcjoxMjMKICAgIH0sCiAgfSwKfQ=="
+          #   scope:
+          #     - read:user
+          #     - user:email
+          #   requested_claims:
+          #     id_token:
+          #       email:
+          #         essential: true
+          #       username:
+          #         essential: true
+          #       phone_number:
+          #         essential: false
 
       # links to generate for kratos ui pages
       default_browser_return_url: https://auth.wosoom.com/
