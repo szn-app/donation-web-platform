@@ -8,13 +8,31 @@ hydra:
     #   level: trace
 
     # dsn: memory # NOTE: use for development only
-    dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-hydra-postgresql:5432/hydra_db?sslmode=disable"
+    dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-hydra-postgresql:5432/hydra_db?sslmode=disable&max_conns=20&max_idle_conns=4"
+
+    serve:
+      public:
+        port: 4444
+      admin:
+        port: 4445
+        request_log:
+          disable_for_health: false # can be disabled for improved performance
+
+      cookies:
+        same_site_mode: Lax
+
+      tls:
+        allow_termination_from:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
 
     secrets:
       system:
         - secret_must_be_overriden # overwritten using helm --set argument
       cookie:
         - secret_must_be_overriden # overwritten using helm --set argument
+
     urls:
       self:
         issuer: https://auth.wosoom.com/authorize/
@@ -30,9 +48,9 @@ hydra:
       jwt:
         scope_claim: list
 
-    serve:
-      cookies:
-        same_site_mode: Lax
+    # for token customization or debugging
+    # oauth2:
+    #   token_hook: http://kratos-custom-webhook-charts.auth/add_claims
 
     # oidc:
     #   subject_identifiers:

@@ -3,15 +3,17 @@
 
 kratos:
   config:
-    # NOTE: use for debug only
-    # dev: true
-    # log:
-    #   level: debug
-    #   format: text
-    #   leak_sensitive_values: true
+    dev: false
+
+    log:
+      level: trace
+      leak_sensitive_values: false
+      redaction_text: ""
+      format: json
 
     # dsn: memory # NOTE: use for development only
-    dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-kratos-postgresql:5432/kratos_db?sslmode=disable"
+    # NOTE: username and password are replaced using regex
+    dsn: "postgresql://kratos:kratos@postgres-kratos-postgresql:5432/kratos_db?sslmode=disable&max_conns=20&max_idle_conns=4"
 
     identity:
       default_schema_id: default
@@ -19,10 +21,15 @@ kratos:
         - id: default
           url: file:///etc/config/identity.default.schema.json
 
+        # NOTE: if the above doesn't work, encode the schema.json content as base64 and copy over here
+        # - id: default
+        #   url: base64://ew0KICAiJGlkIjogImh0dHBzO....=
+
     serve:
       # links to generete for kratos-public internal server
       public:
-        base_url: "https://auth.wosoom.com/authenticate"
+        base_url: https://auth.wosoom.com/authenticate
+        port: 80
         cors:
           enabled: true
           allowed_origins:
@@ -37,7 +44,8 @@ kratos:
             - PATCH
             - DELETE
       admin:
-        base_url: http://kratos-admin:80/
+        base_url: http://kratos-admin/
+        port: 80
 
     selfservice:
       methods:
@@ -53,6 +61,28 @@ kratos:
           enabled: true
         code: # one-time code authentication
           enabled: true
+        oidc:
+          enabled: true
+          config:
+            providers:
+              # example:
+              # - id: github # this is `<provider-id>` in the Authorization callback URL. DO NOT CHANGE IT ONCE SET!
+              #   provider: github
+              #   client_id: Ov23liPZuCzFCQ8DDu0i # Replace this with the Client ID
+              #   client_secret: 06ca8ea1866072734e6331293370650d03e7b93d # Replace this with the Client secret
+              #   issuer_url: https://api.github.com # Replace this with the providers issuer URL
+              #   mapper_url: "base64://bG9jYWwgY2xhaW1zID0gc3RkLmV4dFZhcignY2xhaW1zJyk7Cgp7CiAgaWRlbnRpdHk6IHsKICAgIHRyYWl0czogewogICAgICBlbWFpbDogY2xhaW1zLmVtYWlsLAogICAgICB1c2VybmFtZTogY2xhaW1zLm5hbWUsCiAgICAgIHBob25lX251bWJlcjoxMjMKICAgIH0sCiAgfSwKfQ=="
+              #   scope:
+              #     - read:user
+              #     - user:email
+              #   requested_claims:
+              #     id_token:
+              #       email:
+              #         essential: true
+              #       username:
+              #         essential: true
+              #       phone_number:
+              #         essential: false
 
       # links to generate for kratos ui pages
       default_browser_return_url: https://auth.wosoom.com/
@@ -118,7 +148,21 @@ kratos:
       path: "/"
       same_site: Strict
 
-    # emailTemplates: {}
-
     feature_flags:
       use_continue_with_transitions: true # allow flexible flows (e.g. agree on terms in the registration flow, etc.)
+
+  oauth2_provider:
+    url: http://hydra-admin:4445/
+
+  # convert session to JWT for easier handling and integration
+  # possible to customize the identity token information and custom logic JWT returned based on roles
+  # https://www.ory.sh/docs/identities/session-to-jwt-cors#end-to-end-example
+  session:
+    whoami:
+      tokenizer:
+        templates:
+          jwt_example_template: # template name
+            jwks_url: http://hydra-admin:4445/admin/keys/hydra.jwt.access-token
+            # [manual update] base64 of a Go function with the JWT fields definition
+            claims_mapper_url: base64://CmxvY2FsIGNsYWltcyA9IHN0ZC5leHRWYXIoJ2NsYWltcycpOwpsb2NhbCBzZXNzaW9uID0gc3RkLmV4dFZhcignc2Vzc2lvbicpOwoKewogIGNsYWltczogewogICAgaXNzOiBjbGFpbXMuaXNzICsgIi9hZGRpdGlvbmFsLWNvbXBvbmVudCIsCiAgICBzY2hlbWFfaWQ6IHNlc3Npb24uaWRlbnRpdHkuc2NoZW1hX2lkLAogICAgc2Vzc2lvbjogc2Vzc2lvbiwKICB9Cn0=
+            ttl: 10m

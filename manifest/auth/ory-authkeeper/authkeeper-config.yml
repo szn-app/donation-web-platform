@@ -1,0 +1,47 @@
+oathkeeper:
+  config:
+    log:
+      level: trace
+      format: json
+
+    serve:
+      proxy:
+        port: 4455
+      api:
+        port: 4456
+      prometheus:
+        port: 9000
+
+    access_rules:
+      matching_strategy: regexp
+      repositories:
+        - file:///etc/rules/access-rules.json
+
+    authenticators:
+      jwt:
+        enabled: true
+        config:
+          jwks_urls:
+            - https://auth.wosoom.com/authorize/.well-known/jwks.json
+          scope_strategy: hierarchic
+          jwks_max_wait: 5s
+
+    authorizers:
+      allow:
+        enabled: true
+      deny:
+        enabled: true
+
+    # https://www.ory.sh/docs/oathkeeper/pipeline/mutator
+    mutators:
+      header:
+        enabled: true
+        config:
+          headers:
+            USER_ID: "{{ print .Subject }}"
+
+    errors:
+      handlers:
+        json:
+          enabled: true
+          config: {}

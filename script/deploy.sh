@@ -158,7 +158,7 @@ EOF
     }
 
     generate_database_kratos_credentials() {
-        db_secret_file="./manifest/auth/db_kratos_secret.env"
+        db_secret_file="./manifest/auth/ory-kratos/db_kratos_secret.env"
         if [ ! -f "$db_secret_file" ]; then
             t=$(mktemp) && cat <<EOF > "$t"
 DB_USER="$(shuf -n 1 /usr/share/dict/words | tr -d '\n')"
@@ -171,7 +171,7 @@ EOF
     }
 
     generate_database_hydra_credentials() {
-        db_secret_file="./manifest/auth/db_hydra_secret.env"
+        db_secret_file="./manifest/auth/ory-hydra/db_hydra_secret.env"
         if [ ! -f "$db_secret_file" ]; then
             t=$(mktemp) && cat <<EOF > "$t"
 DB_USER="$(shuf -n 1 /usr/share/dict/words | tr -d '\n')"
@@ -217,9 +217,9 @@ install_ory_stack() {
         {
             # spin database for user accounts
             set -a
-            source db_kratos_secret.env
+            source ory-kratos/db_kratos_secret.env
             set +a
-            helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f postgresql-kratos-values.yml \
+            helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f ory-kratos/postgresql-values.yml \
                 --set auth.username=${DB_USER} \
                 --set auth.password=${DB_PASSWORD} \
                 --set auth.database=kratos_db
@@ -227,11 +227,11 @@ install_ory_stack() {
 
             ### install Ory Kratos
             # preprocess file through substituting env values
-            t="$(mktemp).yml" && envsubst < ory-kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
+            t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
             default_secret="$(openssl rand -hex 16)"
             cookie_secret="$(openssl rand -hex 16)"
             cipher_secret="$(openssl rand -hex 16)"
-            helm --kubeconfig $kubeconfig upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos-values.yml -f $t \
+            helm --kubeconfig $kubeconfig upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos/helm-values.yml -f $t \
                 --set kratos.config.secrets.default[0]="$default_secret" \
                 --set kratos.config.secrets.cookie[0]="$cookie_secret" \
                 --set kratos.config.secrets.cipher[0]="$cipher_secret" \
@@ -241,9 +241,9 @@ install_ory_stack() {
 
         {
             set -a
-            source db_hydra_secret.env # DB_USER, DB_PASSWORD
+            source ory-hydra/db_hydra_secret.env # DB_USER, DB_PASSWORD
             set +a
-            helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f postgresql-hydra-values.yml \
+            helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f ory-hydra/postgresql-values.yml \
                 --set auth.username=${DB_USER} \
                 --set auth.password=${DB_PASSWORD} \
                 --set auth.database=hydra_db
@@ -251,14 +251,124 @@ install_ory_stack() {
 
             ### install Ory Hydra
             # preprocess file through substituting env values
-            t="$(mktemp).yml" && envsubst < ory-hydra-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
+            t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
             system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
             cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
-            helm --kubeconfig $kubeconfig upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra-values.yml -f $t \
+            helm --kubeconfig $kubeconfig upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra/helm-values.yml -f $t \
                 --set kratos.config.secrets.system[0]="$system_secret" \
                 --set kratos.config.secrets.cookie[0]="$cookie_secret" \
                 --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
                 --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
+        }
+
+        {
+            ### install Ory Oauthkeeper
+            helm --kubeconfig $kubeconfig upgrade --install oauthkeeper ory/oauthkeeper -n auth --create-namespace -f ory-oauthkeeper/helm-values.yml -f ory-oauthkeeper/oauthkeeper-config.yml
+        }
+
+        # create OAuth2 client for the trusted app
+        {
+            example_hydra_admin() { 
+                kubectl --kubeconfig $kubeconfig run -it --rm --image=debian:latest debug-pod --namespace auth -- /bin/bash
+                {
+                    apt update && apt install curl -y
+                    # install hydra
+                    bash <(curl https://raw.githubusercontent.com/ory/meta/master/install.sh) -d -b . hydra v2.2.0 && mv hydra /usr/bin/
+
+                    curl http://hydra-admin:4445/admin/clients
+
+                    delete_all_clients() { 
+                        client_list=$(curl -X GET 'http://hydra-admin:4445/admin/clients' | jq -r '.[].client_id')
+                        for client in $client_list
+                        do
+                            echo "Deleting client: $client"
+                            curl -X DELETE "http://hydra-admin:4445/admin/clients/$client"
+                        done
+                    }
+                }
+
+                hydra list oauth2-clients --endpoint "http://hydra-admin:4445"
+            }
+
+            # port-forward hydra-admin 
+            # kpf -n auth services/hydra-admin 4445:4445
+
+
+            kubectl --kubeconfig $kubeconfig run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
+            sleep 5
+
+            # app client users
+            # redirect uri is where the resource owner (user) will be redirected to once the authorization server grants permission to the client
+            # NOTE: using the `authorization code` the client gets both `accesst token` and `id token` when `scope` includes `openid`.
+            t="$(mktemp).sh" && cat << 'EOF' > $t
+#!/bin/bash
+echo 'Running setup script!'
+curl 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id' | grep -q 'frontend-client' || curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
+    --data '{
+        "client_id": "frontend-client",
+        "client_name": "frontend-client",
+        "grant_types": ["authorization_code", "refresh_token"],
+        "response_types": ["code id_token"],
+        "redirect_uris": ["http://auth.wosoom.com/authorize/oauth-redirect"], 
+        "audience": ["exposed-api"],    
+        "scope": "offline_access openid",
+        "token_endpoint_auth_method": "client_secret_post",
+        "skip_consent": true,
+        "skip_logout_prompt": true,
+        "post_logout_redirect_uris": []
+}'
+EOF
+            kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
+            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+
+            # internal service communication
+            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+            t="$(mktemp).sh" && cat << 'EOF' > $t
+#!/bin/bash
+echo 'Running setup script!'
+
+curl -s 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id' | grep -q 'internal-communication' || \
+curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
+    --data '{
+        "client_id": "internal-communication",
+        "client_name": "internal-communication",
+EOF
+            echo "\"client_secret\": \"$client_secret\"," >> $t
+            cat << EOF >> $t
+        "grant_types": ["client_credentials"],
+        "response_types": [],
+        "redirect_uris": [],
+        "audience": ["internal-api", "exposed-api"],
+        "scope": "offline_access openid custom_scope:read",
+        "token_endpoint_auth_method": "client_secret_basic",
+        "skip_consent": false,
+        "post_logout_redirect_uris": [],
+        "skip_logout_prompt": false
+    }'                        
+EOF
+            kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
+            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+
+
+            # NOTE: this is not a proper OIDC exposure to other services (only an example) 
+            # for third party apps to access data 
+            # curl -X POST 'http://hydra-admin/admin/clients' \
+            # -H 'Content-Type: application/json' \
+            # --data-raw '{
+            #     "client_id": "third-party",
+            #     "client_name": "third-party",
+            #     "grant_types": ["authorization_code", "refresh_token"],
+            #     "response_types": ["code"],
+            #     "redirect_uris": ["http://localhost:8000/oauth-redirect"],
+            #     "audience": ["exposed-api"],
+            #     "scope": "offline_access openid custom_scope:read",
+            #     "token_endpoint_auth_method": "client_secret_post",
+            #     "skip_consent": false,
+            #     "post_logout_redirect_uris": [],
+            #     "skip_logout_prompt": false
+            # }'
+
+            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "curl http://hydra-admin:4445/admin/clients | jq"
         }
 
     popd
@@ -281,7 +391,7 @@ install_ory_stack() {
 
         # verify database:
         set -a
-        source manifest/auth/db_kratos_secret.env
+        source manifest/auth/ory-kratos/db_kratos_secret.env
         set +a
         kubectl --kubeconfig $kubeconfig run -it --rm --image=postgres debug-pod --namespace auth --env DB_USER=$DB_USER --env DB_PASSWORD=$DB_PASSWORD -- /bin/bash
         {
