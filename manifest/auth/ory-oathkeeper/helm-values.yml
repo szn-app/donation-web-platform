@@ -188,7 +188,7 @@ oathkeeper:
   # Warrning! This may break configuration settings that use go templates, like https://github.com/ory/k8s/issues/707
   helmTemplatedConfigEnabled: false
 
-  # NOTE: configuration overriden by ory-oauthkeeper/oauthkeeper-config.yml
+  # NOTE: configuration overriden by ory-oathkeeper/oathkeeper-config.yml
   # -- The ORY Oathkeeper configuration. For a full list of available settings, check:
   #   https://github.com/ory/oathkeeper/blob/master/docs/config.yaml
   config:
@@ -205,7 +205,7 @@ oathkeeper:
   # -- If set, uses the given JSON Web Key Set as the signing key for the ID Token Mutator. Requires secret.enabled to be set `true`.
   mutatorIdTokenJWKs: ""
 
-  # [manual update] should be modified in `oauthkeeper-access-rules.template.json` to catch errors and then copied over here.
+  # [manual update] should be modified in `oathkeeper-access-rules.template.json` to catch errors and then copied over here.
   # -- If set, uses the given access rules.
   accessRules: |-
     [
@@ -458,7 +458,7 @@ affinity: {}
 
 ## -- Configures controller setup
 maester:
-  enabled: true
+  enabled: false
 
 ## -- PodDistributionBudget configuration
 pdb:

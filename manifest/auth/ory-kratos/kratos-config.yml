@@ -13,7 +13,7 @@ kratos:
 
     # dsn: memory # NOTE: use for development only
     # NOTE: username and password are replaced using regex
-    dsn: "postgresql://kratos:kratos@postgres-kratos-postgresql:5432/kratos_db?sslmode=disable&max_conns=20&max_idle_conns=4"
+    dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-kratos-postgresql:5432/kratos_db?sslmode=disable&max_conns=20&max_idle_conns=4"
 
     identity:
       default_schema_id: default

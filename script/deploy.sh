@@ -215,7 +215,7 @@ install_ory_stack() {
         helm --kubeconfig $kubeconfig repo update
 
         {
-            # spin database for user accounts
+            printf "install Postgresql for Ory Kratos \n"
             set -a
             source ory-kratos/db_kratos_secret.env
             set +a
@@ -225,7 +225,7 @@ install_ory_stack() {
                 --set auth.database=kratos_db
             # this will generate 'postgres-kratos-postgresql' service
 
-            ### install Ory Kratos
+            printf "install Ory Kratos \n"
             # preprocess file through substituting env values
             t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
             default_secret="$(openssl rand -hex 16)"
@@ -240,6 +240,7 @@ install_ory_stack() {
         }
 
         {
+            printf "install Postgresql for Ory Hydra \n"
             set -a
             source ory-hydra/db_hydra_secret.env # DB_USER, DB_PASSWORD
             set +a
@@ -249,7 +250,7 @@ install_ory_stack() {
                 --set auth.database=hydra_db
             # this will generate 'postgres-hydra-postgresql' service
 
-            ### install Ory Hydra
+            printf "install Ory Hydra \n"
             # preprocess file through substituting env values
             t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
             system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
@@ -262,8 +263,8 @@ install_ory_stack() {
         }
 
         {
-            ### install Ory Oauthkeeper
-            helm --kubeconfig $kubeconfig upgrade --install oauthkeeper ory/oauthkeeper -n auth --create-namespace -f ory-oauthkeeper/helm-values.yml -f ory-oauthkeeper/oauthkeeper-config.yml
+            printf "install Ory Aothkeeper \n"
+            helm --kubeconfig $kubeconfig upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml
         }
 
         # create OAuth2 client for the trusted app
@@ -293,14 +294,14 @@ install_ory_stack() {
             # port-forward hydra-admin 
             # kpf -n auth services/hydra-admin 4445:4445
 
+            {
+                kubectl --kubeconfig $kubeconfig run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
+                sleep 5
 
-            kubectl --kubeconfig $kubeconfig run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
-            sleep 5
-
-            # app client users
-            # redirect uri is where the resource owner (user) will be redirected to once the authorization server grants permission to the client
-            # NOTE: using the `authorization code` the client gets both `accesst token` and `id token` when `scope` includes `openid`.
-            t="$(mktemp).sh" && cat << 'EOF' > $t
+                # app client users
+                # redirect uri is where the resource owner (user) will be redirected to once the authorization server grants permission to the client
+                # NOTE: using the `authorization code` the client gets both `accesst token` and `id token` when `scope` includes `openid`.
+                t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
 echo 'Running setup script!'
 curl 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id' | grep -q 'frontend-client' || curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
@@ -318,12 +319,14 @@ curl 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="
         "post_logout_redirect_uris": []
 }'
 EOF
-            kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
-            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+                kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
+                kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            }
 
-            # internal service communication
-            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
-            t="$(mktemp).sh" && cat << 'EOF' > $t
+            {
+                # internal service communication
+                client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+                t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
 echo 'Running setup script!'
 
@@ -346,8 +349,12 @@ EOF
         "skip_logout_prompt": false
     }'                        
 EOF
-            kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
-            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+                kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
+                kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+
+            }
+
+            kubectl --kubeconfig $kubeconfig delete --force pod setup-pod -n auth
 
 
             # NOTE: this is not a proper OIDC exposure to other services (only an example) 
@@ -368,12 +375,16 @@ EOF
             #     "skip_logout_prompt": false
             # }'
 
-            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "curl http://hydra-admin:4445/admin/clients | jq"
+            manual_verify() { 
+                kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "curl http://hydra-admin:4445/admin/clients | jq"
+            }
         }
 
     popd
 
     manual_verify() { 
+        # use --debug with `helm` for verbose output
+
         kubectl --kubeconfig "$kubeconfig" port-forward -n auth service/kratos-admin 8083:80
 
         kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash 
