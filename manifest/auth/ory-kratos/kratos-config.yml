@@ -29,7 +29,7 @@ kratos:
       # links to generete for kratos-public internal server
       public:
         base_url: https://auth.wosoom.com/authenticate
-        port: 80
+        port: 4433
         cors:
           enabled: true
           allowed_origins:
@@ -45,7 +45,7 @@ kratos:
             - DELETE
       admin:
         base_url: http://kratos-admin/
-        port: 80
+        port: 4434
 
     selfservice:
       methods:
