@@ -117,6 +117,23 @@ parameters:
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
+  name: longhorn-network-storage-1replica
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "2880"
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  diskSelector: "network-storage-volume"
+  nodeSelector: "worker" # where Longhorn node tag (internal Longhorn info) is set to worker (as volumes only mounted on agents)
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
   name: longhorn-local-ext4
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
@@ -124,6 +141,22 @@ reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
   numberOfReplicas: "3"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"
+  diskSelector: "local-storage-disk"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: longhorn-local-ext4-2replica
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "2"
   staleReplicaTimeout: "2880" # 48 hours in minutes
   fromBackup: ""
   fsType: "ext4"
