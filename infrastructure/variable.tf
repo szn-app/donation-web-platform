@@ -1,6 +1,15 @@
 ### Input/Output configurations
 
 locals { 
+    # Get all files in the helm_values directory
+    helm_values_files = fileset("${path.module}/helm_values", "*.yml")
+    # Create a map where the keys are filenames without extensions, and values are file paths
+    # type = map(string)
+    helm_values_file = {
+        for file in local.helm_values_files : 
+            replace(trimspace(file), "-values.yml", "") => file("${path.module}/helm_values/${file}")
+    }
+  
   tag = { 
     project = ""
   }
@@ -104,4 +113,8 @@ variable "instance_size" {
 output "kubeconfig" { 
   value     = module.kube-hetzner.kubeconfig
   sensitive = true
+}
+
+output "helm_values_file" {
+  value = keys(local.helm_values_file)
 }

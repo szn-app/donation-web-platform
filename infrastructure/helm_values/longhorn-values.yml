@@ -1,0 +1,13 @@
+# https://github.com/longhorn/longhorn/blob/master/chart/values.yaml
+
+defaultSettings:
+  createDefaultDiskLabeledNodes: true
+  defaultDataPath: /var/lib/longhorn
+  kubernetesClusterAutoscalerEnabled: true
+  node-down-pod-deletion-policy: delete-both-statefulset-and-deployment-pod
+persistence:
+  defaultClass: true
+  defaultFsType: ext4
+  defaultClassReplicaCount: 3
+longhornUI:
+  replicas: 1

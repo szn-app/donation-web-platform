@@ -1,5 +1,4 @@
 ### Resource configuration
-
 # Original template from https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner/blob/master/kube.tf.example
 
 # https://registry.terraform.io/modules/kube-hetzner/kube-hetzner/hcloud
@@ -65,13 +64,16 @@ module "kube-hetzner" {
   # Disables the public network of the load balancer. (default: false).
   # load_balancer_disable_public_network = true
 
-  cni_plugin = "cilium"
   disable_kube_proxy = true # replace 'kube-proxy' with 'cilium'
   disable_network_policy = true
+  ingress_controller = "none"
+  cni_plugin = "cilium"
+  cilium_version = "v1.16.5"
   cilium_routing_mode = "native"
   # NOTE: if Cilium UI enabled it can be accessed using ssh tunnel
-  cilium_hubble_enabled = false
-  ingress_controller = "none"
+  cilium_hubble_enabled = true
+  # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
+  cilium_values = local.helm_values_file["cilium"]
 
   # for production HA kubernetes: 3 control nodes + 2 agent nodes
   control_plane_nodepools = [
@@ -173,43 +175,31 @@ module "kube-hetzner" {
    }
   ]
 
-  # NOTE: `extra_kustomize_deployment_commands` doesn't get to run unless there is ./extra-manifests/kustomization.yaml.tpl file this is a bug and error prone better to use post-terraform shell scripts with the kubeconfig file for connection
-  extra_kustomize_deployment_commands = <<-EOT
-  EOT
-
   # local k3s basic storage class
   enable_local_storage = true
   # cloud network storage: 
   disable_hetzner_csi = false # Hetzner Cloud Volumes (block storage) as Kubernetes storage class 
+
   # enable longhorn and dependency drivers
   enable_iscsid = true
   enable_longhorn = true # add Longhorn as storage class in kuberenetes
+  longhorn_version = "v1.6.4"
   # TODO: fix[requires PR]: the module doesn't install all required dependeices on control nodes and prevents Longhorn from being able to create disks and schedule on cotnrol nodes (thus leaving network longhorn volumes only for worker nodes )
   longhorn_helmchart_bootstrap = true # if to run on control-plane nodes too
   longhorn_fstype = "ext4" # "xfs"
   longhorn_replica_count = 3 # defaults to 3
   # effects of options: only run on labelled nodes; # adjust to autoscaler if active in the cluster; /var/lib/longhorn local storage path (NOTE: /mnt/longhorn is the default for Hetzner cloud volume mount in kube-hetzner module); cleanup & prevent volume locks by setting policy: ensure pod is moved to an healthy node if current node is down;
-  longhorn_values = <<EOT
-defaultSettings:
-  createDefaultDiskLabeledNodes: true 
-  defaultDataPath: /var/lib/longhorn
-  kubernetesClusterAutoscalerEnabled: true 
-  node-down-pod-deletion-policy: delete-both-statefulset-and-deployment-pod
-persistence:
-  defaultClass: true
-  defaultFsType: ext4
-  defaultClassReplicaCount: 3
-longhornUI:
-  replicas: 1
-  EOT 
+  longhorn_values = local.helm_values_file["longhorn"]
 
-  # NOTE: using the built in helm pacakge of kube-hetzner module
-  enable_cert_manager = false
-  # enable cert-manager feature for Gateway API 
-  # https://cert-manager.io/docs/usage/gateway/
-#   cert_manager_values = <<EOT
-#   EOT 
+  # Cert-manager for automatic TLS certificates
+  enable_cert_manager = true
+  cert_manager_helmchart_bootstrap = true # run on control-plane nodes too
+  cert_manager_version = "v1.16.2"
+  cert_manager_values = local.helm_values_file["cert-manager"]
 
+  # NOTE: `extra_kustomize_deployment_commands` doesn't get to run unless there is ./extra-manifests/kustomization.yaml.tpl file this is a bug and error prone better to use post-terraform shell scripts with the kubeconfig file for connection
+  extra_kustomize_deployment_commands = <<-EOT
+  EOT
 
 }
 

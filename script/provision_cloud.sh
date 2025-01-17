@@ -277,18 +277,12 @@ EOF
   }
 }
 
-install_cert_manager() { 
+### cert-manager installation is done through kube-hetzner module
+restart_cert_manager() { 
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
-    # https://cert-manager.io/docs/installation/helm/
-    helm --kubeconfig $kubeconfig repo add jetstack https://charts.jetstack.io --force-update
-    helm --kubeconfig $kubeconfig install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.2 --set crds.enabled=true \
-        --set config.apiVersion="controller.config.cert-manager.io/v1alpha1" \
-        --set config.kind="ControllerConfiguration" \
-        --set config.enableGatewayAPI=true
-
     # verify installation https://cert-manager.io/docs/installation/kubectl/#verify
-    {
+    verify_cert_manager_installation() {
         t=$(mktemp) && cat <<EOF > "$t"
 apiVersion: v1
 kind: Namespace
@@ -325,11 +319,12 @@ EOF
         kubectl --kubeconfig $kubeconfig delete -f $t
     }
 
+  verify_cert_manager_installation
   kubectl --kubeconfig $kubeconfig rollout restart deployment cert-manager -n cert-manager
 }
 
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
-hetzner_cloud_provision() { 
+hetzner_cloud_provision() {
     hcloud version && kubectl version && packer --version
     tofu --version && terraform version # either tools should work
     helm version
@@ -378,7 +373,7 @@ hetzner_cloud_provision() {
       
       install_kubernetes_dashboard  "$kubeconfig"
       install_gateway_api "$kubeconfig"
-      install_cert_manager "$kubeconfig"
+      restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api
       install_storage_class "$kubeconfig"
 
       verify_installation() {
