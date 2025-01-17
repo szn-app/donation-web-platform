@@ -1,15 +1,27 @@
 #!/bin/bash
 
 install_gateway_api() { 
-    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
-    # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
-    kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+  # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
+  kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
 
-    # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
+  # install CRDs required by Cilium Gateway API support https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/
+  { 
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+  }
+
+  # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
+  {
     kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
     kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
     kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
+  }
 }
 
 install_storage_class() { 
@@ -356,17 +368,41 @@ EOF
   kubectl --kubeconfig $kubeconfig rollout restart deployment cert-manager -n cert-manager
 }
 
+restart_cilinium() { 
+  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+
+  kubectl --kubeconfig $kubeconfig -n kube-system rollout restart deployment/cilium-operator
+  kubectl --kubeconfig $kubeconfig -n kube-system rollout restart ds/cilium
+  # verify 
+  cilium --kubeconfig $kubeconfig status
+}
+
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
 hetzner_cloud_provision() {
-    hcloud version && kubectl version && packer --version
-    tofu --version && terraform version # either tools should work
-    helm version
+    action=${1:-"install"}
 
-    manually() {
+    if [ "$action" == "delete" ]; then
+      pushd infrastructure
+        printf "Destroying infrastructure...\n"
+        terraform init
+        terraform destroy -auto-approve
+      popd
+      return 
+    fi
+
+    {
+      hcloud version && kubectl version && packer --version
+      tofu --version && terraform version # either tools should work
+      helm version && cilium version
+    }
+
+    manually_prerequisites() {
       # TODO: automate
+
       # [manual, then move to ~/.ssh] 
-      # will also be used to log into the machines using ssh
-      ssh-keygen -t ed25519
+      # Generate an ed25519 SSH key pair - will also be used to log into the machines using ssh
+      ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+      
 
       # create snapshots with kube-hetzner binaries
       {
@@ -378,14 +414,11 @@ hetzner_cloud_provision() {
       }
       hcloud context create "k8s-project"
 
-      ### set variables using "terraform.tfvars" or CLI argument or env variables
-      # export TF_VAR_hcloud_token=""
-      # export TF_VAR_ssh_private_key=""
-      # export TF_VAR_ssh_public_key=""
-      
-      export TF_TOKEN_app_terraform_io=""  
-    }    
-
+      ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
+      find . -name *.tfvars
+      export TF_TOKEN_app_terraform_io=""  # required
+    }  
+    
     ### handle terraform 
     {
       pushd infrastructure
@@ -407,6 +440,7 @@ hetzner_cloud_provision() {
       install_kubernetes_dashboard  "$kubeconfig"
       install_gateway_api "$kubeconfig"
       restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api
+      restart_cilinium "$kubeconfig"
       install_storage_class "$kubeconfig"
 
       verify_installation() {
