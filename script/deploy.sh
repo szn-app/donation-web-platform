@@ -514,3 +514,13 @@ kustomize_kubectl() {
     }
 
 }
+
+
+### example and verification
+{
+    example_test_cilium() { 
+        [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+
+        cilium --kubeconfig $kubeconfig config view | grep -w "enabe-gateway-api"
+    }
+}

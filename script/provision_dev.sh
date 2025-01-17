@@ -30,6 +30,7 @@ record_version() {
     KUBERNETES_VERSION=$(kubectl version | awk '{printf "\t%s:\t%s\n", $1" "$2, $3}')
     KUSTOMIZE_VERSION=$(kustomize version)
     KOPS_VERSION=$(kops version --short)
+    CILIUM_VERSION=#(cilium version --client)
 
     echo "Node.js version: ${NODE_VERSION}" > version.txt
     echo "pnpm version: ${PNPM_VERSION}" >> version.txt
@@ -40,6 +41,7 @@ record_version() {
     printf "Kubernetes version: \n%s\n" "$KUBERNETES_VERSION" >> version.txt
     echo "Kustomize version: ${KUSTOMIZE_VERSION}" >> version.txt
     echo "kOps version: ${KOPS_VERSION}" >> version.txt
+    echo "---\nCilium version: ${CILIUM_VERSION}\n" >> version.txt
 
     cat ./version.txt
 }
