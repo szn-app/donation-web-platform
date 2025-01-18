@@ -3,21 +3,10 @@
 install_gateway_api_cilium() { 
   [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
-  printf "Installing Cilium Gateway API controller...\n"
 
   restart_cilinium() { 
     kubectl --kubeconfig $kubeconfig -n kube-system rollout restart deployment/cilium-operator
     kubectl --kubeconfig $kubeconfig -n kube-system rollout restart ds/cilium
-  }
-
-  # install CRDs required by Cilium Gateway API support https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/
-  {
-    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
-    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
   }
 
   restart_cilinium
@@ -489,11 +478,6 @@ hetzner_cloud_provision() {
       export TF_LOG=DEBUG
       terraform init --upgrade # installed terraform module dependecies
       terraform validate
-      
-      # hackish override of init.tf to preinstall requisites for Cilium Gateway API      
-      {
-          cp -f init.tf.patch ./.terraform/modules/kube-hetzner/init.tf
-      }
 
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
