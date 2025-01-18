@@ -404,14 +404,19 @@ hetzner_cloud_provision() {
       ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
       
 
-      # create snapshots with kube-hetzner binaries
-      {
+      # create snapshots with kube-hetzner binaries (idempotent can be executed in existing project)
+      create_snapshot() {
+          pushd infrastructure
+
           tmp_script=$(mktemp)
           curl -sSL -o "${tmp_script}" https://raw.githubusercontent.com/kube-hetzner/terraform-hcloud-kube-hetzner/master/scripts/create.sh
           chmod +x "${tmp_script}" 
           "${tmp_script}"
           rm "${tmp_script}"
+
+          popd
       }
+      create_snapshot
       hcloud context create "k8s-project"
 
       ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
@@ -429,14 +434,12 @@ hetzner_cloud_provision() {
 
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
-      # terraform destroy # when completely redploying
       
       # create kubeconfig (NOTE: do not version control this credentials file)
       export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
       t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
 
       sleep 10 
-      
       install_kubernetes_dashboard  "$kubeconfig"
       install_gateway_api "$kubeconfig"
       restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api

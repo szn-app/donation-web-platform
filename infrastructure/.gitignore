@@ -1,0 +1,4 @@
+/cert_manager_values.yaml
+/cilium_values.yaml
+/longhorn_values.yaml 
+/k3s_kustomization_backup.yaml

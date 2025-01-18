@@ -11,9 +11,9 @@ module "kube-hetzner" {
   }
   hcloud_token = var.hcloud_token
 
-  create_kubeconfig = false
-  export_values = false # do not export local files 
-  create_kustomization = false # do not create local file for kustomization backup
+  create_kubeconfig = false # do not export local kubeconfig file implicitely
+  export_values = true # do not export local files 
+  create_kustomization = true # do not create local file for kustomization backup
   # This does not protect deletion from Terraform itself, only though the Hetzner UI interface
   enable_delete_protection = {
     floating_ip   = true
@@ -211,8 +211,8 @@ module "kube-hetzner" {
   cert_manager_values = local.helm_values_file["cert-manager"]
 
   # NOTE: `extra_kustomize_deployment_commands` doesn't get to run unless there is ./extra-manifests/kustomization.yaml.tpl file this is a bug and error prone better to use post-terraform shell scripts with the kubeconfig file for connection
-  extra_kustomize_deployment_commands = <<-EOT
-  EOT
+  # extra_kustomize_deployment_commands = <<-EOT
+  # EOT
 
 }
 
