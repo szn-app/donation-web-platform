@@ -190,19 +190,19 @@ EOF
 }
 
 # https://k8s.ory.sh/helm/
-# $`install_ory_stack $kubeconfig`
-# $`install_ory_stack $kubeconfig delete`
+# $`install_ory_stack
+# $`install_ory_stack delete
 install_ory_stack() { 
-    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
-    action=${2:-"install"}
+     
+    action=${1:-"install"}
 
     {
         if [ "$action" == "delete" ]; then
-            helm --kubeconfig $kubeconfig uninstall kratos -n auth
-            helm --kubeconfig $kubeconfig uninstall postgres-kratos -n auth
-            helm --kubeconfig $kubeconfig uninstall hydra -n auth
-            helm --kubeconfig $kubeconfig uninstall postgres-hydra -n auth
-            helm --kubeconfig $kubeconfig uninstall oathkeeper -n auth
+            helm uninstall kratos -n auth
+            helm uninstall postgres-kratos -n auth
+            helm uninstall hydra -n auth
+            helm uninstall postgres-hydra -n auth
+            helm uninstall oathkeeper -n auth
             return 
         fi
     }
@@ -214,7 +214,7 @@ install_ory_stack() {
         set -a
         source ory-kratos/db_kratos_secret.env
         set +a
-        helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f ory-kratos/postgresql-values.yml \
+        helm upgrade --reuse-values --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f ory-kratos/postgresql-values.yml \
             --set auth.username=${DB_USER} \
             --set auth.password=${DB_PASSWORD} \
             --set auth.database=kratos_db
@@ -226,7 +226,7 @@ install_ory_stack() {
         default_secret="$(openssl rand -hex 16)"
         cookie_secret="$(openssl rand -hex 16)"
         cipher_secret="$(openssl rand -hex 16)"
-        helm --kubeconfig $kubeconfig upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos/helm-values.yml -f $t \
+        helm upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos/helm-values.yml -f $t \
             --set kratos.config.secrets.default[0]="$default_secret" \
             --set kratos.config.secrets.cookie[0]="$cookie_secret" \
             --set kratos.config.secrets.cipher[0]="$cipher_secret" \
@@ -243,7 +243,7 @@ install_ory_stack() {
         set -a
         source ory-hydra/db_hydra_secret.env # DB_USER, DB_PASSWORD
         set +a
-        helm --kubeconfig $kubeconfig upgrade --reuse-values --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f ory-hydra/postgresql-values.yml \
+        helm upgrade --reuse-values --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f ory-hydra/postgresql-values.yml \
             --set auth.username=${DB_USER} \
             --set auth.password=${DB_PASSWORD} \
             --set auth.database=hydra_db
@@ -254,7 +254,7 @@ install_ory_stack() {
         t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
         system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
         cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
-        helm --kubeconfig $kubeconfig upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra/helm-values.yml -f $t \
+        helm upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra/helm-values.yml -f $t \
             --set kratos.config.secrets.system[0]="$system_secret" \
             --set kratos.config.secrets.cookie[0]="$cookie_secret" \
             --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
@@ -267,7 +267,7 @@ install_ory_stack() {
         pushd ./manifest/auth
         printf "install Ory Aothkeeper \n"
         
-        helm --kubeconfig $kubeconfig upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml
+        helm upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml
 
         popd
     }
@@ -276,7 +276,7 @@ create_oauth2_client_for_trusted_app() {
         pushd ./manifest/auth
 
         example_hydra_admin() { 
-            kubectl --kubeconfig $kubeconfig run -it --rm --image=debian:latest debug-pod --namespace auth -- /bin/bash
+            kubectl run -it --rm --image=debian:latest debug-pod --namespace auth -- /bin/bash
             {
                 apt update && apt install curl -y
                 # install hydra
@@ -301,7 +301,7 @@ create_oauth2_client_for_trusted_app() {
         # kpf -n auth services/hydra-admin 4445:4445
 
         {
-            kubectl --kubeconfig $kubeconfig run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
+            kubectl run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
             sleep 5
 
             # app client users for trusted app
@@ -325,8 +325,8 @@ curl 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="
     "post_logout_redirect_uris": []
 }'
 EOF
-            kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
-            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            kubectl cp $t setup-pod:$t --namespace auth
+            kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
         }
 
         {
@@ -355,12 +355,12 @@ EOF
     "skip_logout_prompt": false
 }'                        
 EOF
-            kubectl --kubeconfig $kubeconfig cp $t setup-pod:$t --namespace auth
-            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            kubectl cp $t setup-pod:$t --namespace auth
+            kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
 
         }
 
-        kubectl --kubeconfig $kubeconfig delete --force pod setup-pod -n auth
+        kubectl delete --force pod setup-pod -n auth
 
 
         # NOTE: this is not a proper OIDC exposure to other services (only an example) 
@@ -382,17 +382,17 @@ EOF
         # }'
 
         manual_verify() { 
-            kubectl --kubeconfig $kubeconfig exec -it setup-pod --namespace auth -- /bin/sh -c "curl http://hydra-admin:4445/admin/clients | jq"
+            kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "curl http://hydra-admin:4445/admin/clients | jq"
         }
 
         popd
     }
 
     # ory stack charts
-    helm --kubeconfig $kubeconfig repo add ory https://k8s.ory.sh/helm/charts
+    helm repo add ory https://k8s.ory.sh/helm/charts
     # postgreSQL
-    helm --kubeconfig $kubeconfig repo add bitnami https://charts.bitnami.com/bitnami 
-    helm --kubeconfig $kubeconfig repo update
+    helm repo add bitnami https://charts.bitnami.com/bitnami 
+    helm repo update
 
     intall_kratos
     install_hydra
@@ -402,9 +402,9 @@ EOF
     manual_verify() { 
         # use --debug with `helm` for verbose output
 
-        kubectl --kubeconfig "$kubeconfig" port-forward -n auth service/kratos-admin 8083:80
+        kubectl port-forward -n auth service/kratos-admin 8083:80
 
-        kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash 
+        kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash 
         {
             $(nslookup kratos-admin)
             
@@ -421,7 +421,7 @@ EOF
         set -a
         source manifest/auth/ory-kratos/db_kratos_secret.env
         set +a
-        kubectl --kubeconfig $kubeconfig run -it --rm --image=postgres debug-pod --namespace auth --env DB_USER=$DB_USER --env DB_PASSWORD=$DB_PASSWORD -- /bin/bash
+        kubectl run -it --rm --image=postgres debug-pod --namespace auth --env DB_USER=$DB_USER --env DB_PASSWORD=$DB_PASSWORD -- /bin/bash
         {
             export PGPASSWORD=$DB_PASSWORD
             psql -h "postgres-kratos-postgresql" -U "$DB_USER" -d "kratos_db" -p 5432 -c "\dt" 
@@ -429,7 +429,7 @@ EOF
         }
 
         # manage users using Ory Admin API through the CLI tool
-        kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
+        kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
         {            
             export KRATOS_ADMIN_URL="http://kratos-admin" 
             # https://www.ory.sh/docs/kratos/reference/api
@@ -449,19 +449,19 @@ EOF
     }
 }
 
-# export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
 kustomize_kubectl() {
-    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
-    action=${2:-"install"}
+    action=${1:-"install"}
+
+    kubectl ctx k3s-project
 
     {
         if [ "$action" == "delete" ]; then
-            kubectl --kubeconfig $kubeconfig delete -k ./manifest/entrypoint/production
-            install_ory_stack $kubeconfig delete
+            kubectl delete -k ./manifest/entrypoint/production
+            install_ory_stack delete
             return 
          elif [ "$action" == "kustomize" ]; then
             pushd manifest/entrypoint/production 
-            t="$(mktemp).yaml" && kubectl --kubeconfig $kubeconfig kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
             return
         fi
@@ -470,13 +470,13 @@ kustomize_kubectl() {
 
     env_files
 
-    install_ory_stack "$kubeconfig"
+    install_ory_stack
 
     pushd ./manifest 
-        kubectl --kubeconfig $kubeconfig apply -k ./entrypoint/production
+        kubectl apply -k ./entrypoint/production
         {
             pushd ./entrypoint/production 
-            t="$(mktemp).yaml" && kubectl --kubeconfig $kubeconfig kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
         }
     popd 
@@ -491,15 +491,16 @@ kustomize_kubectl() {
 
         kubectl kustomize ./
         kubectl get -k ./
+        kubectl --kubeconfig $kubeconfig  get -k ./
         kubectl describe -k ./
         kubectl diff -k ./
 
-        kubectl --kubeconfig $kubeconfig get clusterissuer -A # two issuers: staging & production issuers
-        kubectl --kubeconfig $kubeconfig describe challenge -A # ephemeral challenge appearing during certificate issuance process
-        kubectl --kubeconfig $kubeconfig get order -A # should be STATE = pending → STATE = valid
-        kubectl --kubeconfig $kubeconfig get certificate -A # should be READY = True
-        kubectl --kubeconfig $kubeconfig get httproute -A
-        kubectl --kubeconfig $kubeconfig get gateway -A
+        kubectl get clusterissuer -A # two issuers: staging & production issuers
+        kubectl describe challenge -A # ephemeral challenge appearing during certificate issuance process
+        kubectl get order -A # should be STATE = pending → STATE = valid
+        kubectl get certificate -A # should be READY = True
+        kubectl get httproute -A
+        kubectl get gateway -A
 
         # check dns + web server response with tls staging certificate
         domain_name=""
@@ -509,7 +510,7 @@ kustomize_kubectl() {
         curl --header "Host: donation-app.com" $cloud_load_balancer_ip
 
         # run ephemeral debug container
-        kubectl --kubeconfig $kubeconfig run -it --rm --image=nicolaka/netshoot debug-pod --namespace some_namespace -- /bin/bash 
+        kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace some_namespace -- /bin/bash 
         
     }
 
@@ -519,8 +520,7 @@ kustomize_kubectl() {
 ### example and verification
 {
     example_test_cilium() { 
-        [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
-        cilium --kubeconfig $kubeconfig config view | grep -w "enabe-gateway-api"
+        cilium config view | grep -w "enabe-gateway-api"
     }
 }

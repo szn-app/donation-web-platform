@@ -1,26 +1,26 @@
 #!/bin/bash
 
 install_gateway_api_cilium() { 
-  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+ 
 
 
   restart_cilinium() { 
-    kubectl --kubeconfig $kubeconfig -n kube-system rollout restart deployment/cilium-operator
-    kubectl --kubeconfig $kubeconfig -n kube-system rollout restart ds/cilium
+    kubectl -n kube-system rollout restart deployment/cilium-operator
+    kubectl -n kube-system rollout restart ds/cilium
   }
 
   restart_cilinium
 
   verify() { 
-    kubectl --kubeconfig=$kubeconfig get crd -A
-    cilium --kubeconfig $kubeconfig status
-    cilium --kubeconfig $kubeconfig config view | grep -w "gateway"
-    cilium --kubeconfig $kubeconfig sysdump
+    kubectl get crd -A
+    cilium status
+    cilium config view | grep -w "gateway"
+    cilium sysdump
 
     # verify tls setup
     {
-      kubectl --kubeconfig $kubeconfig get configmap -n kube-system cilium-config -o yaml | grep hubble-disable-tls
-      kubectl --kubeconfig $kubeconfig apply -n kube-system -f https://raw.githubusercontent.com/cilium/cilium/main/examples/hubble/hubble-cli.yaml
+      kubectl get configmap -n kube-system cilium-config -o yaml | grep hubble-disable-tls
+      kubectl apply -n kube-system -f https://raw.githubusercontent.com/cilium/cilium/main/examples/hubble/hubble-cli.yaml
       # https://docs.cilium.io/en/stable/observability/hubble/configuration/tls/
       # ... 
     }
@@ -32,26 +32,26 @@ install_gateway_api_cilium() {
 # This controller could be used in place of the Cilium Gateway API controller 
 installation_gateway_controller_nginx() {
   delete() { 
-    kubectl --kubeconfig $kubeconfig delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+    kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
 
-    kubectl --kubeconfig $kubeconfig delete -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
-    kubectl --kubeconfig $kubeconfig delete -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+    kubectl delete -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+    kubectl delete -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
   }
 
   # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
-  kubectl --kubeconfig $kubeconfig apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+  kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
 
-  kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
-  kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
-  kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
+  kubectl apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+  kubectl apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+  kubectl get pods -n nginx-gateway
 }
 
 install_storage_class() { 
-  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+ 
 
   printf "Installing Longhorn storage class...\n"
 
-  kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
+  kubectl get storageclasses.storage.k8s.io
 
   annotate_nodes() {
     printf "Annotating nodes for Longhorn storage class...\n"
@@ -83,10 +83,10 @@ install_storage_class() {
 EOT
 )
 
-    agent_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
+    agent_node_names=($(kubectl get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
     for node_name in "${agent_node_names[@]}"; do
       echo "annotating node $node_name" 
-      kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+      kubectl annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
     done 
 
     config=$(cat <<EOT
@@ -102,10 +102,10 @@ EOT
 EOT
 )
 
-      control_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] ) | .metadata.name'))
+      control_node_names=($(kubectl get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] ) | .metadata.name'))
       for node_name in "${control_node_names[@]}"; do
         echo "annotating node $node_name" 
-        kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+        kubectl annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
       done 
 
     }
@@ -116,15 +116,15 @@ EOT
       LABEL_KEY="role" # Label key to match in Kubernetes nodes
 
       # Iterate through nodes and apply tags
-      for node in $(kubectl --kubeconfig $kubeconfig get nodes -o jsonpath='{.items[*].metadata.name}'); do
+      for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
         # Get the value of the label
-        LABEL_VALUE=$(kubectl --kubeconfig $kubeconfig get node $node -o jsonpath="{.metadata.labels['$LABEL_KEY']}")
+        LABEL_VALUE=$(kubectl get node $node -o jsonpath="{.metadata.labels['$LABEL_KEY']}")
 
         if [ -n "$LABEL_VALUE" ]; then
           echo "Applying Longhorn tag '$LABEL_VALUE' to node '$node'"
 
           # Patch the Longhorn node with the label value as a tag
-          kubectl --kubeconfig $kubeconfig -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
+          kubectl -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
         else
           echo "Node '$node' does not have label '$LABEL_KEY', skipping."
         fi
@@ -252,7 +252,7 @@ parameters:
   diskSelector: "local-storage-disk"
 EOF
    
-    kubectl --kubeconfig $kubeconfig apply -f $t
+    kubectl apply -f $t
   }
 
   annotate_nodes
@@ -260,7 +260,7 @@ EOF
 
   # [manually] verify that cloud volumes are attached to each nodes at /mnt/longhorn and check longhorn disk in /var/lib/longhorn
   verify_mount_inside_server() {
-    kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
+    kubectl get storageclasses.storage.k8s.io
 
     lsblk 
     mount | grep longhorn
@@ -268,36 +268,36 @@ EOF
     du -sh /var/lib/longhorn # disk usage
 
     # for debugging purposes if persistent volumes are not being created
-    kubectl --kubeconfig "$kubeconfig" logs -n longhorn-system -l app=longhorn-manager
-    kubectl --kubeconfig "$kubeconfig" get events -n longhorn-system
-    kubectl --kubeconfig "$kubeconfig" get sc
-    kubectl --kubeconfig "$kubeconfig" get pv -o yaml
-    kubectl --kubeconfig "$kubeconfig" get pvc
+    kubectl logs -n longhorn-system -l app=longhorn-manager
+    kubectl get events -n longhorn-system
+    kubectl get sc
+    kubectl get pv -o yaml
+    kubectl get pvc
 
     # check nodes as registered by Longhorn and which tags Longhorn internally sees for each of the nodes
-    kubectl --kubeconfig "$kubeconfig" -n longhorn-system get nodes.longhorn.io
+    kubectl -n longhorn-system get nodes.longhorn.io
     node_name="" 
-    kubectl --kubeconfig "$kubeconfig" -n longhorn-system get nodes.longhorn.io $node_name -o yaml
+    kubectl -n longhorn-system get nodes.longhorn.io $node_name -o yaml
 
     # expose longhorn UI dashboard 
-    kubectl --kubeconfig "$kubeconfig" port-forward -n longhorn-system service/longhorn-frontend 8082:80
+    kubectl port-forward -n longhorn-system service/longhorn-frontend 8082:80
   }
 }
 
 # https://github.com/kubernetes/dashboard
 install_kubernetes_dashboard() {
-  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+ 
 
   printf "Installing Kubernetes Dashboard...\n"
 
-  helm --kubeconfig $kubeconfig repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+  helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
   t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
 kong:
   proxy:
     http:
       enabled: true
 EOF
-  helm --kubeconfig $kubeconfig upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard --values $t
+  helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard --values $t
 
   # https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
   t=$(mktemp) && cat <<EOF > "$t" 
@@ -333,12 +333,12 @@ metadata:
     kubernetes.io/service-account.name: "admin-user"   
 type: kubernetes.io/service-account-token  
 EOF
-  kubectl --kubeconfig $kubeconfig apply -f $t 
+  kubectl apply -f $t 
 
   verify_dashboard() { 
     # verify helm custom values 
-    helm --kubeconfig $kubeconfig show values kubernetes-dashboard/kubernetes-dashboard
-    # helm --kubeconfig $kubeconfig uninstall kubernetes-dashboard   --namespace kubernetes-dashboard
+    helm show values kubernetes-dashboard/kubernetes-dashboard
+    # helm uninstall kubernetes-dashboard   --namespace kubernetes-dashboard
 
       t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
 kong:
@@ -346,19 +346,19 @@ kong:
     http:
       enabled: true
 EOF
-    y="$(mktemp).yaml" && helm --kubeconfig $kubeconfig template kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --namespace kubernetes-dashboard --values $t > $y && code $y
+    y="$(mktemp).yaml" && helm template kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --namespace kubernetes-dashboard --values $t > $y && code $y
 
     # get token 
-    export USER_TOKEN=$(kubectl --kubeconfig "$kubeconfig" get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d)
+    export USER_TOKEN=$(kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d)
     echo $USER_TOKEN
 
-    kubectl --kubeconfig "$kubeconfig" port-forward -n kubernetes-dashboard service/kubernetes-dashboard-kong-proxy 8081:443
+    kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard-kong-proxy 8081:443
   }
 }
 
 ### cert-manager installation is done through kube-hetzner module
 restart_cert_manager() { 
-    [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+   
 
     printf "Restarting cert-manager...\n"
 
@@ -391,21 +391,21 @@ spec:
     name: test-selfsigned
 EOF
             
-        kubectl --kubeconfig $kubeconfig apply -f $t 
-        while ! kubectl --kubeconfig $kubeconfig describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"; do
+        kubectl apply -f $t 
+        while ! kubectl describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"; do
           echo "Retry checking for successfully issued certificate. sleep 5s..."; 
           sleep 5
         done
         
-        kubectl --kubeconfig $kubeconfig delete -f $t
+        kubectl delete -f $t
     }
 
   verify_cert_manager_installation
-  kubectl --kubeconfig $kubeconfig rollout restart deployment cert-manager -n cert-manager
+  kubectl rollout restart deployment cert-manager -n cert-manager
 }
 
 remove_warnings_logs() { 
-  kubectl --kubeconfig $kubeconfig apply -f - <<'EOF'
+  kubectl apply -f - <<'EOF'
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -418,7 +418,7 @@ data:
     #
 EOF
 
-  kubectl --kubeconfig $kubeconfig rollout restart deploy/coredns -n kube-system
+  kubectl rollout restart deploy/coredns -n kube-system
 }
 
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
@@ -438,7 +438,9 @@ hetzner_cloud_provision() {
       hcloud version && kubectl version && packer --version
       tofu --version && terraform version # either tools should work
       helm version && cilium version
-      k9s version
+      k9s version && kubectl krew version
+      kubectl krew list | grep ctx && kubectl krew list | grep ns 
+
     }
 
     manually_prerequisites() {
@@ -462,12 +464,114 @@ hetzner_cloud_provision() {
           popd
       }
       create_snapshot
-      hcloud context create "k8s-project"
     }  
     
     ### handle terraform 
     {
       pushd infrastructure
+
+      
+      generate_kubeconfig() {
+        # create kubeconfig (NOTE: do not version control this credentials file)
+        terraform output --raw kubeconfig > "$(realpath ~/.kube)/kubernetes-project-credentials.kubeconfig.yml"
+
+        # Set default kubeconfig file path
+        DEFAULT_KUBECONFIG="$HOME/.kube/config"
+
+        # Create a backup of the existing kubeconfig file
+        if [ -f "$DEFAULT_KUBECONFIG" ]; then
+            cp "$DEFAULT_KUBECONFIG" "$DEFAULT_KUBECONFIG.bak"
+            echo "Backup of existing kubeconfig created at $DEFAULT_KUBECONFIG.bak"
+        fi
+
+        # Find all kubeconfig files matching *.kubeconfig.yml in ~/.kube/
+        KUBECONFIG_FILES=$(find "$HOME/.kube" -type f -name "*.kubeconfig.yml")
+
+        # Check if there are any files to merge
+        if [ -z "$KUBECONFIG_FILES" ]; then
+            echo "No *.kubeconfig.yml files found in $HOME/.kube/"
+            exit 1
+        fi
+
+        # Merge all kubeconfig files into the default kubeconfig
+        KUBECONFIG=$(echo "$KUBECONFIG_FILES" | tr '\n' ':')
+        kubectl config view --merge --flatten --kubeconfig="$KUBECONFIG:$DEFAULT_KUBECONFIG" > "$DEFAULT_KUBECONFIG.tmp"
+
+        # Replace the default kubeconfig with the merged file
+        mv "$DEFAULT_KUBECONFIG.tmp" "$DEFAULT_KUBECONFIG"
+        echo "Merged kubeconfig files into $DEFAULT_KUBECONFIG"
+
+        # Verify the merge
+        kubectl config get-contexts
+      }
+
+      patch_init_tf_file() { 
+        # Install CRDs required by Cilium Gateway API support (required CRDs before Cilium installation) https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/ 
+        #     IMPORTANT: Cilium Gateway API controller must be installed BEFORE Cilium installation, otherwise even a restart won't work
+        # Define variables
+        TARGET_FILE=".terraform/modules/kube-hetzner/init.tf"         # Path to the Terraform file
+        INJECT_FILE="init.tf.patch"  # Path to the file whose contents you want to inject
+        RESOURCE_NAME="rancher_bootstrap" # Name of the Terraform resource to find
+
+        # Check if both files exist
+        if [[ ! -f "$TARGET_FILE" ]]; then
+          echo "Error: Target file '$TARGET_FILE' does not exist."
+          exit 1
+        fi
+
+        if [[ ! -f "$INJECT_FILE" ]]; then
+          echo "Error: Inject file '$INJECT_FILE' does not exist."
+          exit 1
+        fi
+
+        # Backup the original file
+        cp "$TARGET_FILE" "${TARGET_FILE}.backup"
+
+        # Use awk to inject the file content right before the of the resource
+        awk -v inject_content="$(cat "$INJECT_FILE")" -v resource_name="$RESOURCE_NAME" '
+            BEGIN { injected = 0 }
+            $0 ~ "resource .*\"" resource_name "\"" && !injected {
+                print inject_content "\n"
+                injected = 1
+            }
+            { print }
+        ' "$TARGET_FILE" > "${TARGET_FILE}.tmp"
+        mv "${TARGET_FILE}.tmp" "$TARGET_FILE"
+
+        NEW_DEPENDENCY="null_resource.patch_cilium_gateway_api"
+        awk -v new_dependency="$NEW_DEPENDENCY" '
+            BEGIN { last_depends_on_start = 0; last_depends_on_end = 0 }
+            {
+                # Record the line number where "depends_on = [" starts
+                if (/depends_on = \[/) {
+                    last_depends_on_start = NR
+                }
+                
+                # Record the line number where "]" ends the "depends_on" block
+                if (last_depends_on_start > 0 && /\]/) {
+                    last_depends_on_end = NR
+                }
+                
+                # Store the file content
+                lines[NR] = $0
+            }
+            END {
+                # Print the file content with modification
+                for (i = 1; i <= NR; i++) {
+                    if (i == last_depends_on_end) {
+                        # Add the new dependency before the closing bracket
+                        print "    " new_dependency ","
+                    }
+                    print lines[i]
+                }
+            }
+        ' "$TARGET_FILE" > "${TARGET_FILE}.tmp"
+        mv "${TARGET_FILE}.tmp" "$TARGET_FILE"
+
+        echo "Injection completed. Backup saved to ${TARGET_FILE}.backup"
+      }
+
+      hcloud context create "k8s-project"
 
       {
         ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
@@ -479,41 +583,40 @@ hetzner_cloud_provision() {
       terraform init --upgrade # installed terraform module dependecies
       terraform validate
 
+      patch_init_tf_file
+
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
-      
-      generate_kubeconfig() {
-        # create kubeconfig (NOTE: do not version control this credentials file)
-        export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
-        t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
-      }
-      generate_kubeconfig
 
-      remove_warnings_logs
-      sleep 1 
-      install_kubernetes_dashboard  "$kubeconfig"
-      install_gateway_api_cilium "$kubeconfig" 
-      # installation_gateway_controller_nginx "$kubeconfig"
-      restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api
-      sleep 10
-      install_storage_class "$kubeconfig"
+      generate_kubeconfig
+      # kubectl ctx k3s-project
+
+      # remove_warnings_logs
+      # sleep 1 
+      # install_kubernetes_dashboard  
+      # install_gateway_api_cilium  
+      # # installation_gateway_controller_nginx 
+      # restart_cert_manager  # must be restarted after installation of Gateway Api
+      # sleep 10
+      # install_storage_class 
 
       verify_installation() {
-        k9s --kubeconfig $kubeconfig # https://k9scli.io/topics/commands/
+        k9s # https://k9scli.io/topics/commands/
+        kubectl get all -A 
         kubectl --kubeconfig $kubeconfig get all -A 
-        kubectl --kubeconfig $kubeconfig get configmap -A
-        kubectl --kubeconfig $kubeconfig get secrets -A
-        kubectl --kubeconfig $kubeconfig api-resources
-        kubectl --kubeconfig $kubeconfig api-versions
-        kubectl --kubeconfig $kubeconfig get gatewayclasses
+        kubectl get configmap -A
+        kubectl get secrets -A
+        kubectl api-resources
+        kubectl api-versions
+        kubectl get gatewayclasses
         hcloud all list
         terraform show
         terraform state list
         terraform state show type_of_resource.label_of_resource
 
-        helm list -A --all-namespaces --kubeconfig $kubeconfig
-        helm get values --all nginx -n nginx --kubeconfig $kubeconfig
-        helm get manifest nginx -n nginx --kubeconfig $kubeconfig
+        helm list -A --all-namespaces 
+        helm get values --all nginx -n nginx 
+        helm get manifest nginx -n nginx 
         
         journalctl -r -n 200
 
