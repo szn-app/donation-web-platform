@@ -42,15 +42,17 @@ hubble:
     enabled: true
   ui:
     enabled: true
+  # https://docs.cilium.io/en/stable/observability/metrics/#hubble-metrics
   metrics:
     enabled:
+      # HTTP Metrics
+      - "httpV2:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
+      # Policy Metrics
       - "policy:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
-      - "http:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
-      - "grpc:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
   tls:
     auto:
       enabled: true
-      method: helm
+      method: cronJob # generate certificates using hubble's hubblecertgen (check the hubblecertgen section for more details in cilium's helm values file)
       certValidityDuration: 1095
 
 MTU: 1450

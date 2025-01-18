@@ -73,18 +73,7 @@ module "kube-hetzner" {
   # NOTE: if Cilium UI enabled it can be accessed using ssh tunnel
   cilium_hubble_enabled = true
   # Configures the list of Hubble metrics to collect.
-  cilium_hubble_metrics_enabled = [
-    # Policy metrics for source and destination visibility
-    "policy:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace",
-    # HTTP metrics for application tracing
-    "http:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace",
-    # gRPC metrics for service communication
-    "grpc:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
-    # Network flow metrics (L3/L4 observability)
-    # "flow:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace",
-    # DNS metrics for resolving service dependencies
-    # "dns:sourceContext=workload-name|app|pod;destinationContext=dns;labelsContext=source_namespace",
-  ]
+  # cilium_hubble_metrics_enabled = [] # specified in the overriding custom cilium-values.yml file
   # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
   cilium_values = local.helm_values_file["cilium"]
 

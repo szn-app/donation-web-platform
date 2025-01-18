@@ -3,6 +3,8 @@
 install_gateway_api_cilium() { 
   [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
+  printf "Installing Cilium Gateway API controller...\n"
+
   restart_cilinium() { 
     kubectl --kubeconfig $kubeconfig -n kube-system rollout restart deployment/cilium-operator
     kubectl --kubeconfig $kubeconfig -n kube-system rollout restart ds/cilium
@@ -22,6 +24,16 @@ install_gateway_api_cilium() {
 
   verify() { 
     cilium --kubeconfig $kubeconfig status
+
+    # verify tls setup
+    {
+      kubectl --kubeconfig $kubeconfig get configmap -n kube-system cilium-config -o yaml | grep hubble-disable-tls
+      kubectl --kubeconfig $kubeconfig apply -n kube-system -f https://raw.githubusercontent.com/cilium/cilium/main/examples/hubble/hubble-cli.yaml
+      # https://docs.cilium.io/en/stable/observability/hubble/configuration/tls/
+      # ... 
+    }
+
+
   }
 }
 
@@ -39,17 +51,21 @@ installation_gateway_controller_nginx() {
 install_storage_class() { 
   [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
+  printf "Installing Longhorn storage class...\n"
+
   kubectl --kubeconfig $kubeconfig get storageclasses.storage.k8s.io
 
+  annotate_nodes() {
+    printf "Annotating nodes for Longhorn storage class...\n"
 
-  # add storage config through annotation (creating Longhorn 'disks')
-  # check storageReserve ratio values https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b 
-  # /var/lib/longhorn => instruct longhorn to create default 'disk' in path (customized in terraform file)
-  # /mnt/longhorn => # network storage mount point (default from kube-hetzner module)
-  # 25% of 40 GB local storage ~= 2^30 * 10 (NOTE: Hetzner GiB or GB ?) 
-  # 10% of 10GB ~= 2^30 * 1 attached dedicated hcloud volumes
-  {
-    config=$(cat <<EOT
+    # add storage config through annotation (creating Longhorn 'disks')
+    # check storageReserve ratio values https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b 
+    # /var/lib/longhorn => instruct longhorn to create default 'disk' in path (customized in terraform file)
+    # /mnt/longhorn => # network storage mount point (default from kube-hetzner module)
+    # 25% of 40 GB local storage ~= 2^30 * 10 (NOTE: Hetzner GiB or GB ?) 
+    # 10% of 10GB ~= 2^30 * 1 attached dedicated hcloud volumes
+    {
+      config=$(cat <<EOT
 [
   {
     "name": "longhorn-local-storage",
@@ -69,13 +85,13 @@ install_storage_class() {
 EOT
 )
 
-  agent_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
-  for node_name in "${agent_node_names[@]}"; do
-    echo "annotating node $node_name" 
-    kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
-  done 
+    agent_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] | not) | .metadata.name'))
+    for node_name in "${agent_node_names[@]}"; do
+      echo "annotating node $node_name" 
+      kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+    done 
 
-  config=$(cat <<EOT
+    config=$(cat <<EOT
 [
   {
     "name": "longhorn-local-storage",
@@ -88,39 +104,41 @@ EOT
 EOT
 )
 
-    control_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] ) | .metadata.name'))
-    for node_name in "${control_node_names[@]}"; do
-      echo "annotating node $node_name" 
-      kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
-    done 
+      control_node_names=($(kubectl --kubeconfig "$kubeconfig" get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] ) | .metadata.name'))
+      for node_name in "${control_node_names[@]}"; do
+        echo "annotating node $node_name" 
+        kubectl --kubeconfig "$kubeconfig" annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
+      done 
 
-  }
+    }
 
-  # Longhorn add tags for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
-  {
-    NAMESPACE="longhorn-system" # Namespace for Longhorn
-    LABEL_KEY="role" # Label key to match in Kubernetes nodes
+    # Longhorn add tags for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
+    {
+      NAMESPACE="longhorn-system" # Namespace for Longhorn
+      LABEL_KEY="role" # Label key to match in Kubernetes nodes
 
-    # Iterate through nodes and apply tags
-    for node in $(kubectl --kubeconfig $kubeconfig get nodes -o jsonpath='{.items[*].metadata.name}'); do
-      # Get the value of the label
-      LABEL_VALUE=$(kubectl --kubeconfig $kubeconfig get node $node -o jsonpath="{.metadata.labels['$LABEL_KEY']}")
+      # Iterate through nodes and apply tags
+      for node in $(kubectl --kubeconfig $kubeconfig get nodes -o jsonpath='{.items[*].metadata.name}'); do
+        # Get the value of the label
+        LABEL_VALUE=$(kubectl --kubeconfig $kubeconfig get node $node -o jsonpath="{.metadata.labels['$LABEL_KEY']}")
 
-      if [ -n "$LABEL_VALUE" ]; then
-        echo "Applying Longhorn tag '$LABEL_VALUE' to node '$node'"
+        if [ -n "$LABEL_VALUE" ]; then
+          echo "Applying Longhorn tag '$LABEL_VALUE' to node '$node'"
 
-        # Patch the Longhorn node with the label value as a tag
-        kubectl --kubeconfig $kubeconfig -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
-      else
-        echo "Node '$node' does not have label '$LABEL_KEY', skipping."
-      fi
-    done  
+          # Patch the Longhorn node with the label value as a tag
+          kubectl --kubeconfig $kubeconfig -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
+        else
+          echo "Node '$node' does not have label '$LABEL_KEY', skipping."
+        fi
+      done  
+    }
+
   }
 
   ###
-  
-  # storage classes definitions
-  t="$(mktemp).yaml" && cat <<-EOF > "$t"
+  define_storage_classes() {
+    # storage classes definitions
+    t="$(mktemp).yaml" && cat <<-EOF > "$t"
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -236,7 +254,11 @@ parameters:
   diskSelector: "local-storage-disk"
 EOF
    
-  kubectl --kubeconfig $kubeconfig apply -f $t
+    kubectl --kubeconfig $kubeconfig apply -f $t
+  }
+
+  annotate_nodes
+  define_storage_classes
 
   # [manually] verify that cloud volumes are attached to each nodes at /mnt/longhorn and check longhorn disk in /var/lib/longhorn
   verify_mount_inside_server() {
@@ -267,6 +289,8 @@ EOF
 # https://github.com/kubernetes/dashboard
 install_kubernetes_dashboard() {
   [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
+
+  printf "Installing Kubernetes Dashboard...\n"
 
   helm --kubeconfig $kubeconfig repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
   t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
@@ -338,6 +362,8 @@ EOF
 restart_cert_manager() { 
     [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
+    printf "Restarting cert-manager...\n"
+
     # verify installation https://cert-manager.io/docs/installation/kubectl/#verify
     verify_cert_manager_installation() {
         t=$(mktemp) && cat <<EOF > "$t"
@@ -378,6 +404,23 @@ EOF
 
   verify_cert_manager_installation
   kubectl --kubeconfig $kubeconfig rollout restart deployment cert-manager -n cert-manager
+}
+
+remove_warnings_logs() { 
+  kubectl --kubeconfig $kubeconfig apply -f - <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  log.override: |
+    #
+  stub.server: |
+    #
+EOF
+
+  kubectl --kubeconfig $kubeconfig rollout restart deploy/coredns -n kube-system
 }
 
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
@@ -446,11 +489,13 @@ hetzner_cloud_provision() {
       }
       generate_kubeconfig
 
-      sleep 10 
+      remove_warnings_logs
+      sleep 1 
       install_kubernetes_dashboard  "$kubeconfig"
       install_gateway_api_cilium "$kubeconfig" 
       # installation_gateway_controller_nginx "$kubeconfig"
       restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api
+      sleep 5
       install_storage_class "$kubeconfig"
 
       verify_installation() {
