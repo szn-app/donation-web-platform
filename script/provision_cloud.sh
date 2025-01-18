@@ -427,6 +427,12 @@ hetzner_cloud_provision() {
 
     if [ "$action" == "delete" ]; then
       pushd infrastructure
+        {
+          ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
+          find . -name "*.tfvars"
+          set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
+        }
+
         printf "Destroying infrastructure...\n"
         terraform init
         terraform destroy -auto-approve
@@ -560,7 +566,7 @@ hetzner_cloud_provision() {
                 for (i = 1; i <= NR; i++) {
                     if (i == last_depends_on_end) {
                         # Add the new dependency before the closing bracket
-                        print "    " new_dependency ","
+                        print "    ," new_dependency ","
                     }
                     print lines[i]
                 }
@@ -582,7 +588,7 @@ hetzner_cloud_provision() {
       export TF_LOG=DEBUG
       terraform init --upgrade # installed terraform module dependecies
       terraform validate
-
+      
       patch_init_tf_file
 
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
