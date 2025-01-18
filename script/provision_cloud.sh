@@ -11,7 +11,7 @@ install_gateway_api_cilium() {
   }
 
   # install CRDs required by Cilium Gateway API support https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/
-  { 
+  {
     kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
     kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
     kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
@@ -23,7 +23,10 @@ install_gateway_api_cilium() {
   restart_cilinium
 
   verify() { 
+    kubectl --kubeconfig=$kubeconfig get crd -A
     cilium --kubeconfig $kubeconfig status
+    cilium --kubeconfig $kubeconfig config view | grep -w "gateway"
+    cilium --kubeconfig $kubeconfig sysdump
 
     # verify tls setup
     {
@@ -33,13 +36,19 @@ install_gateway_api_cilium() {
       # ... 
     }
 
-
   }
 }
 
 # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
 # This controller could be used in place of the Cilium Gateway API controller 
 installation_gateway_controller_nginx() {
+  delete() { 
+    kubectl --kubeconfig $kubeconfig delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+
+    kubectl --kubeconfig $kubeconfig delete -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+    kubectl --kubeconfig $kubeconfig delete -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+  }
+
   # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
   kubectl --kubeconfig $kubeconfig apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
 
@@ -480,6 +489,11 @@ hetzner_cloud_provision() {
       export TF_LOG=DEBUG
       terraform init --upgrade # installed terraform module dependecies
       terraform validate
+      
+      # hackish override of init.tf to preinstall requisites for Cilium Gateway API      
+      {
+          cp -f init.tf.patch ./.terraform/modules/kube-hetzner/init.tf
+      }
 
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
@@ -497,15 +511,17 @@ hetzner_cloud_provision() {
       install_gateway_api_cilium "$kubeconfig" 
       # installation_gateway_controller_nginx "$kubeconfig"
       restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api
-      sleep 5
+      sleep 10
       install_storage_class "$kubeconfig"
 
       verify_installation() {
         k9s --kubeconfig $kubeconfig # https://k9scli.io/topics/commands/
         kubectl --kubeconfig $kubeconfig get all -A 
         kubectl --kubeconfig $kubeconfig get configmap -A
+        kubectl --kubeconfig $kubeconfig get secrets -A
         kubectl --kubeconfig $kubeconfig api-resources
         kubectl --kubeconfig $kubeconfig api-versions
+        kubectl --kubeconfig $kubeconfig get gatewayclasses
         hcloud all list
         terraform show
         terraform state list
