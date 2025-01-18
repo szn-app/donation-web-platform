@@ -1,27 +1,39 @@
 #!/bin/bash
 
-install_gateway_api() { 
+install_gateway_api_cilium() { 
   [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
 
-  # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
-  kubectl apply --kubeconfig $kubeconfig -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+  restart_cilinium() { 
+    kubectl --kubeconfig $kubeconfig -n kube-system rollout restart deployment/cilium-operator
+    kubectl --kubeconfig $kubeconfig -n kube-system rollout restart ds/cilium
+  }
 
   # install CRDs required by Cilium Gateway API support https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/
   { 
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
+    kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
   }
 
-  # Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
-  {
-    kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
-    kubectl apply --kubeconfig $kubeconfig -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
-    kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
+  restart_cilinium
+
+  verify() { 
+    cilium --kubeconfig $kubeconfig status
   }
+}
+
+# Gateway controller instlalation - https://gateway-api.sigs.k8s.io/implementations/ & https://docs.nginx.com/nginx-gateway-fabric/installation/ 
+# This controller could be used in place of the Cilium Gateway API controller 
+installation_gateway_controller_nginx() {
+  # Gateway API CRD installation - https://gateway-api.sigs.k8s.io/guides/#installing-a-gateway-controller
+  kubectl --kubeconfig $kubeconfig apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/standard-install.yaml   
+
+  kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/crds.yaml
+  kubectl --kubeconfig $kubeconfig apply -f https://raw.githubusercontent.com/nginxinc/nginx-gateway-fabric/v1.5.1/deploy/default/deploy.yaml
+  kubectl --kubeconfig $kubeconfig get pods -n nginx-gateway
 }
 
 install_storage_class() { 
@@ -368,15 +380,6 @@ EOF
   kubectl --kubeconfig $kubeconfig rollout restart deployment cert-manager -n cert-manager
 }
 
-restart_cilinium() { 
-  [ -z "$1" ] && { echo "Error: No arguments provided."; return 1; } || kubeconfig="$1" 
-
-  kubectl --kubeconfig $kubeconfig -n kube-system rollout restart deployment/cilium-operator
-  kubectl --kubeconfig $kubeconfig -n kube-system rollout restart ds/cilium
-  # verify 
-  cilium --kubeconfig $kubeconfig status
-}
-
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner
 hetzner_cloud_provision() {
     action=${1:-"install"}
@@ -394,6 +397,7 @@ hetzner_cloud_provision() {
       hcloud version && kubectl version && packer --version
       tofu --version && terraform version # either tools should work
       helm version && cilium version
+      k9s version
     }
 
     manually_prerequisites() {
@@ -435,18 +439,22 @@ hetzner_cloud_provision() {
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
       
-      # create kubeconfig (NOTE: do not version control this credentials file)
-      export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
-      t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
+      generate_kubeconfig() {
+        # create kubeconfig (NOTE: do not version control this credentials file)
+        export kubeconfig="$(realpath ~/.ssh)/kubernetes-project-credentials.kubeconfig.yaml"
+        t=$(mktemp) && terraform output --raw kubeconfig > "$t" && mv $t $kubeconfig && chmod 600 "$kubeconfig"
+      }
+      generate_kubeconfig
 
       sleep 10 
       install_kubernetes_dashboard  "$kubeconfig"
-      install_gateway_api "$kubeconfig"
+      install_gateway_api_cilium "$kubeconfig" 
+      # installation_gateway_controller_nginx "$kubeconfig"
       restart_cert_manager "$kubeconfig" # must be restarted after installation of Gateway Api
-      restart_cilinium "$kubeconfig"
       install_storage_class "$kubeconfig"
 
       verify_installation() {
+        k9s --kubeconfig $kubeconfig # https://k9scli.io/topics/commands/
         kubectl --kubeconfig $kubeconfig get all -A 
         kubectl --kubeconfig $kubeconfig get configmap -A
         kubectl --kubeconfig $kubeconfig api-resources

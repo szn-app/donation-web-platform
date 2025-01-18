@@ -38,3 +38,6 @@ install_cilium_cli() {
     rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
 }
 
+install_k9s() { 
+    brew install derailed/k9s/k9s
+}

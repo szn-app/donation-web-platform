@@ -47,6 +47,11 @@ hubble:
       - "policy:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
       - "http:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
       - "grpc:sourceContext=workload-name|app|pod;destinationContext=workload-name|app|pod|dns;labelsContext=source_namespace,destination_namespace"
+  tls:
+    auto:
+      enabled: true
+      method: helm
+      certValidityDuration: 1095
 
 MTU: 1450
 
