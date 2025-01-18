@@ -465,15 +465,17 @@ hetzner_cloud_provision() {
       }
       create_snapshot
       hcloud context create "k8s-project"
-
-      ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
-      find . -name *.tfvars
-      export TF_TOKEN_app_terraform_io=""  # required
     }  
     
     ### handle terraform 
     {
       pushd infrastructure
+
+      {
+        ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
+        find . -name "*.tfvars"
+        set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
+      }
 
       export TF_LOG=DEBUG
       terraform init --upgrade # installed terraform module dependecies
