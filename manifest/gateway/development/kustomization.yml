@@ -17,3 +17,11 @@ patches:
       - op: add
         path: /metadata/namespace
         value: donation-app
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/gatewayClassName
+        value: "nginx"

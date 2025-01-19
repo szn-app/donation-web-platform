@@ -6,7 +6,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: https
 
   hostnames:
@@ -31,7 +31,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: https-api
 
   hostnames:
@@ -57,7 +57,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: https-k8s
 
   hostnames:
@@ -84,7 +84,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: https-k8s
 
   hostnames:
@@ -111,7 +111,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: https-auth
 
   hostnames:

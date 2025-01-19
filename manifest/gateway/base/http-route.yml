@@ -7,7 +7,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: http # name of listener
 
   hostnames:
@@ -29,7 +29,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: http-subdomain-all # name of listener
 
   hostnames:
@@ -51,7 +51,7 @@ metadata:
 spec:
   parentRefs:
     - name: gateway
-      namespace: nginx-gateway
+      namespace: gateway
       sectionName: http-redirect-ip-access # name of listener
 
   rules:

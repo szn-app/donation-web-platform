@@ -10,3 +10,9 @@ kind: Namespace
 
 metadata:
   name: auth
+---
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: gateway

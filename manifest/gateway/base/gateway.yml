@@ -2,13 +2,13 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 
 metadata:
-  name: gateway
-  namespace: nginx-gateway
+  name: gateway # cilium adds a prefix "cilium-gateway-*"
+  namespace: gateway
   annotations:
     cert-manager.io/cluster-issuer: staging-cluster-issuer # when testing to avoid Let's Encrypt rate limit of `production-cluster-issuer`
 
 spec:
-  gatewayClassName: nginx
+  gatewayClassName: cilium
   # NOTE: order is important as kustomize targets indecies of listners
   listeners:
     - name: http

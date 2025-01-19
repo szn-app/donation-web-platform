@@ -5,13 +5,13 @@ kind: Ingress
 
 metadata:
   name: ingress-expose-gateway
-  namespace: nginx-gateway
+  namespace: gateway
   annotations: #  https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 spec:
   ingressClassName: nginx
-  defaultBackend: 
-    service: 
-      name: nginx-gateway
-      port: 
+  defaultBackend:
+    service:
+      name: gateway
+      port:
         name: http
