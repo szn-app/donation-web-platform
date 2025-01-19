@@ -222,7 +222,7 @@ install_ory_stack() {
 
         printf "install Ory Kratos \n"
         # preprocess file through substituting env values
-        t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
+        t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
         default_secret="$(openssl rand -hex 16)"
         cookie_secret="$(openssl rand -hex 16)"
         cipher_secret="$(openssl rand -hex 16)"
@@ -251,7 +251,7 @@ install_ory_stack() {
 
         printf "install Ory Hydra \n"
         # preprocess file through substituting env values
-        t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "replaced env variables in manifest: file://$t\n" 
+        t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
         system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
         cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
         helm upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra/helm-values.yml -f $t \
@@ -303,13 +303,14 @@ create_oauth2_client_for_trusted_app() {
         {
             kubectl run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
             sleep 5
+            kubectl wait --for=condition=ready pod/setup-pod --namespace=auth --timeout=300s
 
             # app client users for trusted app
             # redirect uri is where the resource owner (user) will be redirected to once the authorization server grants permission to the client
             # NOTE: using the `authorization code` the client gets both `accesst token` and `id token` when `scope` includes `openid`.
             t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
-echo 'Running setup script!'
+echo 'Adding oauth2 clients'
 curl 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id' | grep -q 'frontend-client' || curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
 --data '{
     "client_id": "frontend-client",
@@ -334,7 +335,7 @@ EOF
             client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
             t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
-echo 'Running setup script!'
+echo 'Adding oauth2 clients'
 
 curl -s 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id' | grep -q 'internal-communication' || \
 curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
@@ -401,7 +402,8 @@ EOF
 
     manual_verify() { 
         # use --debug with `helm` for verbose output
-
+        
+        # tunnel to remote service 
         kubectl port-forward -n auth service/kratos-admin 8083:80
 
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash 
@@ -449,14 +451,39 @@ EOF
     }
 }
 
+deploy_application() { 
+    action=${1:-"install"}
+
+    {
+        if [ "$action" == "delete" ]; then
+            kubectl delete -k ./manifest/entrypoint/production
+            return 
+        fi
+    }
+
+    pushd ./manifest 
+        kubectl apply -k ./entrypoint/production
+        {
+            pushd ./entrypoint/production 
+            t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            popd
+        }
+    popd 
+}
+
 kustomize_kubectl() {
     action=${1:-"install"}
+
+    if ! command -v kubectl-ctx &> /dev/null; then
+        echo "kubectl ctx is not installed. Exiting."
+        return
+    fi
 
     kubectl ctx k3s
 
     {
         if [ "$action" == "delete" ]; then
-            kubectl delete -k ./manifest/entrypoint/production
+            deploy_application delete
             install_ory_stack delete
             return 
          elif [ "$action" == "kustomize" ]; then
@@ -467,21 +494,12 @@ kustomize_kubectl() {
         fi
     }
 
-
     env_files
 
     install_ory_stack
-
-    pushd ./manifest 
-        kubectl apply -k ./entrypoint/production
-        {
-            pushd ./entrypoint/production 
-            t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
-            popd
-        }
-    popd 
-    
-    echo "Services deployed to the cluster. NOTE: wait few minutes to complete startup and propagate TLS certificate generation"
+    deploy_application
+        
+    echo "Services deployed to the cluster (wait few minutes to complete startup and propagate TLS certificate generation)."
 
     # verify cluster certificate issued successfully 
     _verify() {

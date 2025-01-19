@@ -279,7 +279,7 @@ EOF
     node_name="" 
     kubectl -n longhorn-system get nodes.longhorn.io $node_name -o yaml
 
-    # expose longhorn UI dashboard 
+    # expose longhorn UI dashboard (create tunnel) 
     kubectl port-forward -n longhorn-system service/longhorn-frontend 8082:80
   }
 }
@@ -512,6 +512,7 @@ hetzner_cloud_provision() {
 
         # Replace the default kubeconfig with the merged file
         mv "$DEFAULT_KUBECONFIG.tmp" "$DEFAULT_KUBECONFIG"
+        find $(realpath ~/.kube) -name "*.kubeconfig.yml" -exec chmod 600 {} + && chmod 600 $(realpath ~/.kube)/config
         echo "Merged kubeconfig files into $DEFAULT_KUBECONFIG"
 
         # Verify the merge
