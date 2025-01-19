@@ -452,7 +452,7 @@ EOF
 kustomize_kubectl() {
     action=${1:-"install"}
 
-    kubectl ctx k3s-project
+    kubectl ctx k3s
 
     {
         if [ "$action" == "delete" ]; then

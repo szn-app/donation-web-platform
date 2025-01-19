@@ -425,6 +425,11 @@ EOF
 hetzner_cloud_provision() {
     action=${1:-"install"}
 
+    if ! command -v kubectl-ctx &> /dev/null; then
+        echo "kubectl ctx is not installed. Exiting."
+        return
+    fi
+
     if [ "$action" == "delete" ]; then
       pushd infrastructure
         ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
@@ -476,6 +481,9 @@ hetzner_cloud_provision() {
 
       
       generate_kubeconfig() {
+        find . -name "*.tfvars"
+        set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
+
         # create kubeconfig (NOTE: do not version control this credentials file)
         terraform output --raw kubeconfig > "$(realpath ~/.kube)/kubernetes-project-credentials.kubeconfig.yml"
 
@@ -498,8 +506,9 @@ hetzner_cloud_provision() {
         fi
 
         # Merge all kubeconfig files into the default kubeconfig
-        KUBECONFIG=$(echo "$KUBECONFIG_FILES" | tr '\n' ':')
-        kubectl config view --merge --flatten --kubeconfig="$KUBECONFIG:$DEFAULT_KUBECONFIG" > "$DEFAULT_KUBECONFIG.tmp"
+        # KUBECONFIG=$(echo "$KUBECONFIG_FILES" | tr '\n' ':')
+        export KUBECONFIG=$(echo "$KUBECONFIG_FILES" | tr '\n' ':')
+        kubectl config view --merge --flatten > "$DEFAULT_KUBECONFIG.tmp"
 
         # Replace the default kubeconfig with the merged file
         mv "$DEFAULT_KUBECONFIG.tmp" "$DEFAULT_KUBECONFIG"
@@ -558,16 +567,17 @@ hetzner_cloud_provision() {
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
 
-      # generate_kubeconfig
-      # kubectl ctx k3s-project
+      generate_kubeconfig
+      
+      kubectl ctx k3s
 
-      # remove_warnings_logs
-      # sleep 1 
-      # install_kubernetes_dashboard  
-      # install_gateway_api_cilium  # [previous implementation] # installation_gateway_controller_nginx 
-      # restart_cert_manager  # must be restarted after installation of Gateway Api
-      # sleep 10
-      # install_storage_class 
+      remove_warnings_logs
+      sleep 1 
+      install_kubernetes_dashboard  
+      install_gateway_api_cilium  # [previous implementation] # installation_gateway_controller_nginx 
+      restart_cert_manager  # must be restarted after installation of Gateway Api
+      sleep 25
+      install_storage_class 
 
       verify_installation() {
         k9s # https://k9scli.io/topics/commands/
