@@ -427,11 +427,9 @@ hetzner_cloud_provision() {
 
     if [ "$action" == "delete" ]; then
       pushd infrastructure
-        {
-          ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
-          find . -name "*.tfvars"
-          set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
-        }
+        ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
+        find . -name "*.tfvars"
+        set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
 
         printf "Destroying infrastructure...\n"
         terraform init
@@ -514,94 +512,59 @@ hetzner_cloud_provision() {
       patch_init_tf_file() { 
         # Install CRDs required by Cilium Gateway API support (required CRDs before Cilium installation) https://docs.cilium.io/en/stable/network/servicemesh/gateway-api/gateway-api/ 
         #     IMPORTANT: Cilium Gateway API controller must be installed BEFORE Cilium installation, otherwise even a restart won't work
-        # Define variables
-        TARGET_FILE=".terraform/modules/kube-hetzner/init.tf"         # Path to the Terraform file
-        INJECT_FILE="init.tf.patch"  # Path to the file whose contents you want to inject
-        RESOURCE_NAME="rancher_bootstrap" # Name of the Terraform resource to find
+        #!/bin/bash
+        INIT_TF_PATH=".terraform/modules/kube-hetzner/init.tf"
+        PATCH_FILE="init.tf.patch"
 
-        # Check if both files exist
-        if [[ ! -f "$TARGET_FILE" ]]; then
-          echo "Error: Target file '$TARGET_FILE' does not exist."
-          exit 1
+        # Check if files exist
+        if [[ ! -f "$INIT_TF_PATH" ]]; then
+            echo "Error: $INIT_TF_PATH does not exist."
+            return
         fi
 
-        if [[ ! -f "$INJECT_FILE" ]]; then
-          echo "Error: Inject file '$INJECT_FILE' does not exist."
-          exit 1
+        if [[ ! -f "$PATCH_FILE" ]]; then
+            echo "Error: $PATCH_FILE does not exist."
+            return
         fi
 
-        # Backup the original file
-        cp "$TARGET_FILE" "${TARGET_FILE}.backup"
+        # Verify the target line exists in the file
+        if ! grep -q 'kubectl apply -k /var/post_install' "$INIT_TF_PATH"; then
+            echo "Error: Target line 'kubectl apply -k /var/post_install' not found in $INIT_TF_PATH."
+            return
+        fi
 
-        # Use awk to inject the file content right before the of the resource
-        awk -v inject_content="$(cat "$INJECT_FILE")" -v resource_name="$RESOURCE_NAME" '
-            BEGIN { injected = 0 }
-            $0 ~ "resource .*\"" resource_name "\"" && !injected {
-                print inject_content "\n"
-                injected = 1
-            }
-            { print }
-        ' "$TARGET_FILE" > "${TARGET_FILE}.tmp"
-        mv "${TARGET_FILE}.tmp" "$TARGET_FILE"
+        # Read the patch content
+        PATCH_CONTENT=$(cat "$PATCH_FILE")
 
-        NEW_DEPENDENCY="null_resource.patch_cilium_gateway_api"
-        awk -v new_dependency="$NEW_DEPENDENCY" '
-            BEGIN { last_depends_on_start = 0; last_depends_on_end = 0 }
-            {
-                # Record the line number where "depends_on = [" starts
-                if (/depends_on = \[/) {
-                    last_depends_on_start = NR
-                }
-                
-                # Record the line number where "]" ends the "depends_on" block
-                if (last_depends_on_start > 0 && /\]/) {
-                    last_depends_on_end = NR
-                }
-                
-                # Store the file content
-                lines[NR] = $0
-            }
-            END {
-                # Print the file content with modification
-                for (i = 1; i <= NR; i++) {
-                    if (i == last_depends_on_end) {
-                        # Add the new dependency before the closing bracket
-                        print "    ," new_dependency ","
-                    }
-                    print lines[i]
-                }
-            }
-        ' "$TARGET_FILE" > "${TARGET_FILE}.tmp"
-        mv "${TARGET_FILE}.tmp" "$TARGET_FILE"
+        INDENT="        "  # Use 8 spaces for indentation
+        PATCH_CONTENT=$(sed "s/^/$INDENT/" "$PATCH_FILE")  # Add indentation to each line in the patch file
 
-        echo "Injection completed. Backup saved to ${TARGET_FILE}.backup"
+        # Read each line from the patch file
+        while IFS= read -r line; do sed -i.bak "/kubectl apply -k \/var\/post_install/i\\\t\t\t\t$line" "$INIT_TF_PATH"; done < "$PATCH_FILE"
+        echo "Patch applied successfully. A backup of the original file is saved as ${INIT_TF_PATH}.bak."
       }
 
       hcloud context create "k8s-project"
 
-      {
-        ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
-        find . -name "*.tfvars"
-        set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
-      }
+      ### [manual] set variables using "terraform.tfvars" or CLI argument or equivalent env variables (with `TF_TOKEN_*` prefix)
+      find . -name "*.tfvars"
+      set -a && source ".env" && set +a # export TF_TOKEN_app_terraform_io="" 
 
       export TF_LOG=DEBUG
       terraform init --upgrade # installed terraform module dependecies
       terraform validate
-      
-      patch_init_tf_file
 
+      patch_init_tf_file
       t_plan="$(mktemp).tfplan" && terraform plan -no-color -out $t_plan
       terraform apply -auto-approve $t_plan
 
-      generate_kubeconfig
+      # generate_kubeconfig
       # kubectl ctx k3s-project
 
       # remove_warnings_logs
       # sleep 1 
       # install_kubernetes_dashboard  
-      # install_gateway_api_cilium  
-      # # installation_gateway_controller_nginx 
+      # install_gateway_api_cilium  # [previous implementation] # installation_gateway_controller_nginx 
       # restart_cert_manager  # must be restarted after installation of Gateway Api
       # sleep 10
       # install_storage_class 

@@ -1,28 +1,6 @@
-# install prerequisites for Cilium Gateway API controller
-resource "null_resource" "patch_cilium_gateway_api" {
-  connection {
-    user           = "root"
-    private_key    = var.ssh_private_key
-    agent_identity = local.ssh_agent_identity
-    host           = module.control_planes[keys(module.control_planes)[0]].ipv4_address
-    port           = var.ssh_port
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "echo 'Installing Cilium Gateway API controller...'",
-      "if ! command -v kubectl &> /dev/null; then echo 'kubectl not found'; exit 1; fi",
-      "if ! kubectl cluster-info &> /dev/null; then echo 'Cluster is not accessible'; exit 1; fi",
-      "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml || exit 1",
-      "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml || exit 1",
-      "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml || exit 1",
-      "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml || exit 1",
-      "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml || exit 1",
-      "kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml || exit 1"
-    ]
-  }
-  
-  depends_on = [
-    null_resource.first_control_plane
-  ]
-}
+"kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml",
+"kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml",
+"kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml",
+"kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml",
+"kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml",
+"kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml",
