@@ -1,7 +1,11 @@
+# https://github.com/cert-manager/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml
+
 config:
   apiVersion: controller.config.cert-manager.io/v1alpha1
   kind: ControllerConfiguration
   enableGatewayAPI: true
+  featureGates:
+    ExperimentalGatewayAPISupport: true # BETA - default=true
 
 crds:
   enabled: true

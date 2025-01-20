@@ -31,7 +31,7 @@ module "kube-hetzner" {
   cluster_name = "k3s"
   use_cluster_name_in_node_name = true
   automatically_upgrade_k3s = true
-  initial_k3s_channel = "v1.31" # "stable"
+  initial_k3s_channel = "stable" # "v1.31" # "stable"
   # NOTE: checkout also longhorn_values > node-down-pod-deletion-policy
   system_upgrade_enable_eviction = true
   system_upgrade_use_drain = true
@@ -185,7 +185,7 @@ module "kube-hetzner" {
   # enable longhorn and dependency drivers
   enable_iscsid = true
   enable_longhorn = true # add Longhorn as storage class in kuberenetes
-  longhorn_version = "v1.6.4"
+  longhorn_version = "v1.7.2"
   # TODO: fix[requires PR]: the module doesn't install all required dependeices on control nodes and prevents Longhorn from being able to create disks and schedule on cotnrol nodes (thus leaving network longhorn volumes only for worker nodes )
   longhorn_helmchart_bootstrap = true # if to run on control-plane nodes too
   longhorn_fstype = "ext4" # "xfs"
@@ -196,7 +196,7 @@ module "kube-hetzner" {
   # Cert-manager for automatic TLS certificates
   enable_cert_manager = true
   cert_manager_helmchart_bootstrap = true # run on control-plane nodes too
-  cert_manager_version = "v1.16.2"
+  cert_manager_version = "v1.16.3"
   cert_manager_values = local.helm_values_file["cert-manager"]
 
   # NOTE: `extra_kustomize_deployment_commands` doesn't get to run unless there is ./extra-manifests/kustomization.yaml.tpl file this is a bug and error prone better to use post-terraform shell scripts with the kubeconfig file for connection

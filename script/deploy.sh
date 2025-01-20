@@ -515,10 +515,11 @@ kustomize_kubectl() {
 
         kubectl get clusterissuer -A # two issuers: staging & production issuers
         kubectl describe challenge -A # ephemeral challenge appearing during certificate issuance process
-        kubectl get order -A # should be STATE = pending → STATE = valid
         kubectl get certificate -A # should be READY = True
+        kubectl get order -A # should be STATE = pending → STATE = valid
         kubectl get httproute -A
         kubectl get gateway -A
+        kubectl get crds -A
 
         # check dns + web server response with tls staging certificate
         domain_name=""
@@ -530,6 +531,7 @@ kustomize_kubectl() {
         # run ephemeral debug container
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace some_namespace -- /bin/bash 
         
+        kubectl -n kube-system edit configmap cilium-config
     }
 
 }

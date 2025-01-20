@@ -392,7 +392,7 @@ spec:
 EOF
             
         kubectl apply -f $t 
-        while ! kubectl describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"; do
+        while ! $(kubectl describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"); do
           echo "Retry checking for successfully issued certificate. sleep 5s..."; 
           sleep 5
         done

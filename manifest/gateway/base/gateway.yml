@@ -5,6 +5,7 @@ metadata:
   name: gateway # cilium adds a prefix "cilium-gateway-*"
   namespace: gateway
   annotations:
+    # automatically create and renew Let's Encrypt certificates
     cert-manager.io/cluster-issuer: staging-cluster-issuer # when testing to avoid Let's Encrypt rate limit of `production-cluster-issuer`
 
 spec:
