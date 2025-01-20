@@ -15,9 +15,25 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
+      hostname: "wosoom.com"
       allowedRoutes:
         namespaces:
-          from: All # required for letsecrypt
+          from: All
+
+    - name: http-subdomain
+      protocol: HTTP
+      port: 80
+      hostname: "*.wosoom.com"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    - name: direct-ip
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
 
     - name: https
       protocol: HTTPS
@@ -79,6 +95,20 @@ spec:
       protocol: HTTPS
       port: 443
       hostname: "dashboard.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
+
+    - name: https-k8s-hubble
+      protocol: HTTPS
+      port: 443
+      hostname: "hubble.k8s.donation-app.test"
       allowedRoutes:
         namespaces:
           from: All # required for letsecrypt

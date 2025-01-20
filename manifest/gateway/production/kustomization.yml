@@ -22,32 +22,36 @@ patches:
       name: gateway
     patch: |-
       - op: replace
-        path: /spec/listeners/1/hostname
-        value: "wosoom.com"
-        
-      - op: replace
-        path: /spec/listeners/2/hostname
-        value: "api.wosoom.com"
-        
-      - op: replace
-        path: /spec/listeners/3/hostname
-        value: "auth.wosoom.com"
-
-      - op: replace
-        path: /spec/listeners/4/hostname
-        value: "longhorn.k8s.wosoom.com"
-
-      - op: replace
-        path: /spec/listeners/5/hostname
-        value: "dashboard.k8s.wosoom.com"
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: "production-cluster-issuer"
 
   - target:
       kind: Gateway
       name: gateway
     patch: |-
       - op: replace
-        path: /metadata/annotations/cert-manager.io~1cluster-issuer
-        value: "production-cluster-issuer"
+        path: /spec/listeners/3/hostname
+        value: "wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/4/hostname
+        value: "api.wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/5/hostname
+        value: "auth.wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/6/hostname
+        value: "longhorn.k8s.wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/7/hostname
+        value: "dashboard.k8s.wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/8/hostname
+        value: "hubble.k8s.wosoom.com"
 
   - target:
       kind: HTTPRoute
@@ -59,7 +63,7 @@ patches:
 
   - target:
       kind: HTTPRoute
-      name: http-redirect-subdomain
+      name: http-subdomain-redirect
     patch: |-
       - op: replace
         path: /spec/hostnames/0
@@ -83,11 +87,11 @@ patches:
 
   - target:
       kind: HTTPRoute
-      name: https-k8s-dashboard
+      name: https-auth
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: "dashboard.k8s.wosoom.com"
+        value: "auth.wosoom.com"
 
   - target:
       kind: HTTPRoute
@@ -99,8 +103,16 @@ patches:
 
   - target:
       kind: HTTPRoute
-      name: https-auth
+      name: https-k8s-dashboard
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: "auth.wosoom.com"
+        value: "dashboard.k8s.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: https-k8s-hubble
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "hubble.k8s.wosoom.com"

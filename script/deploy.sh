@@ -524,13 +524,14 @@ kustomize_kubectl() {
         kubectl describe -k ./
         kubectl diff -k ./
 
-        kubectl get clusterissuer -A # two issuers: staging & production issuers
-        kubectl describe challenge -A # ephemeral challenge appearing during certificate issuance process
-        kubectl get certificate -A # should be READY = True
-        kubectl get order -A # should be STATE = pending → STATE = valid
-        kubectl get httproute -A
-        kubectl get gateway -A
-        kubectl get crds -A
+        # cert-manager related 
+        # two issuers: staging & production issuers 
+        # ephemeral challenge appearing during certificate issuance process 
+        # certificate should be READY = True
+        # order: should be STATE = pending → STATE = valid
+        kubectl get clusterissuer,certificate,challenge,order -A 
+        kubectl get gateway,httproute,crds -A 
+        kubectl describe gateway -n gateway
 
         # check dns + web server response with tls staging certificate
         domain_name=""
