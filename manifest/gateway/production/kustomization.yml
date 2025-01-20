@@ -22,28 +22,24 @@ patches:
       name: gateway
     patch: |-
       - op: replace
-        path: /spec/listeners/0/hostname
-        value: "wosoom.com"
-        
-      - op: replace
         path: /spec/listeners/1/hostname
-        value: "*.wosoom.com"
+        value: "wosoom.com"
         
       - op: replace
         path: /spec/listeners/2/hostname
-        value: "wosoom.com"
-        
-      - op: replace
-        path: /spec/listeners/3/hostname
         value: "api.wosoom.com"
         
       - op: replace
+        path: /spec/listeners/3/hostname
+        value: "auth.wosoom.com"
+
+      - op: replace
         path: /spec/listeners/4/hostname
-        value: "*.k8s.wosoom.com"
+        value: "longhorn.k8s.wosoom.com"
 
       - op: replace
         path: /spec/listeners/5/hostname
-        value: "auth.wosoom.com"
+        value: "dashboard.k8s.wosoom.com"
 
   - target:
       kind: Gateway
@@ -59,7 +55,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hostnames/0
-        value: wosoom.com
+        value: "wosoom.com"
 
   - target:
       kind: HTTPRoute
@@ -108,11 +104,3 @@ patches:
       - op: replace
         path: /spec/hostnames/0
         value: "auth.wosoom.com"
-
-  # - target:
-  #     kind: HTTPRoute
-  #     name: http-web-server
-  #   patch: |-
-  #     - op: replace
-  #       path: /spec/hostnames/0
-  #       value: wosoom.com

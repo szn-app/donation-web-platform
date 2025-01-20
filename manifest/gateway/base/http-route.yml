@@ -8,7 +8,7 @@ spec:
   parentRefs:
     - name: gateway
       namespace: gateway
-      sectionName: http # name of listener
+      sectionName: http
 
   hostnames:
     - donation-app.test
@@ -30,7 +30,7 @@ spec:
   parentRefs:
     - name: gateway
       namespace: gateway
-      sectionName: http-subdomain-all # name of listener
+      sectionName: http
 
   hostnames:
     - "*.donation-app.test"
@@ -42,22 +42,11 @@ spec:
             scheme: https
             statusCode: 301
 
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-
-metadata:
-  name: http-redirect-ip-access
-spec:
-  parentRefs:
-    - name: gateway
-      namespace: gateway
-      sectionName: http-redirect-ip-access # name of listener
-
-  rules:
-    - filters:
-        - type: RequestRedirect
-          requestRedirect:
-            scheme: http
-            hostname: "localhost"
-            statusCode: 301
+    # - backendRefs:
+    #     # kubernetees service
+    #     - name: web-server
+    #       port: 80
+    #   matches:
+    #     - path:
+    #         type: PathPrefix
+    #         value: /

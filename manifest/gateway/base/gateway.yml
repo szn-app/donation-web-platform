@@ -15,15 +15,6 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
-      hostname: "donation-app.test"
-      allowedRoutes:
-        namespaces:
-          from: All # required for letsecrypt
-
-    - name: http-subdomain-all
-      protocol: HTTP
-      port: 80
-      hostname: "*.donation-app.test"
       allowedRoutes:
         namespaces:
           from: All # required for letsecrypt
@@ -56,20 +47,6 @@ spec:
             name: tls-certificate-donation-app
             group: ""
 
-    - name: https-k8s
-      protocol: HTTPS
-      port: 443
-      hostname: "*.k8s.donation-app.test"
-      allowedRoutes:
-        namespaces:
-          from: All # required for letsecrypt
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            name: tls-certificate-donation-app
-            group: ""
-
     - name: https-auth
       protocol: HTTPS
       port: 443
@@ -84,9 +61,30 @@ spec:
             name: tls-certificate-donation-app
             group: ""
 
-    - name: http-redirect-ip-access
-      protocol: HTTP
-      port: 80
+    - name: https-k8s-longhorn
+      protocol: HTTPS
+      port: 443
+      hostname: "longhorn.k8s.donation-app.test"
       allowedRoutes:
         namespaces:
           from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
+
+    - name: https-k8s-dashboard
+      protocol: HTTPS
+      port: 443
+      hostname: "dashboard.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-donation-app
+            group: ""
