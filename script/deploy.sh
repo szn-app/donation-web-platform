@@ -480,21 +480,32 @@ kustomize_kubectl() {
     fi
 
     kubectl ctx k3s
+    env_files
 
     {
         if [ "$action" == "delete" ]; then
-            deploy_application delete
             install_ory_stack delete
+            deploy_application delete
             return 
          elif [ "$action" == "kustomize" ]; then
             pushd manifest/entrypoint/production 
             t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
             return
+         elif [ "$action" == "app" ]; then
+            deploy_application
+            return
+        elif [ "$action" != "install" ]; then
+            # Call the function based on the argument
+            if declare -f "$action" > /dev/null; then
+                "$action" # Call the function
+                return
+            else
+                echo "Unknown action: $action"
+                return 
+            fi
         fi
     }
-
-    env_files
 
     install_ory_stack
     deploy_application

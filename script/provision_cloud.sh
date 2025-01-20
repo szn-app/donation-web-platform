@@ -110,6 +110,8 @@ EOT
 
     }
 
+    sleep 10 
+
     # Longhorn add tags for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
     {
       NAMESPACE="longhorn-system" # Namespace for Longhorn
@@ -577,7 +579,7 @@ hetzner_cloud_provision() {
       install_kubernetes_dashboard  
       install_gateway_api_cilium  # [previous implementation] # installation_gateway_controller_nginx 
       restart_cert_manager  # must be restarted after installation of Gateway Api
-      sleep 25
+      sleep 20
       install_storage_class 
 
       verify_installation() {
