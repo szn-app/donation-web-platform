@@ -13,27 +13,28 @@ labels:
     includeSelectors: true
 
 patches:
-  - target:
-      kind: Deployment
-      name: auth-ui
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: _ # required field but not used
+  # TODO: add proper limits if needed
+  # - target:
+  #     kind: Deployment
+  #     name: auth-ui
+  #   patch: |-
+  #     apiVersion: apps/v1
+  #     kind: Deployment
+  #     metadata:
+  #       name: _ # required field but not used
 
-      spec: 
-        template:  
-          spec: 
-            containers:
-              - name: auth-ui
-                resources:
-                  requests:
-                    cpu: "10m" 
-                    memory: "20Mi"
-                  limits: 
-                    cpu: "50m"
-                    memory: "100Mi"
+  #     spec:
+  #       template:
+  #         spec:
+  #           containers:
+  #             - name: auth-ui
+  #               resources:
+  #                 requests:
+  #                   cpu: "10m"
+  #                   memory: "20Mi"
+  #                 limits:
+  #                   cpu: "50m"
+  #                   memory: "100Mi"
 
   # NOTE: taint keys are defined in the Terraform file
   - target:
