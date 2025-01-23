@@ -52,8 +52,8 @@ spec:
                   name: secrets-auth-ui
                   key: CSRF_COOKIE_SECRET
                   optional: false
-            # - name: HYDRA_ADMIN_URL
-            #   value: http://ory-hydra-authorize:4434/
+            - name: HYDRA_ADMIN_URL
+              value: http://hydra-admin/ # Updated port to match Hydra admin port
           envFrom:
             - configMapRef:
                 name: properties-map-auth-ui # add additional values

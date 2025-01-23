@@ -402,7 +402,8 @@ install_ory_stack() {
 
             # NOTE: SDK libraries for Oauth and OIDC compose requests better
             # initiate login flow and redirect to login page
-            curl -i "https://auth.wosoom.com/authorize/oauth2/auth?client_id=frontend-client&response_type=code%20id_token&scope=offline_access%20openid&redirect_url=https://auth.wosoom.com/authorize/oauth-redirect&state=some_random_string"
+            curl -i "https://auth.wosoom.com/authorize/oauth2/auth?client_id=frontend-client&response_type=code%20id_token&scope=offline_access%20openid&redirect_url=https://wosoom.com/&state=some_random_string&nonce=some_other_random_string"
+            # [manual] following the process should redirect after login with the authorization code provided in the URL
         }
 
         popd
@@ -473,7 +474,7 @@ curl 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="front
     "client_name": "frontend-client",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code id_token"],
-    "redirect_uris": ["https://auth.wosoom.com/authorize/oauth-redirect"], 
+    "redirect_uris": ["https://wosoom.com/"], 
     "audience": ["exposed-api"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
@@ -495,7 +496,7 @@ EOF
                     --response-type code,id_token \
                     --format json \
                     --scope openid --scope offline \
-                    --redirect-uri https://auth.wosoom.com/authorize/oauth-redirect --token-endpoint-auth-method none
+                    --redirect-uri https://wosoom.com/ --token-endpoint-auth-method none
 
                 code_client_id=$(echo $code_client | jq -r '.client_id')
                 code_client_secret=$(echo $code_client | jq -r '.client_secret')
@@ -520,7 +521,7 @@ EOF
         cat << EOF >> $t
     "grant_types": ["client_credentials"],
     "response_types": [],
-    "redirect_uris": ["https://auth.wosoom.com/authorize/oauth-redirect"], 
+    "redirect_uris": ["https://wosoom.com/"], 
     "audience": ["internal-api", "exposed-api"],
     "scope": "offline_access openid custom_scope:read",
     "token_endpoint_auth_method": "client_secret_basic",

@@ -39,7 +39,7 @@ hydra:
         public: https://auth.wosoom.com/authorize/
       login: https://auth.wosoom.com/login
       logout: https://auth.wosoom.com/logout
-      consent: https://auth.wosoom.com/consent
+      consent: https://auth.wosoom.com/consent # Must matche auth_ui consent endpoint
       identity_provider:
         url: http://kratos-admin
         publicUrl: http://kratos-public
