@@ -88,7 +88,7 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-donation-app
+            name: tls-certificate-admin-donation-app
             group: ""
 
     - name: https-k8s-dashboard
@@ -102,7 +102,7 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-donation-app
+            name: tls-certificate-admin-donation-app
             group: ""
 
     - name: https-k8s-hubble
@@ -116,5 +116,5 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-donation-app
+            name: tls-certificate-admin-donation-app
             group: ""

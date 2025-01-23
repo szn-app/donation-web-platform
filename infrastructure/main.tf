@@ -5,7 +5,7 @@
 # https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner/blob/master/docs/terraform.md
 module "kube-hetzner" {
   source = "kube-hetzner/kube-hetzner/hcloud"
-  version = "2.16.0"
+  version = "2.16.1"
   providers = {
     hcloud = hcloud
   }

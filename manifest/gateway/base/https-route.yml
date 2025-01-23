@@ -28,6 +28,7 @@ kind: HTTPRoute
 
 metadata:
   name: https-api
+  namespace: auth
 spec:
   parentRefs:
     - name: gateway
@@ -40,7 +41,8 @@ spec:
   rules:
     - backendRefs:
         # kubernetees service
-        - name: web-server
+        - name: oathkeeper-proxy
+          namespace: auth
           port: 80
       matches:
         - path:
@@ -90,7 +92,7 @@ spec:
     - backendRefs:
         - name: hydra-public
           namespace: auth
-          port: 4444
+          port: 80
       matches:
         - path:
             type: PathPrefix
