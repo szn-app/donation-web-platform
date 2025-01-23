@@ -227,11 +227,51 @@ install_ory_stack() {
         cookie_secret="$(openssl rand -hex 16)"
         cipher_secret="$(openssl rand -hex 16)"
         helm upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos/helm-values.yml -f $t \
+            --set-file 'identitySchemas=ory-kratos/identity-default-schema.json' \
             --set kratos.config.secrets.default[0]="$default_secret" \
             --set kratos.config.secrets.cookie[0]="$cookie_secret" \
             --set kratos.config.secrets.cipher[0]="$cipher_secret" \
             --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
             --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
+
+        verify()  {
+            t="$(mktemp).yml" && helm upgrade --dry-run --debug --install kratos ory/kratos -n auth --create-namespace -f ory-kratos/helm-values.yml -f $t --set-file 'identitySchemas=ory-kratos/identity-default-schema.json' --set kratos.config.secrets.default[0]="$default_secret" --set kratos.config.secrets.cookie[0]="$cookie_secret" --set kratos.config.secrets.cipher[0]="$cipher_secret" --set env[0].name=DB_USER --set env[0].value=${DB_USER} --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD} > $t && printf "generated manifest with replaced env variables: file://$t\n"
+            
+            # https://www.ory.sh/docs/kratos/self-service
+            {
+                # https://www.ory.sh/docs/kratos/quickstart#perform-registration-login-and-logout
+                # return a new login flow and csrf_token 
+                flow=$(curl -s -X GET -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/login/api")
+                flowId=$(echo $flow | jq -r '.id')
+                actionUrl=$(echo $flow | jq -r '.ui.action') && echo $actionUrl
+                # display info about the new login flow and required parameters
+                curl -s -X GET -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/login/flows?id=$flowId" | jq
+                curl -s -X POST -H  "Accept: application/json" -H "Content-Type: application/json" -d '{"identifier": "i-do-not-exist@user.org", "password": "the-wrong-password", "method": "password"}' "$actionUrl" | jq
+            }
+
+            {
+                # makes internal call to https://auth.wosoom.com/authenticate/self-service/login/api to retrieve csrf_token and redirect user
+                curl -s -i -X GET -H "Accept: text/html" https://auth.wosoom.com/authenticate/self-service/login/browser 
+                # login will make POST request with required parameters to /self-service/login/flows?id=$flowId 
+                printf "visit https://auth.wosoom.com/login?flow=$flowId\n"   
+            }
+
+            # send cookies in curl
+            {
+                # A cookie jar for storing the CSRF tokens
+                cookieJar=$(mktemp) && flowId=$(curl -s -X GET --cookie-jar $cookieJar --cookie $cookieJar -H "Accept: application/json" https://auth.wosoom.com/authenticate/self-service/login/browser | jq -r '.id')
+                # The endpoint uses Ory Identities' REST API to fetch information about the request
+                curl -s -X GET --cookie-jar $cookieJar --cookie $cookieJar -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/login/flows?id=$flowId" | jq
+            }
+
+            # registration flow 
+            {
+                flowId=$(curl -s -X GET -H "Accept: application/json" https://auth.wosoom.com/authenticate/self-service/registration/api | jq -r '.id')
+                curl -s -X GET -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/registration/flows?id=$flowId" | jq
+            }
+
+
+        }
 
         popd
     }
@@ -260,14 +300,110 @@ install_ory_stack() {
             --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
             --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
 
+        verify() { 
+            # /.well-known/jwks.json
+            # /.well-known/openid-configuration
+            # /oauth2/auth
+            # /oauth2/token
+            # /oauth2/revoke
+            # /oauth2/fallbacks/consent
+            # /oauth2/fallbacks/error
+            # /oauth2/sessions/logout
+            # /userinfo
+
+            kubectl run -it --rm --image=debian:latest debug-pod-client --namespace auth -- /bin/bash
+            {
+                apt update && apt install curl jq -y
+                # install hydra
+                bash <(curl https://raw.githubusercontent.com/ory/meta/master/install.sh) -d -b . hydra v2.2.0 && mv hydra /usr/bin/
+
+                curl -s http://hydra-admin/admin/clients | jq
+
+                # https://www.ory.sh/docs/hydra/self-hosted/quickstart
+                # [OAuth 2.0] create client and perform "clients credentials" grant
+                {
+                    client=$(hydra create client --endpoint http://hydra-admin/ --format json --grant-type client_credentials)
+                    # parse the JSON response using jq to get the client ID and client secret:
+                    client_id=$(echo $client | jq -r '.client_id')
+                    client_secret=$(echo $client | jq -r '.client_secret')
+
+                    # perform client credentials grant
+                    CREDENTIALS_GRANT=$(hydra perform client-credentials --endpoint http://hydra-public/ --client-id "$client_id" --client-secret "$client_secret")
+                    printf "%s\n" "$CREDENTIALS_GRANT"
+                    TOKEN=$(printf "%s\n" "$CREDENTIALS_GRANT" | grep "ACCESS TOKEN" | awk '{if($1 == "ACCESS" && $2 == "TOKEN") {print $3}}')
+
+                    # token introspection 
+                    hydra introspect token --format json-pretty --endpoint http://hydra-admin/ $TOKEN
+                }
+
+                # [OAuth 2.0] user "Code" grant 
+                {
+                    # example of public client which cannot provide client secrets (authentication flow only using client id )
+                    code_client=$(hydra create client --endpoint http://hydra-admin --grant-type authorization_code,refresh_token --response-type code,id_token --format json --scope openid --scope offline --redirect-uri http://hydra-public/callback --token-endpoint-auth-method none)
+                    code_client=$(hydra create client --endpoint http://hydra-admin --grant-type authorization_code,refresh_token --response-type code,id_token --format json --scope openid --scope offline --redirect-uri http://hydra-public/callback)
+                    code_client_id=$(echo $code_client | jq -r '.client_id')
+                    code_client_secret=$(echo $code_client | jq -r '.client_secret')
+                    # perform Authorization Code flow to grant Code 
+                    hydra perform authorization-code --port 5555 --client-id $code_client_id --endpoint http://hydra-admin/ --scope openid --scope offline
+                    # [execute on local mahcine] access hydra's Authorization Code flow endpoint
+                    # NOTE: requires exposing all relied on services because the examplery authorization page on 5555 redirects to the endpoint hydra-admin which is not exposed in localhost 
+                    {
+                        # TODO: APPROACH NOT WORKING - browser doesn't resolve kubernetes services
+                        kubectl run --image=overclockedllama/docker-chromium debug-auth-browser --namespace auth
+                        kubectl port-forward pod/debug-auth-browser 5800:5800 --namespace auth
+                        # access browser at localhost:5800 (on local machine) and navigate to localhost:5555 (which is inside kubernetes)
+                        kubectl delete pod debug-auth-browser --grace-period=0 --force -n auth
+                    }
+                    # [another approach]  requires a reverse proxy or solution to map /etc/hosts domains to specific localhost port, in order to fix redirections
+                    {
+                        # TODO: APPROACH NOT WOKRING INCOMPLETE
+                        kubectl port-forward pod/debug-pod-client 5555:5555 --namespace auth
+                        kubectl port-forward service/hydra-admin 5556:80 --namespace auth
+                        kubectl port-forward service/hydra-public 5557:80 --namespace auth
+                        # echo "127.0.0.1 localhost:5556" | tee -a /etc/hosts
+                        # sed -i '/127.0.0.1 example1.com/d' /etc/hosts
+                    }
+                }
+            }
+        }
+
         popd
     }
 
     install_oathkeeper() {
         pushd ./manifest/auth
         printf "install Ory Aothkeeper \n"
-        
-        helm upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml
+
+        # t="$(mktemp).pem" && openssl genrsa -out "$t" 2048 # create private key
+        # # Generate a JWKs file (if needed) - basic example using OpenSSL:
+        # y="$(mktemp).json" && openssl rsa -in "$t" -pubout -outform PEM > $y 
+        # echo "jwt file created file://$y"
+        helm upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml \
+             --set-file 'oathkeeper.accessRules=./ory-oathkeeper/oathkeeper-access-rules.json'
+             # --set-file "oathkeeper.mutatorIdTokenJWKs=$y" 
+
+        verify() { 
+            t="$(mktemp).yml" && helm upgrade --dry-run --debug --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml --set-file 'oathkeeper.accessRules=./ory-oathkeeper/oathkeeper-access-rules.json' > $t && printf "generated manifest with replaced env variables: file://$t\n"
+
+
+            curl -i https://auth.wosoom.com/authorize/health/alive
+            curl -i https://auth.wosoom.com/authorize/health/ready
+            curl https://auth.wosoom.com/authorize/.well-known/jwks.json | jq
+
+            kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
+            {
+                curl  http://hydra-public/.well-known/jwks.json | jq # public keys used to verify JWT tokens
+                curl http://oathkeeper-api/rules | jq "."
+                curl http://hydra-admin/admin/clients | jq
+            }
+
+            curl -i https://api.wosoom.com/p/ 
+            curl -H "Accept: text/html" -X GET https://api.wosoom.com/p/ 
+
+            # NOTE: SDK libraries for Oauth and OIDC compose requests better
+            # initiate login flow and redirect to login page
+            curl -i "https://auth.wosoom.com/authorize/oauth2/auth?client_id=frontend-client&response_type=code%20id_token&scope=offline_access%20openid&redirect_url=https://auth.wosoom.com/authorize/oauth-redirect&state=some_random_string"
+        }
 
         popd
     }
@@ -282,27 +418,28 @@ create_oauth2_client_for_trusted_app() {
                 # install hydra
                 bash <(curl https://raw.githubusercontent.com/ory/meta/master/install.sh) -d -b . hydra v2.2.0 && mv hydra /usr/bin/
 
-                curl http://hydra-admin:4445/admin/clients
+                curl http://hydra-admin/admin/clients
 
                 delete_all_clients() { 
-                    client_list=$(curl -X GET 'http://hydra-admin:4445/admin/clients' | jq -r '.[].client_id')
+                    client_list=$(curl -X GET 'http://hydra-admin/admin/clients' | jq -r '.[].client_id')
                     for client in $client_list
                     do
                         echo "Deleting client: $client"
-                        curl -X DELETE "http://hydra-admin:4445/admin/clients/$client"
+                        curl -X DELETE "http://hydra-admin/admin/clients/$client"
                     done
                 }
             }
 
-            hydra list oauth2-clients --endpoint "http://hydra-admin:4445"
+            hydra list oauth2-clients --endpoint "http://hydra-admin"
         }
 
         # port-forward hydra-admin 
         # kpf -n auth services/hydra-admin 4445:4445
 
+        kubectl run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
+        kubectl create secret generic ory-hydra-clients --namespace=auth
+        sleep 5
         {
-            kubectl run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
-            sleep 5
             kubectl wait --for=condition=ready pod/setup-pod --namespace=auth --timeout=300s
 
             # app client users for trusted app
@@ -311,23 +448,40 @@ create_oauth2_client_for_trusted_app() {
             t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
 echo 'Adding oauth2 clients'
-curl 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id' | grep -q 'frontend-client' || curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
+curl 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id' | grep -q 'frontend-client' || curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
 --data '{
     "client_id": "frontend-client",
     "client_name": "frontend-client",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code id_token"],
-    "redirect_uris": ["http://auth.wosoom.com/authorize/oauth-redirect"], 
+    "redirect_uris": ["https://auth.wosoom.com/authorize/oauth-redirect", "https://wosoom.com/*"], 
     "audience": ["exposed-api"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
-    "skip_consent": true,
+    "skip_consent": false,
     "skip_logout_prompt": true,
-    "post_logout_redirect_uris": []
+    "post_logout_redirect_uris": ["https://wosoom.com/*"]
 }'
 EOF
             kubectl cp $t setup-pod:$t --namespace auth
             kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            # kubectl patch -n auth secret ory-hydra-clients --type=json -p='[{"op": "add", "path": "frontend-client", "value": ""}]'
+
+            example_alternative_option() {
+                # TODO: incomplete example
+                # https://www.ory.sh/docs/hydra/self-hosted/quickstart
+                hydra create client \
+                    --endpoint http://hydra-admin \
+                    --grant-type authorization_code,refresh_token \
+                    --response-type code,id_token \
+                    --format json \
+                    --scope openid --scope offline \
+                    --redirect-uri https://auth.wosoom.com/authorize/oauth-redirect --token-endpoint-auth-method none
+
+                code_client_id=$(echo $code_client | jq -r '.client_id')
+                code_client_secret=$(echo $code_client | jq -r '.client_secret')
+            }
+
         }
 
         {
@@ -337,8 +491,8 @@ EOF
 #!/bin/bash
 echo 'Adding oauth2 clients'
 
-curl -s 'http://hydra-admin:4445/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id' | grep -q 'internal-communication' || \
-curl -X POST 'http://hydra-admin:4445/admin/clients' -H 'Content-Type: application/json' \
+curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id' | grep -q 'internal-communication' || \
+curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
 --data '{
     "client_id": "internal-communication",
     "client_name": "internal-communication",
@@ -358,6 +512,7 @@ EOF
 EOF
             kubectl cp $t setup-pod:$t --namespace auth
             kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            kubectl delete secret ory-hydra-clients -n auth || kubectl create secret generic ory-hydra-clients --namespace=auth --from-literal=internal-communication=$client_secret
 
         }
 
@@ -383,7 +538,8 @@ EOF
         # }'
 
         manual_verify() { 
-            kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "curl http://hydra-admin:4445/admin/clients | jq"
+            kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- curl http://hydra-admin/admin/clients | jq
+            kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- curl http://hydra-admin/admin/clients/frontend-client | jq
         }
 
         popd
@@ -471,6 +627,11 @@ deploy_application() {
     popd 
 }
 
+restart_cilinium() { 
+    kubectl -n kube-system rollout restart deployment/cilium-operator
+    kubectl -n kube-system rollout restart ds/cilium
+}
+
 kustomize_kubectl() {
     action=${1:-"install"}
 
@@ -506,10 +667,12 @@ kustomize_kubectl() {
             fi
         fi
     }
+    
 
     install_ory_stack
     deploy_application
-        
+    # restart_cilinium  # [issue] restarting fixs gateway has no ip assignment by controller
+
     echo "Services deployed to the cluster (wait few minutes to complete startup and propagate TLS certificate generation)."
 
     # verify cluster certificate issued successfully 
@@ -535,13 +698,14 @@ kustomize_kubectl() {
 
         # check dns + web server response with tls staging certificate
         domain_name=""
-        curl -I http://$domain_name
+        curl -i http://$domain_name
         curl --insecure -I https://$domain_name
         cloud_load_balancer_ip=""
         curl --header "Host: donation-app.com" $cloud_load_balancer_ip
 
         # run ephemeral debug container
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace some_namespace -- /bin/bash 
+        kubectl run -it --rm --image=busybox debug-pod-2 --namespace auth -- /bin/bash nslookup oathkeeper-proxy
         
         kubectl -n kube-system edit configmap cilium-config
     }

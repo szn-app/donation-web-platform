@@ -1,0 +1,35 @@
+[
+  {
+    "id": "api-rule",
+    "upstream": {
+      "url": "http://web-server",
+      "preserve_host": true
+    },
+    "match": {
+      "url": "https://api.wosoom.com/<.*>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "jwt",
+        "config": {
+          "scope_strategy": "none"
+        }
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  }
+]

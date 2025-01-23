@@ -30,7 +30,7 @@ record_version() {
     KUBERNETES_VERSION=$(kubectl version | awk '{printf "\t%s:\t%s\n", $1" "$2, $3}')
     KUSTOMIZE_VERSION=$(kustomize version)
     KOPS_VERSION=$(kops version --short)
-    CILIUM_VERSION=#(cilium version --client)
+    CILIUM_VERSION=$(cilium version --client)
 
     echo "Node.js version: ${NODE_VERSION}" > version.txt
     echo "pnpm version: ${PNPM_VERSION}" >> version.txt

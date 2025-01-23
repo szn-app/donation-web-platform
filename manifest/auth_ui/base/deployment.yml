@@ -39,6 +39,7 @@ spec:
                   name: secrets-auth-ui
                   key: COOKIE_SECRET
                   optional: false
+            # following "__Host-<domain>-x-csrf-token" naming convention for better security
             - name: CSRF_COOKIE_NAME
               valueFrom:
                 secretKeyRef:

@@ -6,7 +6,7 @@ kratos:
     dev: false
 
     log:
-      level: trace
+      level: debug
       leak_sensitive_values: false
       redaction_text: ""
       format: json
@@ -34,8 +34,8 @@ kratos:
           enabled: true
           allowed_origins:
             # - "*" # NOTE: use for debug only
-            - https://auth.wosoom.com/
             - https://wosoom.com/
+            - https://auth.wosoom.com/
             - https://*.wosoom.com/
           allowed_methods:
             - GET
@@ -48,6 +48,13 @@ kratos:
         port: 4434
 
     selfservice:
+      # links to generate for kratos ui pages
+      default_browser_return_url: https://wosoom.com/
+      allowed_return_urls:
+        - https://wosoom.com/
+        - https://auth.wosoom.com/
+        - https://*.wosoom.com/
+
       methods:
         password: # email/password authentication
           enabled: true # default enabled
@@ -84,48 +91,39 @@ kratos:
           #       phone_number:
           #         essential: false
 
-      # links to generate for kratos ui pages
-      default_browser_return_url: https://auth.wosoom.com/
-      allowed_return_urls:
-        - https://wosoom.com/
-        - https://auth.wosoom.com/
-        - https://*.wosoom.com/
-
       flows:
+        # default return url if no uri parameter set or no service-level default_browser_return_url config set
         login:
           ui_url: https://auth.wosoom.com/login
           lifespan: 10m
         logout:
           after:
-            default_browser_return_url: http://auth.wosoom.com/login
+            default_browser_return_url: https://wosoom.com/
+        registration:
+          ui_url: https://auth.wosoom.com/registration
+          lifespan: 10m
+          after:
+            default_browser_return_url: https://wosoom.com/
+            password:
+              hooks:
+                - hook: session
+                # - hook: show_verification_ui
         verification:
           enabled: true
           ui_url: https://auth.wosoom.com/verification
           # use: code
           after:
-            default_browser_return_url: http://wosoom.com/
-        registration:
-          ui_url: https://auth.wosoom.com/registration
-          lifespan: 10m
-          after:
-            password:
-              hooks:
-                - hook: session
-                # - hook: show_verification_ui
+            default_browser_return_url: https://wosoom.com/
         settings:
           ui_url: https://auth.wosoom.com/settings
           privileged_session_max_age: 15m
           # required_aal: highest_available
         recovery:
           enabled: true
-          ui_url: http://auth.wosoom.com/recovery
+          ui_url: https://auth.wosoom.com/recovery
           # use: code
         error:
           ui_url: https://auth.wosoom.com/error
-
-    courier:
-      smtp:
-        connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true # TODO: update with deployed one
 
     secrets:
       default:
@@ -151,18 +149,22 @@ kratos:
     feature_flags:
       use_continue_with_transitions: true # allow flexible flows (e.g. agree on terms in the registration flow, etc.)
 
-  oauth2_provider:
-    url: http://hydra-admin:4445/
+    courier:
+      smtp:
+        connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true # TODO: update with deployed one
 
-  # convert session to JWT for easier handling and integration
-  # possible to customize the identity token information and custom logic JWT returned based on roles
-  # https://www.ory.sh/docs/identities/session-to-jwt-cors#end-to-end-example
-  session:
-    whoami:
-      tokenizer:
-        templates:
-          jwt_example_template: # template name
-            jwks_url: http://hydra-admin:4445/admin/keys/hydra.jwt.access-token
-            # [manual update] base64 of a Go function with the JWT fields definition
-            claims_mapper_url: base64://CmxvY2FsIGNsYWltcyA9IHN0ZC5leHRWYXIoJ2NsYWltcycpOwpsb2NhbCBzZXNzaW9uID0gc3RkLmV4dFZhcignc2Vzc2lvbicpOwoKewogIGNsYWltczogewogICAgaXNzOiBjbGFpbXMuaXNzICsgIi9hZGRpdGlvbmFsLWNvbXBvbmVudCIsCiAgICBzY2hlbWFfaWQ6IHNlc3Npb24uaWRlbnRpdHkuc2NoZW1hX2lkLAogICAgc2Vzc2lvbjogc2Vzc2lvbiwKICB9Cn0=
-            ttl: 10m
+    oauth2_provider:
+      url: http://hydra-admin/
+
+    # convert session to JWT for easier handling and integration
+    # possible to customize the identity token information and custom logic JWT returned based on roles
+    # https://www.ory.sh/docs/identities/session-to-jwt-cors#end-to-end-example
+    session:
+      whoami:
+        tokenizer:
+          templates:
+            jwt_example_template: # template name
+              jwks_url: http://hydra-admin/admin/keys/hydra.jwt.access-token
+              # [manual update] base64 of a Go function with the JWT fields definition
+              claims_mapper_url: base64://CmxvY2FsIGNsYWltcyA9IHN0ZC5leHRWYXIoJ2NsYWltcycpOwpsb2NhbCBzZXNzaW9uID0gc3RkLmV4dFZhcignc2Vzc2lvbicpOwoKewogIGNsYWltczogewogICAgaXNzOiBjbGFpbXMuaXNzICsgIi9hZGRpdGlvbmFsLWNvbXBvbmVudCIsCiAgICBzY2hlbWFfaWQ6IHNlc3Npb24uaWRlbnRpdHkuc2NoZW1hX2lkLAogICAgc2Vzc2lvbjogc2Vzc2lvbiwKICB9Cn0=
+              ttl: 10m

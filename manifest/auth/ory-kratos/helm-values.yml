@@ -155,11 +155,12 @@ kratos:
     # -- resource requests and limits for the automigration initcontainer
     resources: {}
 
+  # this configuration gets overriden by --set-file helm argument with file identity.default.schema.json
   # -- You can add multiple identity schemas here. You can pass JSON schema using `--set-file` Helm CLI argument.
-  identitySchemas: # [manual update] NOTE: to update, first edit the identity-default-schema.template.json to catch errors and then copy over here
+  identitySchemas:
     "identity.default.schema.json": |-
       {
-        "$id": "default",
+        "$id": "example",
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Person",
         "type": "object",
@@ -198,10 +199,10 @@ kratos:
                     "type": "string"
                   }
                 }
-              }, 
+              },
               "phone_number": {
-                "type":"string",
-                "title":"Phone Number",
+                "type": "string",
+                "title": "Phone Number",
                 "format": "tel"
               }
             },
@@ -210,7 +211,6 @@ kratos:
           }
         }
       }
-
   # identitySchemas:
   #  "identity.default.schema.json": |
   #    {

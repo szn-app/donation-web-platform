@@ -3,9 +3,9 @@
 
 hydra:
   config:
-    # dev: true
-    # log:
-    #   level: trace
+    dev: true
+    log:
+      level: debug
 
     # dsn: memory # NOTE: use for development only
     dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-hydra-postgresql:5432/hydra_db?sslmode=disable&max_conns=20&max_idle_conns=4"
@@ -36,12 +36,17 @@ hydra:
     urls:
       self:
         issuer: https://auth.wosoom.com/authorize/
+        public: https://auth.wosoom.com/authorize/
       login: https://auth.wosoom.com/login
       registration: https://auth.wosoom.com/registration
       consent: https://auth.wosoom.com/consent
       logout: https://auth.wosoom.com/logout
       identity_provider:
         url: https://auth.wosoom.com/authenticate
+      error:
+        url: https://auth.wosoom.com/error
+      verification:
+        url: https://auth.wosoom.com/verify
 
     strategies:
       access_token: jwt

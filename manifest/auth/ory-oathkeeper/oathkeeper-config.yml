@@ -1,7 +1,7 @@
 oathkeeper:
   config:
     log:
-      level: trace
+      level: debug
       format: json
 
     serve:
@@ -22,9 +22,13 @@ oathkeeper:
         enabled: true
         config:
           jwks_urls:
-            - https://auth.wosoom.com/authorize/.well-known/jwks.json
+            - https://hydra-public/.well-known/jwks.json
           scope_strategy: hierarchic
           jwks_max_wait: 5s
+      anonymous:
+        enabled: true
+        config:
+          subject: guest
 
     authorizers:
       allow:
@@ -38,7 +42,14 @@ oathkeeper:
         enabled: true
         config:
           headers:
-            USER_ID: "{{ print .Subject }}"
+            X-User: "{{ print .Subject }}"
+      noop:
+        enabled: true
+      # id_token:
+      #   enabled: true
+      #   config:
+      #     issuer_url: http://hydra-admin/
+      #     jwks_url: http://overriden_by_helm_argument/ # a jwks.json file which gets overriden by helm argument     --set-file 'oathkeeper.mutatorIdTokenJWKs=./path/to/jwks.json'
 
     errors:
       handlers:
