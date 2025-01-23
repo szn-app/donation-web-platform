@@ -436,13 +436,32 @@ create_oauth2_client_for_trusted_app() {
         # port-forward hydra-admin 
         # kpf -n auth services/hydra-admin 4445:4445
 
-        kubectl run --image=nicolaka/netshoot setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
+        kubectl run --image=debian:latest setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
         kubectl create secret generic ory-hydra-clients --namespace=auth
         sleep 5
+        {
+                        t="$(mktemp).sh" && cat << 'EOF' > $t
+#!/bin/bash
+apt update && apt install curl jq -y
+bash <(curl https://raw.githubusercontent.com/ory/meta/master/install.sh) -d -b . hydra v2.2.0 && mv hydra /usr/bin/
+curl -s http://hydra-admin/admin/clients | jq
+EOF
+            kubectl cp $t setup-pod:$t --namespace auth
+            kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+        }
         {
             kubectl wait --for=condition=ready pod/setup-pod --namespace=auth --timeout=300s
 
             # app client users for trusted app
+            t="$(mktemp).sh" && cat << 'EOF' > $t
+#!/bin/bash
+hydra create oauth2-client --name frontend-backend-client --audience backend-service --endpoint http://hydra-admin --grant-type authorization_code,refresh_token --response-type code --redirect-uri https://wosoom.com --scope offline_access,openid --skip-consent --skip-logout-consent --token-endpoint-auth-method client_secret_post
+EOF
+            kubectl cp $t setup-pod:$t --namespace auth
+            kubectl exec -it setup-pod --namespace auth -- /bin/bash -c "chmod +x $t && $t"
+
+
+
             # redirect uri is where the resource owner (user) will be redirected to once the authorization server grants permission to the client
             # NOTE: using the `authorization code` the client gets both `accesst token` and `id token` when `scope` includes `openid`.
             t="$(mktemp).sh" && cat << 'EOF' > $t
@@ -454,13 +473,13 @@ curl 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="front
     "client_name": "frontend-client",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code id_token"],
-    "redirect_uris": ["https://auth.wosoom.com/authorize/oauth-redirect", "https://wosoom.com/*"], 
+    "redirect_uris": ["https://auth.wosoom.com/authorize/oauth-redirect"], 
     "audience": ["exposed-api"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
-    "skip_consent": false,
+    "skip_consent": true,
     "skip_logout_prompt": true,
-    "post_logout_redirect_uris": ["https://wosoom.com/*"]
+    "post_logout_redirect_uris": []
 }'
 EOF
             kubectl cp $t setup-pod:$t --namespace auth
@@ -501,7 +520,7 @@ EOF
         cat << EOF >> $t
     "grant_types": ["client_credentials"],
     "response_types": [],
-    "redirect_uris": [],
+    "redirect_uris": ["https://auth.wosoom.com/authorize/oauth-redirect"], 
     "audience": ["internal-api", "exposed-api"],
     "scope": "offline_access openid custom_scope:read",
     "token_endpoint_auth_method": "client_secret_basic",

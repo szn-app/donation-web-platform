@@ -38,15 +38,12 @@ hydra:
         issuer: https://auth.wosoom.com/authorize/
         public: https://auth.wosoom.com/authorize/
       login: https://auth.wosoom.com/login
-      registration: https://auth.wosoom.com/registration
-      consent: https://auth.wosoom.com/consent
       logout: https://auth.wosoom.com/logout
+      consent: https://auth.wosoom.com/consent
       identity_provider:
-        url: https://auth.wosoom.com/authenticate
-      error:
-        url: https://auth.wosoom.com/error
-      verification:
-        url: https://auth.wosoom.com/verify
+        url: http://kratos-admin
+        publicUrl: http://kratos-public
+      error: https://auth.wosoom.com/error
 
     strategies:
       access_token: jwt

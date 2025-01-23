@@ -538,7 +538,7 @@ statefulSet:
 
   log:
     format: json
-    level: trace
+    level: debug
 
     # -- Specify pod metadata, this metadata is added directly to the pod, and not higher objects
   podMetadata:
