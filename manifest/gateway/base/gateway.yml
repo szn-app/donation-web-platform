@@ -132,3 +132,33 @@ spec:
           - kind: Secret
             name: tls-certificate-admin-donation-app
             group: ""
+
+    # TODO: add http routes to this listener
+    - name: https-k8s-grafana
+      protocol: HTTPS
+      port: 443
+      hostname: "grafana.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-admin-donation-app
+            group: ""
+
+    # TODO: add http routes to this listener
+    - name: https-k8s-prometheus
+      protocol: HTTPS
+      port: 443
+      hostname: "prometheus.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-admin-donation-app
+            group: ""
