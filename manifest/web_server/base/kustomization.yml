@@ -1,42 +1,51 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-resources: 
-- deployment.yml
-- service.yml
+resources:
+  - deployment.yml
+  - service.yml
 
 # [BUG in Kustomize https://github.com/kubernetes-sigs/kustomize/issues/5047] specifiying namespace ruins configMapGenerator name resolution
-# namespace: donation-app
+# namespace: donation-app # using customization transformers instead (which provides more options)
+transformers:
+  - |-
+    apiVersion: builtin
+    kind: NamespaceTransformer
+    metadata:
+      name: _not_important_here
+      namespace: donation-app
+    unsetOnly: true
 
 nameSuffix: -v1
 # adds labels to all resources (including selector and template fields)
-labels: 
-  - pairs: 
+labels:
+  - pairs:
       app: web-server
     includeSelectors: true
 
 patches:
-  - target:
-      kind: Deployment
-      name: web-server
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: _ # required field but not used
+  # TODO: add proper limits if needed without slowing down web-server
+  # - target:
+  #     kind: Deployment
+  #     name: web-server
+  #   patch: |-
+  #     apiVersion: apps/v1
+  #     kind: Deployment
+  #     metadata:
+  #       name: _ # required field but not used
 
-      spec: 
-        template:  
-          spec: 
-            containers:
-              - name: nginx
-                resources:
-                  requests:
-                    cpu: "10m" 
-                    memory: "20Mi"
-                  limits: 
-                    cpu: "50m"
-                    memory: "100Mi"
+  #     spec:
+  #       template:
+  #         spec:
+  #           containers:
+  #             - name: nginx
+  #               resources:
+  #                 requests:
+  #                   cpu: "10m"
+  #                   memory: "20Mi"
+  #                 limits:
+  #                   cpu: "50m"
+  #                   memory: "100Mi"
 
   # NOTE: taint keys are defined in the Terraform file
   - target:
@@ -56,4 +65,3 @@ patches:
                 operator: "Equal"
                 value: "peak-workloads"
                 effect: "NoExecute"
-

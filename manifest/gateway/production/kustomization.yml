@@ -3,8 +3,6 @@ kind: Kustomization
 
 resources:
   - ../base
-  - ../../web_server/production
-  - ../../auth_ui/production
 
 # namespace: donation-app # using customization transformers instead (which provides more options)
 transformers:
@@ -23,8 +21,8 @@ patches:
     patch: |-
       - op: replace
         path: /metadata/annotations/cert-manager.io~1cluster-issuer
-        value: "production-cluster-issuer"
-
+        value: "staging-cluster-issuer"
+  # value: "production-cluster-issuer"
   - target:
       kind: Gateway
       name: gateway
@@ -52,6 +50,10 @@ patches:
       - op: replace
         path: /spec/listeners/8/hostname
         value: "hubble.k8s.wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/9/hostname
+        value: "ory-admin.k8s.wosoom.com"
 
   - target:
       kind: HTTPRoute
@@ -116,3 +118,11 @@ patches:
       - op: replace
         path: /spec/hostnames/0
         value: "hubble.k8s.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: https-k8s-ory-admin
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "ory-admin.k8s.wosoom.com"

@@ -118,3 +118,17 @@ spec:
           - kind: Secret
             name: tls-certificate-admin-donation-app
             group: ""
+
+    - name: https-k8s-ory-admin
+      protocol: HTTPS
+      port: 443
+      hostname: "ory-admin.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All # required for letsecrypt
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: tls-certificate-admin-donation-app
+            group: ""
