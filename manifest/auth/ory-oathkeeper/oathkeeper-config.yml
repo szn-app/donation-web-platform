@@ -22,7 +22,7 @@ oathkeeper:
         enabled: true
         config:
           jwks_urls:
-            - https://hydra-public/.well-known/jwks.json
+            - http://hydra-public/.well-known/jwks.json
           scope_strategy: hierarchic
           jwks_max_wait: 5s
       anonymous:

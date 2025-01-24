@@ -2,7 +2,7 @@
   {
     "id": "api-rule",
     "upstream": {
-      "url": "http://web-server",
+      "url": "http://prod-web-server-v1.donation-app.svc.cluster.local",
       "preserve_host": true
     },
     "match": {
