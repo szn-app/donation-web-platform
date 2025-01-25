@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: web-server
 spec:
-  replicas: 3
+  replicas: 2
   minReadySeconds: 10
   strategy:
     rollingUpdate:
@@ -19,6 +19,6 @@ spec:
           ports:
             - containerPort: 80
               name: http-web-server
-          envFrom:
-            - configMapRef:
-                name: properties-map-web-server
+          # envFrom:
+          #   - configMapRef:
+          #       name: properties-map-web-server

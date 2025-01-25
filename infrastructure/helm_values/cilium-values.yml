@@ -40,8 +40,13 @@ bpf:
 hubble:
   relay:
     enabled: true
+    nodeSelector:
+      role: worker
   ui:
     enabled: true
+    nodeSelector:
+      role: worker
+
   # https://docs.cilium.io/en/stable/observability/metrics/#hubble-metrics
   metrics:
     enabled:
@@ -59,3 +64,7 @@ MTU: 1450
 
 gatewayAPI:
   enabled: true
+
+certgen:
+  nodeSelector:
+    role: worker

@@ -17,7 +17,9 @@ oathkeeper:
       repositories:
         - file:///etc/rules/access-rules.json
 
+    # https://www.ory.sh/docs/oathkeeper/pipeline/authn
     authenticators:
+      # checks authenticity of JWT tokens that they were actually signed by Hydra issuer
       jwt:
         enabled: true
         config:
@@ -25,12 +27,37 @@ oathkeeper:
             - http://hydra-public/.well-known/jwks.json
           scope_strategy: hierarchic
           jwks_max_wait: 5s
+
       anonymous:
         enabled: true
         config:
           subject: guest
 
+      # externally using Hydra validating the authenticity, validity, and authorization (simple scope based RBAC) attributes of the access token issued (does extra validation than jwt handler)
+      oauth2_introspection:
+        enabled: true
+        config:
+          introspection_url: http://hydra-admin/oauth2/introspect # TODO: check if need to add prefix 'admin'
+          introspection_request_headers:
+            Authorization: Basic ${OATHKEEPER_CLIENT_CREDENTIALS}
+          # NOTE: this approach is not required with Keto
+          # can be configured to match check the roles/scopes of tokens
+          # scope_strategy: exact
+          # required_scope: ["posts"]
+          # target_audience: ["frontend"]
+
+    # https://www.ory.sh/docs/oathkeeper/pipeline/authz
     authorizers:
+      keto_engine_acp_ory:
+        enabled: true
+        config:
+          base_url: http://keto-read:80 # TODO: verify name of service
+          required_action: "read"
+          required_resource: "resources:xyz"
+          subject: "{{ .AuthenticationSession.Subject }}"
+          flavor: "keto" # use Keto's policy implementation to authorize decisions
+
+      # can be used in tandem with oathkeeper and delegating authorization to oathkeeper simple RBAC
       allow:
         enabled: true
       deny:

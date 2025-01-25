@@ -44,13 +44,12 @@ spec:
               value: http://hydra-public:80
             - name: OATHKEEPER_API_URL
               value: http://oathkeeper-api:80
-            # TODO: once Keto is integrated
-            # - name: KETO_READ_URL
-            #   value: http://ory-keto-1:4466
-            # - name: KETO_WRITE_URL
-            #   value: http://ory-keto-1:4467
+            - name: KETO_READ_URL
+              value: http://keto-read:80
+            - name: KETO_WRITE_URL
+              value: http://keto-write:80
             - name: ENABLED_SERVICES
-              value: kratos,hydra,oathkeeper # ,keto
+              value: kratos,hydra,oathkeeper,keto
           resources:
             requests:
               cpu: "10m"

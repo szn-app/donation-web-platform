@@ -3,7 +3,7 @@ primary:
     enabled: true
   persistence:
     enabled: true
-    storageClass: "longhorn-local-ext4"
+    storageClass: "longhorn-local-ext4-2replica"
     accessModes:
       - ReadWriteOnce
     size: 4Gi
@@ -14,15 +14,19 @@ primary:
     limits:
       cpu: "2"
       memory: "4Gi"
+  nodeSelector:
+    role: worker
 
 readReplicas:
   replicaCount: 2 # Number of replicas for load balancing
   resources:
     requests:
-      cpu: "1"
-      memory: "2Gi"
+      cpu: "512Mi"
+      memory: "1Gi"
     limits:
-      cpu: "2"
-      memory: "4Gi"
+      cpu: "1"
+      memory: "3Gi"
   storageClass: "longhorn-local-ext4-strict-locality"
-  size: "2Gi" # Adjust for replication data
+  size: "1Gi" # Adjust for replication data
+  nodeSelector:
+    role: worker

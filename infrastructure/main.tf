@@ -30,12 +30,12 @@ module "kube-hetzner" {
 
   cluster_name = "k3s"
   use_cluster_name_in_node_name = true
-  automatically_upgrade_k3s = true
-  initial_k3s_channel = "stable" # "v1.31" # "stable"
+  automatically_upgrade_k3s = false
   # NOTE: checkout also longhorn_values > node-down-pod-deletion-policy
   system_upgrade_enable_eviction = true
   system_upgrade_use_drain = true
-  allow_scheduling_on_control_plane = true
+  initial_k3s_channel = "stable" # "v1.32" # "stable"
+  allow_scheduling_on_control_plane = false
 
   automatically_upgrade_os = false # NOTE: must be turned off for single control node setup.
   kured_options = {
@@ -68,10 +68,10 @@ module "kube-hetzner" {
   disable_network_policy = true
   ingress_controller = "none"
   cni_plugin = "cilium"
-  cilium_version = "v1.16.5"
+  cilium_version = "v1.16.6"
   cilium_routing_mode = "native"
   # NOTE: if Cilium UI enabled it can be accessed using ssh tunnel
-  cilium_hubble_enabled = true
+  cilium_hubble_enabled = false
   # Configures the list of Hubble metrics to collect.
   # cilium_hubble_metrics_enabled = [] # specified in the overriding custom cilium-values.yml file
   # https://github.com/cilium/cilium/blob/main/install/kubernetes/cilium/values.yaml
@@ -85,22 +85,24 @@ module "kube-hetzner" {
       server_type = var.instance_size.small,
       location    = var.network_location[0].region[0],
       placement_group = "controller"
-      labels      = concat(local.label.control_plane, ["node.longhorn.io/create-default-disk=config"]),
+      # labels      = concat(local.label.control_plane, ["node.longhorn.io/create-default-disk=config"]),
+      labels      = local.label.control_plane,
       taints      = [],
       # kubelet_args = ["kube-reserved=cpu=250m,memory=1500Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
 
       # Enable automatic backups via Hetzner (default: false)
       # backups = true
     },
-    {
-      name        = "control-plane-arm",
-      count       = 0 
-      server_type = var.instance_size.small_arm,
-      location    = var.network_location[0].region[0],
-      placement_group = "controller"
-      labels      = concat(local.label.control_plane_arm, ["node.longhorn.io/create-default-disk=config"]),
-      taints      = [],
-    }
+    # {
+    #   name        = "control-plane-arm",
+    #   count       = 0 
+    #   server_type = var.instance_size.small_arm,
+    #   location    = var.network_location[0].region[0],
+    #   placement_group = "controller"
+    #   # labels      = concat(local.label.control_plane, ["node.longhorn.io/create-default-disk=config"]),
+    #   labels      = local.label.control_plane,
+    #   taints      = [],
+    # }
   ]
 
   # node type per pool > # nodes
@@ -108,7 +110,7 @@ module "kube-hetzner" {
   agent_nodepools = [
     {
       name        = "worker-small",
-      count       = 2, 
+      count       = 1, 
       server_type = var.instance_size.small,
       location    = var.network_location[0].region[0],
       placement_group = "worker"
@@ -119,7 +121,7 @@ module "kube-hetzner" {
 
     {
       name        = "worker-medium",
-      count       = 0
+      count       = 1
       server_type = var.instance_size.medium,
       location    = var.network_location[0].region[0],
       placement_group = "worker"
@@ -128,53 +130,53 @@ module "kube-hetzner" {
       longhorn_volume_size = 10
     },
 
-    {
-      name        = "worker-large",
-      count       = 0
-      server_type = var.instance_size.large,
-      location    = var.network_location[0].region[0],
-      placement_group = "worker"
-      labels      = concat(local.label.worker, ["node.longhorn.io/create-default-disk=config"]),
-      taints      = [],
-      longhorn_volume_size = 10
-    },
+    # {
+    #   name        = "worker-large",
+    #   count       = 0
+    #   server_type = var.instance_size.large,
+    #   location    = var.network_location[0].region[0],
+    #   placement_group = "worker"
+    #   labels      = concat(local.label.worker, ["node.longhorn.io/create-default-disk=config"]),
+    #   taints      = [],
+    #   longhorn_volume_size = 10
+    # },
 
-    {
-      # follow link to set values for reserved storage: https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b
-      name        = "example-longhorn-storage-volume",
-      count       = 0
-      server_type = var.instance_size.small,
-      location    = var.network_location[0].region[0],
-      placement_group = "worker"
-      labels      = concat(local.label.worker, ["node.longhorn.io/create-default-disk=config"]),  # use config in annotations instead of single option label (annotations must be set using `kubectl annotate node ...`  command)
-      taints      = [],
+    # {
+    #   # follow link to set values for reserved storage: https://gist.github.com/ifeulner/d311b2868f6c00e649f33a72166c2e5b
+    #   name        = "example-longhorn-storage-volume",
+    #   count       = 0
+    #   server_type = var.instance_size.small,
+    #   location    = var.network_location[0].region[0],
+    #   placement_group = "worker"
+    #   labels      = concat(local.label.worker, ["node.longhorn.io/create-default-disk=config"]),  # use config in annotations instead of single option label (annotations must be set using `kubectl annotate node ...`  command)
+    #   taints      = [],
       
-      # option 1 - longhorn on local machine storage: Fast storage (e.g. for DB app usage)
-      # longhorn_volume_size = 0
-      # option 2 - longhorn on network storage: slower storage using Hetzner Cloud Volume network block storage instead of machine's local storage (e.g. good for backup usage, any low IOPS requirement)
-      longhorn_volume_size = 10
-    },
+    #   # option 1 - longhorn on local machine storage: Fast storage (e.g. for DB app usage)
+    #   # longhorn_volume_size = 0
+    #   # option 2 - longhorn on network storage: slower storage using Hetzner Cloud Volume network block storage instead of machine's local storage (e.g. good for backup usage, any low IOPS requirement)
+    #   longhorn_volume_size = 10
+    # },
   ]
 
   autoscaler_nodepools = [
-    {
-      name        = "autoscaled-small"
-      server_type = var.instance_size.small
-      location    = var.network_location[0].region[0],
-      min_nodes   = 0
-      max_nodes   = 2
-      labels      = {
-        "node.kubernetes.io/role": "peak-workloads" # convention labels (doesn't seem used by )
-      }
-      taints      = [
-        {
-          key= "node.kubernetes.io/role"
-          value= "peak-workloads"
-          effect= "NoExecute"
-        }
-      ]
-      # kubelet_args = ["kube-reserved=cpu=250m,memory=1500Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
-   }
+  #   {
+  #     name        = "autoscaled-small"
+  #     server_type = var.instance_size.small
+  #     location    = var.network_location[0].region[0],
+  #     min_nodes   = 0
+  #     max_nodes   = 2
+  #     labels      = {
+  #       "node.kubernetes.io/role": "peak-workloads" # convention labels (doesn't seem used by )
+  #     }
+  #     taints      = [
+  #       {
+  #         key= "node.kubernetes.io/role"
+  #         value= "peak-workloads"
+  #         effect= "NoExecute"
+  #       }
+  #     ]
+  #     # kubelet_args = ["kube-reserved=cpu=250m,memory=1500Mi,ephemeral-storage=1Gi", "system-reserved=cpu=250m,memory=300Mi"]
+  #  }
   ]
 
   # local k3s basic storage class
@@ -185,17 +187,17 @@ module "kube-hetzner" {
   # enable longhorn and dependency drivers
   enable_iscsid = true
   enable_longhorn = true # add Longhorn as storage class in kuberenetes
-  longhorn_version = "v1.7.2"
+  longhorn_version = "v1.8.0" # previous "v1.7.2"
   # TODO: fix[requires PR]: the module doesn't install all required dependeices on control nodes and prevents Longhorn from being able to create disks and schedule on cotnrol nodes (thus leaving network longhorn volumes only for worker nodes )
-  longhorn_helmchart_bootstrap = true # if to run on control-plane nodes too
+  longhorn_helmchart_bootstrap = false # if to run on control-plane nodes too
   longhorn_fstype = "ext4" # "xfs"
-  longhorn_replica_count = 3 # defaults to 3
+  longhorn_replica_count = 2 # defaults to 3
   # effects of options: only run on labelled nodes; # adjust to autoscaler if active in the cluster; /var/lib/longhorn local storage path (NOTE: /mnt/longhorn is the default for Hetzner cloud volume mount in kube-hetzner module); cleanup & prevent volume locks by setting policy: ensure pod is moved to an healthy node if current node is down;
   longhorn_values = local.helm_values_file["longhorn"]
 
   # Cert-manager for automatic TLS certificates
   enable_cert_manager = true
-  cert_manager_helmchart_bootstrap = true # run on control-plane nodes too
+  cert_manager_helmchart_bootstrap = false # run on control-plane nodes too
   cert_manager_version = "v1.16.3"
   cert_manager_values = local.helm_values_file["cert-manager"]
 

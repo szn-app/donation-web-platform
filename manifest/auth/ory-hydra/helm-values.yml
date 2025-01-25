@@ -9,7 +9,7 @@ image:
   # -- ORY Hydra image
   repository: oryd/hydra
   # -- ORY Hydra version
-  tag: v2.2.0
+  tag: v2.3.0
   # -- Image pull policy
   pullPolicy: IfNotPresent
 
@@ -252,10 +252,9 @@ deployment:
     annotations: {}
 
   # -- Node labels for pod assignment.
-  nodeSelector: {}
-  # If you do want to specify node labels, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'nodeSelector:'.
-  #   foo: bar
+  # If you do want to specify node labels
+  nodeSelector:
+    role: "worker"
 
   # -- Array of extra envs to be passed to the deployment. Kubernetes format is expected. Value is processed with Helm
   # `tpl`

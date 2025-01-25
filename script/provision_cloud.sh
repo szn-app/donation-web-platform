@@ -89,6 +89,8 @@ EOT
       kubectl annotate node "$node_name" "node.longhorn.io/default-disks-config=$config" --overwrite   
     done 
 
+    sleep 10
+
     config=$(cat <<EOT
 [
   {
@@ -110,9 +112,10 @@ EOT
 
     }
 
-    sleep 10 
+    sleep 25
 
-    # Longhorn add tags for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
+    # Longhorn add tags (longhorn tag) for workers from the Kubernetes labels (synchronize K8s labels to Longhorn tags)
+    # NOTE: this tags only nodes that can run pods (if control node is not set to run workloads it will print error message)
     {
       NAMESPACE="longhorn-system" # Namespace for Longhorn
       LABEL_KEY="role" # Label key to match in Kubernetes nodes
@@ -125,8 +128,9 @@ EOT
         if [ -n "$LABEL_VALUE" ]; then
           echo "Applying Longhorn tag '$LABEL_VALUE' to node '$node'"
 
-          # Patch the Longhorn node with the label value as a tag
-          kubectl -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
+          # Patch the Longhorn node with the label value as a tag (this uses a longhorn specific approach)
+          printf "kubectl -n $NAMESPACE patch nodes.longhorn.io $node --type='merge' -p \"{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}\" \n"
+          kubectl -n "$NAMESPACE" patch nodes.longhorn.io "$node" --type='merge' -p "{\"spec\":{\"tags\":[\"$LABEL_VALUE\"]}}"
         else
           echo "Node '$node' does not have label '$LABEL_KEY', skipping."
         fi
@@ -138,7 +142,7 @@ EOT
   ###
   define_storage_classes() {
     # storage classes definitions
-    t="$(mktemp).yaml" && cat <<-EOF > "$t"
+    t="$(mktemp).yaml" && cat <<-EOF > "$t" # must be .yaml to pass validation
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -258,6 +262,7 @@ EOF
   }
 
   annotate_nodes
+  sleep 10
   define_storage_classes
 
   # [manually] verify that cloud volumes are attached to each nodes at /mnt/longhorn and check longhorn disk in /var/lib/longhorn
@@ -293,11 +298,33 @@ install_kubernetes_dashboard() {
   printf "Installing Kubernetes Dashboard...\n"
 
   helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-  t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
+  t="$(mktemp)-values.yml" && cat <<EOF > "$t" 
+app: 
+  scheduling: 
+    nodeSelector:
+      role: worker
 kong:
   proxy:
     http:
       enabled: true
+  nodeSelector: 
+    role: worker
+
+auth: 
+  nodeSelector: 
+    role: worker
+
+api: 
+  nodeSelector: 
+    role: worker
+
+web: 
+  nodeSelector: 
+    role: worker
+
+metricsScraper: 
+  nodeSelector: 
+    role: worker
 EOF
   helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard --values $t
 
@@ -342,13 +369,13 @@ EOF
     helm show values kubernetes-dashboard/kubernetes-dashboard
     # helm uninstall kubernetes-dashboard   --namespace kubernetes-dashboard
 
-      t="$(mktemp)-values.yaml" && cat <<EOF > "$t" 
+      t="$(mktemp)-values.yml" && cat <<EOF > "$t" 
 kong:
   proxy:
     http:
       enabled: true
 EOF
-    y="$(mktemp).yaml" && helm template kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --namespace kubernetes-dashboard --values $t > $y && code $y
+    y="$(mktemp).yml" && helm template kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --namespace kubernetes-dashboard --values $t > $y && code $y
 
     # get token 
     export USER_TOKEN=$(kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d)
@@ -394,6 +421,7 @@ spec:
 EOF
             
         kubectl apply -f $t 
+        sleep 2
         while ! $(kubectl describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"); do
           echo "Retry checking for successfully issued certificate. sleep 5s..."; 
           sleep 5
@@ -401,7 +429,8 @@ EOF
         
         kubectl delete -f $t
     }
-
+  
+  sleep 10
   verify_cert_manager_installation
   kubectl rollout restart deployment cert-manager -n cert-manager
 }
@@ -435,9 +464,13 @@ server:
   persistentVolume:
     storageClass: local-path
     size: 3Gi
+  nodeSelector: 
+    role: worker
+
 alertmanager:
   persistentVolume:
     size: 512Mi
+    
 resources:
     limits:
       cpu: 150m
@@ -487,6 +520,8 @@ EOF
 
     # https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
     t="$(mktemp)-grafana-values.yml" && cat <<EOF > "$t"
+nodeSelector: 
+  role: worker
 persistence:
   enabled: true
   storageClassName: local-path
@@ -509,6 +544,7 @@ EOF
 
   manual_steps() { 
     # TODO: install Grafana extension for Prometheus from the graphical interface and implement recommendations from docs
+    echo ""
   }
 
   install_prometheus
@@ -520,10 +556,6 @@ EOF
     # get grafana password 
     kubectl get secret --namespace monitoring grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
   }
-
-}
-
-install_pod_vertical_autoscaller() { 
 
 }
 
@@ -683,7 +715,7 @@ hetzner_cloud_provision() {
       install_kubernetes_dashboard  
       install_gateway_api_cilium  # [previous implementation] # installation_gateway_controller_nginx 
       restart_cert_manager  # must be restarted after installation of Gateway Api
-      sleep 20
+      sleep 30
       install_storage_class 
       # TODO: check resource limits and prevent contention when using monitoring tools
       # install_monitoring
@@ -710,10 +742,25 @@ hetzner_cloud_provision() {
 
         # check cpu/mem utilization
         kubectl get node && kubectl top nodes && kubectl describe node
-        kubectl top pods
+        kubectl get pods -o wide -A 
+        kubectl get pods -n longhorn-system -l app.kubernetes.io/name=longhorn -o wide 
+          # NOTE: memory reporting it seems because of cilium is not reported correctly. (discrepancies found between linux command reported memory and kubectl command one)
         kubectl top pods --containers=true -A --sort-by memory
+        kubectl get pods -o wide --all-namespaces | grep k3s-control-plane-wug
         HIGHEST_CPU_NODE=$(kubectl top nodes | awk 'NR>1 {print $1, $2+0}' | sort -k2 -nr | head -n 1 | awk '{print $1}')
         kubectl top pods -A -n $HIGHEST_CPU_NODE --sort-by cpu
+        # list all pods of controller nodes: 
+        {
+          for node in $(kubectl get nodes -l role=control-plane -o jsonpath='{.items[*].metadata.name}'); do
+            echo "Pods on node: $node"
+            kubectl get pods --all-namespaces -o wide --field-selector spec.nodeName=$node
+          done
+        }
+
+        hcloud server list
+        {
+          free | awk '/Mem:/ {printf "Memory Usage: %.2f%%\n", $3/$2 * 100}'
+        }
 
         ### ssh into remove machines
         # echo "" > ~/.ssh/known_hosts # clear known hosts to permit connection for same assigned IP to different server

@@ -10,9 +10,9 @@ images:
   - name: web-server
     newTag: latest
 
-configMapGenerator:
-  - name: properties-map-web-server
-    env: config.properties
+# configMapGenerator:
+#   - name: properties-map-web-server
+#     env: config.properties
 
 patches:
   - patch: |-

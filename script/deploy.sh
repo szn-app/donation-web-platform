@@ -183,8 +183,23 @@ EOF
         fi
     }
 
+    generate_database_keto_credentials() {
+        db_secret_file="./manifest/auth/ory-keto/db_keto_secret.env"
+        if [ ! -f "$db_secret_file" ]; then
+            t=$(mktemp) && cat <<EOF > "$t"
+DB_USER="$(shuf -n 1 /usr/share/dict/words | tr -d '\n')"
+DB_PASSWORD="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+EOF
+
+            mv $t $db_secret_file
+            echo "generated secrets file: file://$db_secret_file" 
+        fi
+    }
+
+
     generate_database_kratos_credentials
     generate_database_hydra_credentials
+    generate_database_keto_credentials
     generate_secret_auth_ui
     create_env_files
 }
@@ -207,6 +222,7 @@ install_ory_stack() {
             kubectl delete secret ory-hydra-client--frontend-client-oauth -n auth
             kubectl delete secret ory-hydra-client--frontend-client -n auth
             kubectl delete secret ory-hydra-client--internal-communication -n auth
+            kubectl delete secret ory-hydra-client--oathkeeper-introspection -n auth
             return 
         fi
     }
@@ -296,8 +312,8 @@ install_ory_stack() {
         printf "install Ory Hydra \n"
         # preprocess file through substituting env values
         t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
-        system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
-        cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+        system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
+        cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
         helm upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra/helm-values.yml -f $t \
             --set kratos.config.secrets.system[0]="$system_secret" \
             --set kratos.config.secrets.cookie[0]="$cookie_secret" \
@@ -376,19 +392,49 @@ install_ory_stack() {
 
     install_oathkeeper() {
         pushd ./manifest/auth
+
+        generate_oathkeeper_oauth2_client_credentials_env_file() {
+            CLIENT_NAME="oathkeeper-introspection"
+            CLIENT_SECRET=$(kubectl get secret ory-hydra-client--oathkeeper-introspection -n auth -o jsonpath="{.data.$CLIENT_NAME}" | base64 -d)
+
+            # Check if the secret was retrieved successfully
+            if [[ -z "$CLIENT_SECRET" ]]; then
+                echo "Error: Failed to retrieve client secret 'ory-hydra-client--oathkeeper-introspection' from Kubernetes."
+                exit 1
+            fi
+
+            # create authorization header value
+            OATHKEEPER_CLIENT_CREDENTIALS=$(printf "${CLIENT_NAME}:${CLIENT_SECRET}" | base64 -w 0)
+
+            secret="./ory-oathkeeper/secret.env"
+
+            t=$(mktemp) && cat <<EOF > "$t"
+OATHKEEPER_CLIENT_CREDENTIALS="${OATHKEEPER_CLIENT_CREDENTIALS}"
+EOF
+            mv $t $secret
+            echo "generated secrets file: file://$secret" 
+        }
+
         printf "install Ory Aothkeeper \n"
+        generate_oathkeeper_oauth2_client_credentials_env_file
+        set -a
+        source ory-oathkeeper/secret.env 
+        set +a
 
         # t="$(mktemp).pem" && openssl genrsa -out "$t" 2048 # create private key
         # # Generate a JWKs file (if needed) - basic example using OpenSSL:
         # y="$(mktemp).json" && openssl rsa -in "$t" -pubout -outform PEM > $y 
         # echo "jwt file created file://$y"
-        helm upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml \
+
+        t="$(mktemp).yml" && envsubst < ory-oathkeeper/oathkeeper-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
+        helm upgrade --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f $t \
              --set-file 'oathkeeper.accessRules=./ory-oathkeeper/oathkeeper-access-rules.json'
              # --set-file "oathkeeper.mutatorIdTokenJWKs=$y" 
 
         verify() { 
             t="$(mktemp).yml" && helm upgrade --dry-run --debug --install oathkeeper ory/oathkeeper -n auth --create-namespace -f ory-oathkeeper/helm-values.yml -f ory-oathkeeper/oathkeeper-config.yml --set-file 'oathkeeper.accessRules=./ory-oathkeeper/oathkeeper-access-rules.json' > $t && printf "generated manifest with replaced env variables: file://$t\n"
 
+            oathkeeper rules validate --file ory-oathkeeper/oathkeeper-access-rules.json
 
             curl -i https://auth.wosoom.com/authorize/health/alive
             curl -i https://auth.wosoom.com/authorize/health/ready
@@ -502,7 +548,8 @@ create_oauth2_client_for_trusted_app() {
         # kpf -n auth services/hydra-admin 4445:4445
 
         kubectl run --image=debian:latest setup-pod --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
-        sleep 5
+        kubectl wait --for=condition=ready pod/setup-pod --namespace=auth --timeout=300s
+
         {
                         t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
@@ -513,8 +560,6 @@ EOF
             kubectl cp $t setup-pod:$t --namespace auth
             kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
         }
-
-        kubectl wait --for=condition=ready pod/setup-pod --namespace=auth --timeout=300s
         
         {
 
@@ -532,23 +577,21 @@ EOF
 
             # redirect uri is where the resource owner (user) will be redirected to once the authorization server grants permission to the client
             # NOTE: using the `authorization code` the client gets both `accesst token` and `id token` when `scope` includes `openid`.
-            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
             client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id')
-            t="$(mktemp).sh" && cat << 'EOF' > $t
+            t="$(mktemp).sh" && cat << EOF > $t
 #!/bin/bash
 
-client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id')
+client_exist=\$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client") | .client_id')
 
-if [[ -z "$client_exist" ]]; then
+if [[ -z "\$client_exist" ]]; then
 echo 'Adding oauth2 client'
 
 curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
     --data '{
         "client_id": "frontend-client",
         "client_name": "frontend-client",
-EOF
-            echo "\"client_secret\": \"$client_secret\"," >> $t
-            cat << EOF >> $t
+        "client_secret": "${client_secret}",
         "grant_types": ["authorization_code", "refresh_token"],
         "response_types": ["code id_token"],
         "redirect_uris": ["https://wosoom.com"], 
@@ -586,23 +629,21 @@ EOF
         }
         {
 
-            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
             client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client-oauth") | .client_id')
-            t="$(mktemp).sh" && cat << 'EOF' > $t
+            t="$(mktemp).sh" && cat << EOF > $t
 #!/bin/bash
 
-client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client-oauth") | .client_id')
+client_exist=\$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="frontend-client-oauth") | .client_id')
 
-if [[ -z "$client_exist" ]]; then
+if [[ -z "\$client_exist" ]]; then
 echo 'Adding oauth2 client'
 
 curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
     --data '{
         "client_id": "frontend-client-oauth",
         "client_name": "frontend-client-oauth",
-EOF
-            echo "\"client_secret\": \"$client_secret\"," >> $t
-            cat << EOF >> $t
+        "client_secret": "${client_secret}",
         "grant_types": ["authorization_code", "refresh_token"],
         "response_types": ["code"],
         "redirect_uris": ["https://wosoom.com"], 
@@ -641,27 +682,25 @@ EOF
 
         {
             # internal service communication
-            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64)" 
+            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
             client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id')
-            t="$(mktemp).sh" && cat << 'EOF' > $t
+            t="$(mktemp).sh" && cat << EOF > $t
 #!/bin/bash
 
-client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id')
+client_exist=\$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="internal-communication") | .client_id')
 
-if [[ -z "$client_exist" ]]; then
+if [[ -z "\$client_exist" ]]; then
 echo 'Adding oauth2 client'
 
 curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
     --data '{
         "client_id": "internal-communication",
         "client_name": "internal-communication",
-EOF
-            echo "\"client_secret\": \"$client_secret\"," >> $t
-            cat << EOF >> $t
+        "client_secret": "${client_secret}",
         "grant_types": ["client_credentials"],
         "response_types": [],
         "redirect_uris": ["https://wosoom.com"], 
-        "audience": ["internal-api", "exposed-api"],
+        "audience": ["internal-service", "external-service"],
         "scope": "offline_access openid custom_scope:read",
         "token_endpoint_auth_method": "client_secret_basic",
         "skip_consent": false,
@@ -681,6 +720,42 @@ EOF
 
         }
 
+
+
+        {
+            # Oathkeeper introspection
+            client_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
+            client_exist=$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="oathkeeper-introspection") | .client_id')
+            t="$(mktemp).sh" && cat << EOF > $t
+#!/bin/bash
+
+client_exist=\$(curl -s 'http://hydra-admin/admin/clients' | jq -r '.[] | select(.client_id=="oathkeeper-introspection") | .client_id')
+
+if [[ -z "\$client_exist" ]]; then
+echo 'Adding oauth2 client'
+
+curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
+    --data '{
+        "client_id": "oathkeeper-introspection",
+        "client_name": "oathkeeper-introspection",
+        "client_secret": "${client_secret}",
+        "grant_types": ["client_credentials"],
+        "response_types": ["token"],
+        "audience": ["internal-service"],
+        "scope": "introspect",
+        "token_endpoint_auth_method": "client_secret_basic"
+    }'                     
+fi
+EOF
+            kubectl cp $t setup-pod:$t --namespace auth
+            kubectl exec -it setup-pod --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            # create/update secret 
+            if [[ -z "$client_exist" ]]; then
+                kubectl create secret generic ory-hydra-client--oathkeeper-introspection -n auth --from-literal=oathkeeper-introspection="$client_secret" --dry-run=client -o yaml | kubectl apply -f - 2>/dev/null
+            fi 
+
+        }
+        
         kubectl delete --force pod setup-pod -n auth
 
 
@@ -694,7 +769,7 @@ EOF
         #     "grant_types": ["authorization_code", "refresh_token"],
         #     "response_types": ["code"],
         #     "redirect_uris": ["http://localhost:8000/oauth-redirect"],
-        #     "audience": ["exposed-api"],
+        #     "audience": ["external-service"],
         #     "scope": "offline_access openid custom_scope:read",
         #     "token_endpoint_auth_method": "client_secret_post",
         #     "skip_consent": false,
@@ -710,6 +785,74 @@ EOF
         popd
     }
 
+    install_keto() {
+        pushd ./manifest/auth
+        
+        printf "install Postgresql for Ory Keto \n"
+        set -a
+        source ory-keto/db_keto_secret.env # DB_USER, DB_PASSWORD
+        set +a
+        helm upgrade --reuse-values --install postgres-keto bitnami/postgresql -n auth --create-namespace -f ory-keto/postgresql-values.yml \
+            --set auth.username=${DB_USER} \
+            --set auth.password=${DB_PASSWORD} \
+            --set auth.database=keto_db
+        # this will generate 'postgres-keto-postgresql' service
+
+        printf "install Ory Keto \n"
+        # preprocess file through substituting env values
+        t="$(mktemp).yml" && envsubst < ory-keto/keto-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
+        helm upgrade --install keto ory/keto -n auth --create-namespace -f ory-keto/helm-values.yml -f $t \
+            --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
+            --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
+
+        {
+            printf "Keto: create relations rules \n"
+            
+            kubectl run --image=debian:latest setup-pod-keto --namespace auth -- /bin/sh -c "while true; do sleep 60; done"
+            kubectl wait --for=condition=ready pod/setup-pod-keto --namespace=auth --timeout=300s
+
+            {
+                t="$(mktemp).sh" && cat << 'EOF' > $t
+#!/bin/bash
+apt update && apt install curl jq -y
+bash <(curl https://raw.githubusercontent.com/ory/meta/master/install.sh) -d -b . keto v0.12.0-alpha.0 && chmod +x ./keto && mv ./keto /usr/bin/
+
+# keto --read-remote http://keto-read --write-remote http://keto-write relation-tuple get
+EOF
+                kubectl cp $t setup-pod-keto:$t --namespace auth
+                kubectl exec -it setup-pod-keto --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            }
+            {
+                t="$(mktemp).sh" && cat << 'EOF' > $t
+#!/bin/bash
+
+# keto relation-tuple create --namespace="resources" --object="resources:xyz" --relation="read" --subject="{{ .AuthenticationSession.Subject }}" --flavor="keto"
+
+EOF
+                kubectl cp $t setup-pod-keto:$t --namespace auth
+                kubectl exec -it setup-pod-keto --namespace auth -- /bin/sh -c "chmod +x $t && $t"
+            }
+
+            kubectl delete --force pod setup-pod-keto -n auth
+        }
+
+        verify() {
+            alias keto="docker run -it --network cat-videos-example_default -e KETO_READ_REMOTE=\"keto:4466\" oryd/keto:v0.7.0-alpha.1"
+
+            http PUT http://keto.example.com/write/relation-tuples namespace=access object=administration relation=access subject_id=admin
+            http PUT http://keto.example.com/write/relation-tuples namespace=access object=application relation=access subject_id=admin
+            http PUT http://keto.example.com/write/relation-tuples namespace=access object=application relation=access subject_id=user
+
+            # check
+            http -b http://keto.example.com/read/check namespace=access object=administration relation=access subject_id=admin
+            # {
+            #     "allowed": true
+            # }
+        }
+        popd
+    }
+
+
     # ory stack charts
     helm repo add ory https://k8s.ory.sh/helm/charts
     # postgreSQL
@@ -718,8 +861,10 @@ EOF
 
     intall_kratos
     install_hydra
-    install_oathkeeper
+    install_keto
     create_oauth2_client_for_trusted_app
+    install_oathkeeper # depends on `create_oauth2_client_for_trusted_app`
+
 
     manual_verify() { 
         # use --debug with `helm` for verbose output
@@ -786,7 +931,7 @@ deploy_application() {
         kubectl apply -k ./entrypoint/production
         {
             pushd ./entrypoint/production 
-            t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            t="$(mktemp).yml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
         }
     popd 
@@ -815,7 +960,7 @@ kustomize_kubectl() {
             return 
          elif [ "$action" == "kustomize" ]; then
             pushd manifest/entrypoint/production 
-            t="$(mktemp).yaml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
+            t="$(mktemp).yml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
             return
          elif [ "$action" == "app" ]; then
@@ -832,14 +977,15 @@ kustomize_kubectl() {
             fi
         fi
     }
-    
 
     install_ory_stack
     deploy_application
-    # restart_cilinium  # [issue] restarting fixs gateway has no ip assignment by controller
-
+    
     echo "Services deployed to the cluster (wait few minutes to complete startup and propagate TLS certificate generation)."
 
+    _fix() { 
+        restart_cilinium  # [issue] restarting fixs gateway has no ip assignment by controller
+    }
     # verify cluster certificate issued successfully 
     _verify() {
         ### generate combined configuration
@@ -851,6 +997,8 @@ kustomize_kubectl() {
         kubectl --kubeconfig $kubeconfig  get -k ./
         kubectl describe -k ./
         kubectl diff -k ./
+
+        kubectl get nodes --show-labels
 
         # cert-manager related 
         # two issuers: staging & production issuers 

@@ -6,14 +6,14 @@ primary:
     storageClass: "longhorn-local-ext4-2replica"
     accessModes:
       - ReadWriteOnce
-    size: 4Gi
+    size: 2Gi
   resources:
     requests:
       cpu: "1"
-      memory: "2Gi"
+      memory: "1Gi"
     limits:
       cpu: "2"
-      memory: "4Gi"
+      memory: "3Gi"
   nodeSelector:
     role: worker
 
@@ -22,11 +22,11 @@ readReplicas:
   resources:
     requests:
       cpu: "100m"
-      memory: "1Gi"
+      memory: "512Mi"
     limits:
       cpu: "1"
-      memory: "4Gi"
+      memory: "2Gi"
   storageClass: "longhorn-local-ext4-strict-locality"
-  size: "2Gi" # Adjust for replication data
+  size: "1Gi" # Adjust for replication data
   nodeSelector:
     role: worker

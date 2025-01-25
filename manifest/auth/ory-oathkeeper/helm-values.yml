@@ -311,10 +311,8 @@ deployment:
   terminationGracePeriodSeconds: 60
 
   # -- Node labels for pod assignment.
-  nodeSelector: {}
-  # If you do want to specify node labels, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'annotations:'.
-  #   foo: bar
+  nodeSelector:
+    role: "worker"
 
   # -- Array of extra envs to be passed to the deployment. Kubernetes format is expected. Value is processed with Helm
   # `tpl`

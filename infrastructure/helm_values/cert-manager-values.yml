@@ -10,3 +10,6 @@ config:
 crds:
   enabled: true
   keep: true
+
+nodeSelector:
+  role: worker
