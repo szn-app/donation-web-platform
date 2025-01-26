@@ -1,0 +1,92 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+metadata:
+  name: https-auth
+  namespace: auth
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: gateway
+      sectionName: https-auth
+
+  hostnames:
+    - auth.donation-app.test
+
+  rules:
+    - backendRefs:
+        - name: auth-ui
+          namespace: auth
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+    - backendRefs:
+        - name: kratos-public
+          namespace: auth
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /authenticate
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: "/" # "/authenticate" to "/" for internal service
+
+    - backendRefs:
+        - name: hydra-public
+          namespace: auth
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /authorize
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: "/" # "/authorize" to "/" for internal service
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+metadata:
+  name: http-auth-redirect
+  namespace: cert-manager # HTTPRoute must be placed in same namespace as the target backend service
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: gateway
+      sectionName: http-auth
+
+  hostnames:
+    - "auth.donation-app.test"
+
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: "/.well-known/"
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: "/livez"
+      backendRefs:
+        - name: cert-manager-health-endpoint
+          namespace: cert-manager
+          port: 80

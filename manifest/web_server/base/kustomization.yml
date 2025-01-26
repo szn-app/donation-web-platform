@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - deployment.yml
   - service.yml
+  - route.yml
 
 # [BUG in Kustomize https://github.com/kubernetes-sigs/kustomize/issues/5047] specifiying namespace ruins configMapGenerator name resolution
 # namespace: donation-app # using customization transformers instead (which provides more options)

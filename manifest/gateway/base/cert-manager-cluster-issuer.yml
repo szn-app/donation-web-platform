@@ -5,7 +5,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: staging-cluster-issuer
-  namespace: gateway # this will be ignored as it is a ClusterIssuer
+  namespace: "gateway" # this will be ignored as it is a ClusterIssuer
 spec:
   acme:
     # Staging Environment: must be used for testing before using prod env to avoid Letsencrypt strict rate limit.
@@ -25,7 +25,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: production-cluster-issuer
-  namespace: gateway # this will be ignored as it is a ClusterIssuer
+  namespace: "gateway" # this will be ignored as it is a ClusterIssuer
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory

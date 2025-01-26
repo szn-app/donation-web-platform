@@ -198,7 +198,7 @@ module "kube-hetzner" {
   # Cert-manager for automatic TLS certificates
   enable_cert_manager = true
   cert_manager_helmchart_bootstrap = false # run on control-plane nodes too
-  cert_manager_version = "v1.16.3"
+  cert_manager_version = "v1.15.3" # NOTE: downgraded from 1.16.3 to resolve a bug https://github.com/cert-manager/cert-manager/issues/7337
   cert_manager_values = local.helm_values_file["cert-manager"]
 
   # NOTE: `extra_kustomize_deployment_commands` doesn't get to run unless there is ./extra-manifests/kustomization.yaml.tpl file this is a bug and error prone better to use post-terraform shell scripts with the kubeconfig file for connection

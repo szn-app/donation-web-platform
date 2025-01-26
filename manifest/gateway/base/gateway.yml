@@ -12,28 +12,14 @@ spec:
   gatewayClassName: cilium
   # NOTE: order is important as kustomize targets indecies of listners
   listeners:
-    - name: http
-      protocol: HTTP
-      port: 80
-      hostname: "wosoom.com"
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    - name: http-subdomain
-      protocol: HTTP
-      port: 80
-      hostname: "*.wosoom.com"
-      allowedRoutes:
-        namespaces:
-          from: All
-
     - name: direct-ip
       protocol: HTTP
       port: 80
       allowedRoutes:
         namespaces:
           from: All
+
+    ###
 
     - name: https
       protocol: HTTPS
@@ -46,8 +32,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-donation-app
+            name: tls-certificate-root
             group: ""
+
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    ###
 
     - name: https-api
       protocol: HTTPS
@@ -60,8 +56,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-donation-app
+            name: tls-certificate-api
             group: ""
+
+    - name: http-api
+      protocol: HTTP
+      port: 80
+      hostname: "api.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    ###
 
     - name: https-auth
       protocol: HTTPS
@@ -74,8 +80,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-donation-app
+            name: tls-certificate-auth
             group: ""
+
+    - name: http-auth
+      protocol: HTTP
+      port: 80
+      hostname: "auth.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    ###
 
     - name: https-k8s-longhorn
       protocol: HTTPS
@@ -88,8 +104,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-admin-donation-app
+            name: tls-certificate-k8s
             group: ""
+
+    - name: http-k8s-longhorn
+      protocol: HTTP
+      port: 80
+      hostname: "longhorn.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    ###
 
     - name: https-k8s-dashboard
       protocol: HTTPS
@@ -102,8 +128,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-admin-donation-app
+            name: tls-certificate-k8s
             group: ""
+
+    - name: http-k8s-dashboard
+      protocol: HTTP
+      port: 80
+      hostname: "dashboard.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    ###
 
     - name: https-k8s-hubble
       protocol: HTTPS
@@ -116,8 +152,18 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-admin-donation-app
+            name: tls-certificate-k8s
             group: ""
+
+    - name: http-k8s-hubble
+      protocol: HTTP
+      port: 80
+      hostname: "hubble.k8s.donation-app.test"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    ###
 
     - name: https-k8s-ory-admin
       protocol: HTTPS
@@ -130,35 +176,49 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: tls-certificate-admin-donation-app
+            name: tls-certificate-k8s
             group: ""
 
-    # TODO: add http routes to this listener
-    - name: https-k8s-grafana
-      protocol: HTTPS
-      port: 443
-      hostname: "grafana.k8s.donation-app.test"
+    - name: http-k8s-ory-admin
+      protocol: HTTP
+      port: 80
+      hostname: "ory-admin.k8s.donation-app.test"
       allowedRoutes:
         namespaces:
-          from: All # required for letsecrypt
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            name: tls-certificate-admin-donation-app
-            group: ""
+          from: All
 
-    # TODO: add http routes to this listener
-    - name: https-k8s-prometheus
-      protocol: HTTPS
-      port: 443
-      hostname: "prometheus.k8s.donation-app.test"
-      allowedRoutes:
-        namespaces:
-          from: All # required for letsecrypt
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - kind: Secret
-            name: tls-certificate-admin-donation-app
-            group: ""
+    ###
+
+    # # TODO: add http routes to this listener
+    # - name: https-k8s-grafana
+    #   protocol: HTTPS
+    #   port: 443
+    #   hostname: "grafana.k8s.donation-app.test"
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: All # required for letsecrypt
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - kind: Secret
+    #         name: tls-certificate-k8s
+    #         group: ""
+
+    ###
+
+    # # TODO: add http routes to this listener
+    # - name: https-k8s-prometheus
+    #   protocol: HTTPS
+    #   port: 443
+    #   hostname: "prometheus.k8s.donation-app.test"
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: All # required for letsecrypt
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - kind: Secret
+    #         name: tls-certificate-k8s
+    #         group: ""
+
+    ###

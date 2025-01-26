@@ -6,4 +6,6 @@ resources:
   - ../../gateway/development
   - ../../web_server/development
   - ../../auth_ui/development
-  - ../../auth-ory-admin-ui
+  - ../../auth-ory-admin-ui/development
+  - ../route
+  - ../../auth/development

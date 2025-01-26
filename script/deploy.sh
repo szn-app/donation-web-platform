@@ -756,7 +756,7 @@ EOF
 
         }
         
-        kubectl delete --force pod setup-pod -n auth
+        kubectl delete --force pod setup-pod -n auth > /dev/null 2>&1
 
 
         # NOTE: this is not a proper OIDC exposure to other services (only an example) 
@@ -833,7 +833,7 @@ EOF
                 kubectl exec -it setup-pod-keto --namespace auth -- /bin/sh -c "chmod +x $t && $t"
             }
 
-            kubectl delete --force pod setup-pod-keto -n auth
+            kubectl delete --force pod setup-pod-keto -n auth > /dev/null 2>&1
         }
 
         verify() {
@@ -1005,7 +1005,7 @@ kustomize_kubectl() {
         # ephemeral challenge appearing during certificate issuance process 
         # certificate should be READY = True
         # order: should be STATE = pending → STATE = valid
-        kubectl get clusterissuer,certificate,challenge,order -A 
+        kubectl get clusterissuer,certificate,order,challenge -A 
         kubectl get gateway,httproute,crds -A 
         kubectl describe gateway -n gateway
 
@@ -1014,7 +1014,8 @@ kustomize_kubectl() {
         curl -i http://$domain_name
         curl --insecure -I https://$domain_name
         cloud_load_balancer_ip=""
-        curl --header "Host: donation-app.com" $cloud_load_balancer_ip
+        curl -i --header "Host: donation-app.com" $cloud_load_balancer_ip
+        kubectl logs -n kube-system deployments/cilium-operator | grep gateway
 
         # run ephemeral debug container
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace some_namespace -- /bin/bash 

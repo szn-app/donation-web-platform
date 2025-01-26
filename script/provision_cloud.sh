@@ -386,8 +386,9 @@ EOF
 }
 
 ### cert-manager installation is done through kube-hetzner module
-restart_cert_manager() { 
-   
+cert_manager_related() { 
+  restart_cert_manager() { 
+    
 
     printf "Restarting cert-manager...\n"
 
@@ -419,7 +420,6 @@ spec:
   issuerRef:
     name: test-selfsigned
 EOF
-            
         kubectl apply -f $t 
         sleep 2
         while ! $(kubectl describe certificate -n cert-manager-test | grep "Status" | awk '{print $2}' | grep -i -q "true"); do
@@ -429,10 +429,37 @@ EOF
         
         kubectl delete -f $t
     }
-  
-  sleep 10
-  verify_cert_manager_installation
-  kubectl rollout restart deployment cert-manager -n cert-manager
+    
+    sleep 10
+    verify_cert_manager_installation
+    kubectl rollout restart deployment cert-manager -n cert-manager
+    
+  }
+
+  # used for cert-manager challenge routes to always return 200 (hackish way to overcome limitations in Gateway API configuration) 
+  # allows to probe with $`curl -i cert-manager-health-endpoint.cert-manager/livez`
+  expose_status_endpoint() { 
+    t=$(mktemp) && cat <<"EOF" > "$t"
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager-health-endpoint
+  namespace: cert-manager
+spec:
+  selector:
+    app: cert-manager 
+  ports:
+  # expose port named http-healthz (9403)
+  - protocol: TCP
+    port: 80
+    targetPort: http-healthz 
+EOF
+
+    kubectl apply -f $t
+  }
+
+  expose_status_endpoint
+  restart_cert_manager
 }
 
 remove_warnings_logs() { 
@@ -714,7 +741,7 @@ hetzner_cloud_provision() {
       sleep 1 
       install_kubernetes_dashboard  
       install_gateway_api_cilium  # [previous implementation] # installation_gateway_controller_nginx 
-      restart_cert_manager  # must be restarted after installation of Gateway Api
+      cert_manager_related  # must be restarted after installation of Gateway Api
       sleep 30
       install_storage_class 
       # TODO: check resource limits and prevent contention when using monitoring tools

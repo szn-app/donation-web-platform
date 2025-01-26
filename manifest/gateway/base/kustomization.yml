@@ -4,8 +4,7 @@ kind: Kustomization
 resources:
   - gateway.yml
   - cert-manager-cluster-issuer.yml
-  - http-route.yml
-  - https-route.yml
+  - direct-ip-route.yml
 
 configurations:
   - name-reference.kustomize-config.yml
