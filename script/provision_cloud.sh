@@ -767,6 +767,9 @@ hetzner_cloud_provision() {
         
         journalctl -r -n 200
 
+        # load balancer hetzner manager (Hetzner Cloud Controller Manager (CCM))
+        kubectl logs -n kube-system -l app=hcloud-cloud-controller-manager
+
         # check cpu/mem utilization
         kubectl get node && kubectl top nodes && kubectl describe node
         kubectl get pods -o wide -A 

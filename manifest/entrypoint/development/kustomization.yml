@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ../base
   - ../../gateway/development
+  - ../../envoy_proxy/base
   - ../../web_server/development
   - ../../auth_ui/development
   - ../../auth-ory-admin-ui/development

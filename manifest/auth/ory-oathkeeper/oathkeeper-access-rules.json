@@ -18,7 +18,39 @@
       }
     ],
     "authorizer": {
-      "handler": "allow"
+      "handler": "keto_engine_acp_ory"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "k8s-admin-rule",
+    "upstream": {
+      "url": "http://kubernetes-dashboard-kong-proxy.kubernetes-dashboard",
+      "preserve_host": true
+    },
+    "match": {
+      "host": "kubernetes-dashboard.k8s.wosoom.com"
+    },
+    "authenticators": [
+      {
+        "handler": "jwt",
+        "config": {
+          "scope_strategy": "none"
+        }
+      }
+    ],
+    "authorizer": {
+      "handler": "deny"
     },
     "mutators": [
       {

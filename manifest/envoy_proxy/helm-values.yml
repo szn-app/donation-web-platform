@@ -1,0 +1,7 @@
+# https://gateway.envoyproxy.io/docs/install/gateway-helm-api/
+# https://github.com/envoyproxy/gateway/blob/main/charts/gateway-helm/values.tmpl.yaml
+
+config:
+  envoyGateway:
+    gateway:
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller-internal
