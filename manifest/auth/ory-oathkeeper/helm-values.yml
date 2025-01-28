@@ -76,7 +76,7 @@ service:
   # -- Configures the Kubernetes service for the proxy port.
   proxy:
     # -- En-/disable the service
-    enabled: true
+    enabled: false # proxy is disablec in favor of using oathkeeper as decision maker only
     # -- The service type
     type: ClusterIP
     # -- The load balancer IP
