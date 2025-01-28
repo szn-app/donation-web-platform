@@ -1,8 +1,12 @@
 [
   {
     "id": "api-rule",
+    "upstream": {
+      "url": "http://prod-web-server-v1.donation-app.svc.cluster.local",
+      "preserve_host": true
+    },
     "match": {
-      "url": "//api.wosoom.com/<.*>",
+      "url": "http://api.wosoom.com/<.*>",
       "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
     },
     "authenticators": [
@@ -35,7 +39,7 @@
       "preserve_host": true
     },
     "match": {
-      "host": "//kubernetes-dashboard.k8s.wosoom.com/<.*>"
+      "url": "https://kubernetes-dashboard.k8s.wosoom.com/<.*>"
     },
     "authenticators": [
       {

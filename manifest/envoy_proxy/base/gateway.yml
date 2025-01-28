@@ -14,3 +14,45 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+---
+# https://gateway.envoyproxy.io/contributions/design/security-policy/
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: internal-gateway
+  namespace: envoy-gateway-system # must be same as targetRefs' namesapce
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: envoy-gateway-internal
+  extAuth:
+    headersToExtAuth:
+      - X-Forwarded-Proto
+      - Authorization
+      - Proxy-Authorization
+      - Accept
+      - Cookie
+    failOpen: false
+    http:
+      path: "/decisions" # https://www.ory.sh/docs/oathkeeper/reference/api#tag/api/operation/decisions
+      backendRefs:
+        - name: oathkeeper-api
+          namespace: auth
+          port: 80
+---
+# https://gateway.envoyproxy.io/docs/api/extension_types/#securitypolicy
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: ReferenceGrant
+metadata:
+  name: allow-envoy-gateway
+  namespace: auth # backend service
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: envoy-gateway-system
+  to:
+    # backend service
+    - group: ""
+      kind: Service
