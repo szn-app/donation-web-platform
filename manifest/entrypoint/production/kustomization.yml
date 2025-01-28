@@ -31,6 +31,14 @@ patches:
 
   - target:
       kind: HTTPRoute
+      name: internal-api
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "api.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
       name: http-api-redirect
     patch: |-
       - op: replace

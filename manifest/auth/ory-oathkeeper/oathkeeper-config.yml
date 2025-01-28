@@ -12,6 +12,7 @@ oathkeeper:
       prometheus:
         port: 9000
 
+    # access rules endsup in a configmap in kubernetes
     access_rules:
       matching_strategy: regexp
       repositories:

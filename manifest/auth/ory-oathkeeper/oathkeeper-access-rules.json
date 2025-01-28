@@ -6,7 +6,7 @@
       "preserve_host": true
     },
     "match": {
-      "url": "https://api.wosoom.com/<.*>",
+      "url": "//api.wosoom.com/<.*>",
       "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
     },
     "authenticators": [
@@ -39,7 +39,7 @@
       "preserve_host": true
     },
     "match": {
-      "host": "kubernetes-dashboard.k8s.wosoom.com"
+      "host": "//kubernetes-dashboard.k8s.wosoom.com/<.*>"
     },
     "authenticators": [
       {

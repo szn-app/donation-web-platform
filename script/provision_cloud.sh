@@ -595,6 +595,7 @@ install_envoy_gateway_class() {
     {
         if [ "$action" == "delete" ]; then
             # permit forceful deletion of gatewayclass
+            kubectl delete envoyproxy envoy-proxy-config-internal -n envoy-gateway-system # --force
             kubectl patch gatewayclass envoy-internal -n envoy-gateway-system -p '{"metadata":{"finalizers":[]}}' --type=merge 
             kubectl delete gatewayclass envoy-internal -n envoy-gateway-system # --force
             helm delete envoy-gateway -n envoy-gateway-system
@@ -621,9 +622,13 @@ spec:
     type: Kubernetes
     kubernetes:
       envoyService:
+        # additional config from kube-hetzner module's loadbalancer controller
         annotations:
-            load-balancer.hetzner.cloud/disable: "true" # additional config from kube-hetzner module's loadbalancer controller
-        type: ClusterIP  # Use ClusterIP instead of LoadBalancer (making the gateway internal only)
+            load-balancer.hetzner.cloud/disable: "true"
+        # Use ClusterIP instead of LoadBalancer (making the gateway internal only)
+        type: ClusterIP
+        # set fixed name to refernce it in manifest yml files
+        name: envoy-gateway-internal
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
