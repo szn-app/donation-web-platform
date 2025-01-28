@@ -14,8 +14,6 @@ transformers:
       namespace: auth
     unsetOnly: true
 
-namePrefix: prod-
-
 images:
   - name: auth-ui
     newName: ghcr.io/szn-app/donation-app/auth-ui

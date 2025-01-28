@@ -8,5 +8,11 @@ resources:
   - ../../web_server/development
   - ../../auth_ui/development
   - ../../auth-ory-admin-ui/development
-  - ../route
   - ../../auth/development
+  - ../route
+
+# namePrefix: prod-
+# nameSuffix: -v1
+
+configurations:
+  - ./name-reference.kustomize-config.yml

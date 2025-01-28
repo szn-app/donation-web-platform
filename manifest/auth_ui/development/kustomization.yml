@@ -14,8 +14,6 @@ transformers:
       namespace: auth
     unsetOnly: true
 
-namePrefix: dev-
-
 images:
   - name: auth-ui
     newTag: latest

@@ -8,8 +8,14 @@ resources:
   - ../../web_server/production
   - ../../auth_ui/production
   - ../../auth-ory-admin-ui/production
-  - ../route/
   - ../../auth/production
+  - ../route/
+
+# namePrefix: prod-
+# nameSuffix: -v1
+
+configurations:
+  - ./name-reference.kustomize-config.yml
 
 patches:
   - target:

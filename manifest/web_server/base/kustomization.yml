@@ -6,6 +6,9 @@ resources:
   - service.yml
   - route.yml
 
+namePrefix: prod-
+nameSuffix: -v1
+
 # [BUG in Kustomize https://github.com/kubernetes-sigs/kustomize/issues/5047] specifiying namespace ruins configMapGenerator name resolution
 # namespace: donation-app # using customization transformers instead (which provides more options)
 transformers:
@@ -17,7 +20,6 @@ transformers:
       namespace: donation-app
     unsetOnly: true
 
-nameSuffix: -v1
 # adds labels to all resources (including selector and template fields)
 labels:
   - pairs:

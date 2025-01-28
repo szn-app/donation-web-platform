@@ -1,0 +1,18 @@
+# fixes service name association for Gateway API resource (seems like Kustomize didn't update the nameReference configuration for Gateway components https://github.com/kubernetes-sigs/kustomize/blob/master/examples/transformerconfigs/README.md#builtin-namereference)
+
+# NOTE: the condition for this to apply requires targets to be in the same namespace (which could be a limitation when using HTTPRoute on a backend on different namespace - forcing HTTPRoute namespace to be the same)
+# Patch to associate backend reference of HTTPRoute rule with Service name
+nameReference:
+  - kind: Service
+    version: v1
+    fieldSpecs:
+      - kind: HTTPRoute
+        path: spec/rules/backendRefs/name
+        version: v1
+        group: gateway.networking.k8s.io
+
+  - kind: Gateway
+    fieldSpecs:
+      - kind: HTTPRoute
+        path: spec/parentRefs/name
+        group: gateway.networking.k8s.io
