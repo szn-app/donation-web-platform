@@ -38,42 +38,49 @@ patches:
 
       - op: replace
         path: /spec/listeners/3/hostname
-        value: "api.wosoom.com"
+        value: "test.wosoom.com"
       - op: replace
         path: /spec/listeners/4/hostname
-        value: "api.wosoom.com"
+        value: "test.wosoom.com"
 
       - op: replace
         path: /spec/listeners/5/hostname
-        value: "auth.wosoom.com"
+        value: "api.wosoom.com"
       - op: replace
         path: /spec/listeners/6/hostname
-        value: "auth.wosoom.com"
+        value: "api.wosoom.com"
 
       - op: replace
         path: /spec/listeners/7/hostname
-        value: "longhorn.k8s.wosoom.com"
+        value: "auth.wosoom.com"
       - op: replace
         path: /spec/listeners/8/hostname
-        value: "longhorn.k8s.wosoom.com"
+        value: "auth.wosoom.com"
 
       - op: replace
         path: /spec/listeners/9/hostname
-        value: "dashboard.k8s.wosoom.com"
+        value: "longhorn.k8s.wosoom.com"
       - op: replace
         path: /spec/listeners/10/hostname
-        value: "dashboard.k8s.wosoom.com"
+        value: "longhorn.k8s.wosoom.com"
 
       - op: replace
         path: /spec/listeners/11/hostname
-        value: "hubble.k8s.wosoom.com"
+        value: "dashboard.k8s.wosoom.com"
       - op: replace
         path: /spec/listeners/12/hostname
-        value: "hubble.k8s.wosoom.com"
+        value: "dashboard.k8s.wosoom.com"
 
       - op: replace
         path: /spec/listeners/13/hostname
-        value: "ory-admin.k8s.wosoom.com"
+        value: "hubble.k8s.wosoom.com"
       - op: replace
         path: /spec/listeners/14/hostname
+        value: "hubble.k8s.wosoom.com"
+
+      - op: replace
+        path: /spec/listeners/15/hostname
+        value: "ory-admin.k8s.wosoom.com"
+      - op: replace
+        path: /spec/listeners/16/hostname
         value: "ory-admin.k8s.wosoom.com"

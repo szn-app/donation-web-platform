@@ -1,0 +1,198 @@
+[
+  {
+    "id": "api-allow-all",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://api.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}></?><.*>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "anonymous"
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "test-oauth-cookie-TODO",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/oauth-cookie</?>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "oauth2_introspection",
+        "config": {
+          "scope_strategy": "none",
+          "token_from": {
+            "cookie": "ory_kratos_session"
+          }
+        }
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "test-oauth-header",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/oauth-header</?>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "oauth2_introspection",
+        "config": {
+          "scope_strategy": "none",
+          "token_from": {
+            "header": "Authorization"
+          }
+        }
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "test-jwt-TODO",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/jwt</?>"
+    },
+    "authenticators": [
+      {
+        "handler": "jwt",
+        "config": {
+          "scope_strategy": "none"
+        }
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "test-anonymous",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/anonymous</?>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "anonymous"
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "test-anonymous-forbidden",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/deny</?><.*>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "anonymous"
+      }
+    ],
+    "authorizer": {
+      "handler": "deny"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  },
+  {
+    "id": "test-anonymous-allow",
+    "match": {
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/allow</?><.*>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
+    },
+    "authenticators": [
+      {
+        "handler": "anonymous"
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "header",
+        "config": null
+      }
+    ],
+    "errors": [
+      {
+        "handler": "json"
+      }
+    ]
+  }
+]

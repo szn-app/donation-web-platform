@@ -1,3 +1,4 @@
+# https://www.ory.sh/docs/oathkeeper/reference/configuration
 oathkeeper:
   config:
     log:
@@ -13,8 +14,11 @@ oathkeeper:
         port: 9000
 
     # access rules endsup in a configmap in kubernetes
+    # https://www.ory.sh/docs/oathkeeper/api-access-rules
+    # https://www.ory.sh/docs/oathkeeper/pipeline/authn
+    # https://gateway.envoyproxy.io/docs/api/extension_types/#extauth
     access_rules:
-      matching_strategy: regexp
+      matching_strategy: regexp # `regexp` or `glob` Regular expressions (or glob patterns) are encapsulated in brackets < and >; verify regex at https://regex101.com/
       repositories:
         - file:///etc/rules/access-rules.json
 
@@ -38,9 +42,10 @@ oathkeeper:
       oauth2_introspection:
         enabled: true
         config:
-          introspection_url: http://hydra-admin/oauth2/introspect # TODO: check if need to add prefix 'admin'
+          introspection_url: http://hydra-admin/admin/oauth2/introspect
           introspection_request_headers:
-            Authorization: Basic ${OATHKEEPER_CLIENT_CREDENTIALS}
+            Authorization: Basic ${OATHKEEPER_CLIENT_CREDENTIALS} # credentials used internally for introspection between Oathkeeper and Hydra endpoint
+
           # NOTE: this approach is not required with Keto
           # can be configured to match check the roles/scopes of tokens
           # scope_strategy: exact
@@ -48,7 +53,14 @@ oathkeeper:
           # target_audience: ["frontend"]
 
     # https://www.ory.sh/docs/oathkeeper/pipeline/authz
+
     authorizers:
+      # can be used in tandem with oathkeeper and delegating authorization to oathkeeper simple RBAC
+      allow:
+        enabled: true
+      deny:
+        enabled: true
+
       keto_engine_acp_ory:
         enabled: true
         config:
@@ -57,12 +69,6 @@ oathkeeper:
           required_resource: "resources:xyz"
           subject: "{{ .AuthenticationSession.Subject }}"
           flavor: "keto" # use Keto's policy implementation to authorize decisions
-
-      # can be used in tandem with oathkeeper and delegating authorization to oathkeeper simple RBAC
-      allow:
-        enabled: true
-      deny:
-        enabled: true
 
     # https://www.ory.sh/docs/oathkeeper/pipeline/mutator
     mutators:

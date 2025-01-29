@@ -29,6 +29,31 @@ patches:
   ###
   - target:
       kind: HTTPRoute
+      name: https-test
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "test.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: internal-test
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "test.wosoom.com"
+
+  - target:
+      kind: HTTPRoute
+      name: http-test-redirect
+    patch: |-
+      - op: replace
+        path: /spec/hostnames/0
+        value: "test.wosoom.com"
+
+  ###
+  - target:
+      kind: HTTPRoute
       name: https-api
     patch: |-
       - op: replace

@@ -133,7 +133,8 @@ ingress:
 
 ## -- Application specific config
 kratos:
-  development: false
+  # TODO:
+  development: true
   # -- Enable the initialization job. Required to work with a DB
 
   # -- Enables database migration

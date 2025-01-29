@@ -2,8 +2,10 @@
 # https://www.ory.sh/docs/kratos/reference/configuration
 
 kratos:
+  # TODO:
+  development: true
   config:
-    dev: false
+    dev: true
 
     log:
       level: debug

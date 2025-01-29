@@ -41,6 +41,7 @@ spec:
           namespace: auth
           port: 80
 ---
+# Generic allow SecurityPolicy of Gateway (envoy-gateway-system namespace) to Services (auth)
 # https://gateway.envoyproxy.io/docs/api/extension_types/#securitypolicy
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: ReferenceGrant

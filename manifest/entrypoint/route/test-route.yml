@@ -1,0 +1,143 @@
+# fine-grained security policy over HTTPRoute overrides the Gateway policy in place
+# No extAuth configured → No authentication required (allows all)
+# https://gateway.envoyproxy.io/docs/api/extension_types/#securitypolicy
+# apiVersion: gateway.envoyproxy.io/v1alpha1
+# kind: SecurityPolicy
+# metadata:
+#   name: internal-test-allow-all
+#   namespace: cert-manager # must be same as targetRefs' namesapce
+# spec:
+#   targetRefs:
+#     - group: gateway.networking.k8s.io
+#       kind: HTTPRoute
+#       name: internal-test
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: internal-test-introspect
+  namespace: cert-manager # must be same as targetRefs' namesapce
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: internal-test
+  extAuth:
+    headersToExtAuth:
+      - X-Forwarded-Proto
+      - Authorization
+      - Proxy-Authorization
+      - Accept
+      - Cookie
+    failOpen: false
+    http:
+      path: "/decisions" # https://www.ory.sh/docs/oathkeeper/reference/api#tag/api/operation/decisions
+      backendRefs:
+        - name: oathkeeper-api
+          namespace: auth
+          port: 80
+---
+# Generic allow SecurityPolicy of HTTPRoute (cert-manager namespace) to Services (auth)
+# https://gateway.envoyproxy.io/docs/api/extension_types/#securitypolicy
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: ReferenceGrant
+metadata:
+  name: allow-policy-httproute-internal-test
+  namespace: auth # backend service
+spec:
+  from:
+    - group: gateway.envoyproxy.io
+      kind: SecurityPolicy
+      namespace: cert-manager
+  to:
+    # backend service
+    - group: ""
+      kind: Service
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+metadata:
+  name: https-test
+  namespace: envoy-gateway-system
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: gateway
+      sectionName: https-test
+
+  hostnames:
+    - test.donation-app.test
+
+  rules:
+    - backendRefs:
+        # kubernetees service
+        - name: envoy-gateway-internal
+          namespace: envoy-gateway-system
+          port: 80
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+metadata:
+  name: internal-test
+  namespace: cert-manager # HTTPRoute must be placed in same namespace as the target backend service
+spec:
+  parentRefs:
+    - name: envoy-gateway-internal
+      namespace: envoy-gateway-system
+      sectionName: http
+
+  hostnames:
+    - test.donation-app.test
+
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: "/livez"
+      backendRefs:
+        - name: cert-manager-health-endpoint
+          namespace: cert-manager
+          port: 80
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+metadata:
+  name: http-test-redirect
+  namespace: cert-manager # HTTPRoute must be placed in same namespace as the target backend service
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: gateway
+      sectionName: http-test
+
+  hostnames:
+    - "test.donation-app.test"
+
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: "/.well-known/"
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: "/livez"
+      backendRefs:
+        - name: cert-manager-health-endpoint
+          namespace: cert-manager
+          port: 80

@@ -185,7 +185,9 @@ hydra:
     resources: {}
 
   # -- Enable dev mode, not secure in production environments
-  dev: false
+  # TODO:
+  dev: true
+  dangerousForceHttp: true
 
 ## -- Deployment specific config
 deployment:
