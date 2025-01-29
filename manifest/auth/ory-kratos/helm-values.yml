@@ -158,7 +158,7 @@ kratos:
   # this configuration gets overriden by --set-file helm argument with file identity.default.schema.json
   # -- You can add multiple identity schemas here. You can pass JSON schema using `--set-file` Helm CLI argument.
   identitySchemas:
-    "identity.default.schema.json": |-
+    "example.schema.json": |-
       {
         "$id": "example",
         "$schema": "http://json-schema.org/draft-07/schema#",

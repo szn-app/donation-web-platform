@@ -30,22 +30,13 @@
           "type": "object",
           "properties": {
             "first": {
-              "title": "First Name",
-              "type": "string"
-            },
-            "last": {
-              "title": "Last Name",
+              "title": "Full Name",
               "type": "string"
             }
           }
-        },
-        "phone_number": {
-          "type": "string",
-          "title": "Phone Number",
-          "format": "tel"
         }
       },
-      "required": ["email", "phone_number"],
+      "required": ["email"],
       "additionalProperties": false
     }
   }
