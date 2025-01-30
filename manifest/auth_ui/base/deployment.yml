@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: auth-ui
 spec:
-  replicas: 2
+  replicas: 1
   minReadySeconds: 3
   strategy:
     rollingUpdate:
@@ -16,6 +16,17 @@ spec:
       containers:
         - name: auth-ui
           image: auth-ui:latest
+
+          ### for debugging purposes:
+          # command: ["sleep"]
+          # args: ["100000"]
+          # securityContext:
+          #   runAsUser: 0 # Run as root
+          #   privileged: true # Give full system privileges (use only if needed)
+          #   allowPrivilegeEscalation: true # Allow sudo-like behavior (if required)
+          #   capabilities:
+          #     add: ["SYS_ADMIN"] # Add specific root capabilities (adjust as needed)
+
           ports:
             - containerPort: 4455
               name: http-auth-ui
@@ -24,9 +35,11 @@ spec:
             - name: PORT
               value: "4455"
             - name: KRATOS_PUBLIC_URL
-              value: http://kratos-public:80/
+              value: "http://kratos-public"
             - name: KRATOS_ADMIN_URL
-              value: http://kratos-admin:80/
+              value: "http://kratos-admin"
+            - name: HYDRA_ADMIN_URL
+              value: http://hydra-admin
             - name: KRATOS_BROWSER_URL
               valueFrom:
                 configMapKeyRef:
@@ -52,8 +65,11 @@ spec:
                   name: secrets-auth-ui
                   key: CSRF_COOKIE_SECRET
                   optional: false
-            - name: HYDRA_ADMIN_URL
-              value: http://hydra-admin/ # Updated port to match Hydra admin port
+            # TODO: remove for production
+            - name: DANGEROUSLY_DISABLE_SECURE_CSRF_COOKIES
+              value: "true"
+            - name: NODE_ENV
+              value: "development"
           envFrom:
             - configMapRef:
                 name: properties-map-auth-ui # add additional values

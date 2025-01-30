@@ -22,6 +22,7 @@ oathkeeper:
       repositories:
         - file:///etc/rules/access-rules.json
 
+    # https://www.ory.sh/docs/oauth2-oidc/authorization-code-flow
     # https://www.ory.sh/docs/oathkeeper/pipeline/authn
     authenticators:
       # checks authenticity of JWT tokens that they were actually signed by Hydra issuer
@@ -30,8 +31,8 @@ oathkeeper:
         config:
           jwks_urls:
             - http://hydra-public/.well-known/jwks.json
-          scope_strategy: hierarchic
           jwks_max_wait: 5s
+          # jwks_ttl: 120s
 
       anonymous:
         enabled: true
@@ -54,6 +55,7 @@ oathkeeper:
 
     # https://www.ory.sh/docs/oathkeeper/pipeline/authz
 
+    # https://www.ory.sh/docs/oathkeeper/pipeline/authz#allow-configuration
     authorizers:
       # can be used in tandem with oathkeeper and delegating authorization to oathkeeper simple RBAC
       allow:

@@ -28,7 +28,7 @@ intall_kratos() {
     # preprocess file through substituting env values
     t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
     default_secret="$(openssl rand -hex 16)"
-    cookie_secret="$(openssl rand -hex 16)"
+    cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)" 
     cipher_secret="$(openssl rand -hex 16)"
     helm upgrade --install kratos ory/kratos -n auth --create-namespace -f ory-kratos/helm-values.yml -f $t \
         --set-file kratos.identitySchemas.identity-schema\\.json=./ory-kratos/identity-schema.json \

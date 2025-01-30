@@ -90,15 +90,18 @@
     ]
   },
   {
-    "id": "test-jwt-TODO",
+    "id": "test-jwt",
     "match": {
-      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/jwt</?>"
+      "url": "<[a-zA-Z][a-zA-Z0-9+.-]*>://test.<([a-zA-Z0-9-]+.)*[a-zA-Z0-9-]+.[a-zA-Z]{2,}>/jwt</?>",
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "PATCH", "HEAD", "DELETE"]
     },
     "authenticators": [
       {
         "handler": "jwt",
         "config": {
-          "scope_strategy": "none"
+          "token_from": {
+            "header": "Authorization"
+          }
         }
       }
     ],
