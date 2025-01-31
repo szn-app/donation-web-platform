@@ -51,14 +51,15 @@ kratos:
 
     selfservice:
       # links to generate for kratos ui pages
-      default_browser_return_url: https://wosoom.com/
-      allowed_return_urls:
-        - https://wosoom.com/
-        - https://auth.wosoom.com/
-        - https://*.wosoom.com/
+      default_browser_return_url: https://wosoom.com/callback # default callback checks for access tokens, if non-exist redirect to Oauth2 to complete the authorization step (in case initiated authentication directly with SSO "/login" interface)
+      allowed_return_urls: # redirect uri
+        - https://wosoom.com
+        - https://auth.wosoom.com
+        - https://*.wosoom.com
+        - https://wosoom.com/callback
 
       methods:
-        password: # email/password authentication
+        password: # email/password authentication (SSO)
           enabled: true # default enabled
         totp: # MFA
           config:
@@ -71,7 +72,7 @@ kratos:
         code: # one-time code authentication
           enabled: true
         oidc:
-          enabled: false
+          enabled: true
           # example:
           # config:
           #   providers:
