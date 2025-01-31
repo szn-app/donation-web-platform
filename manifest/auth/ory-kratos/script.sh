@@ -13,8 +13,46 @@ EOF
 
 intall_kratos() { 
     pushd ./manifest/auth
-    printf "install Postgresql for Ory Kratos \n"
 
+    check_kratos_secret_env() {
+        pushd "ory-kratos" 
+        # generate secrets for production
+        secret_file="secret.env"
+        if [ ! -f "$secret_file" ]; then
+            prinf "./ory-kratos/secret.env must exist ! otherwise OIDC for external providers will fail" 
+        fi
+
+        popd
+    }
+
+    generate_kratos_env_file() {
+        pushd "ory-kratos" 
+
+        env_file_name=".env"
+        google_jsonnet_file="./google-oidc-mapper.jsonnet"
+
+        # Check if the JSONNET file exists
+        if [[ ! -f "$google_jsonnet_file" ]]; then
+            echo "Error: File '$google_jsonnet_file' not found!"
+            return 1
+        fi
+
+        # Read the JSONNET file and encode it as base64
+        google_jsonnet_base64=$(base64 -w 0 < "$google_jsonnet_file")
+
+        t=$(mktemp) && cat <<EOF > "$t"
+GOOGLE_JSONNET_MAPPER_BASE64="$google_jsonnet_base64"
+EOF
+        mv $t $env_file_name
+        echo "generated env file: file://$env_file_name" 
+
+        popd
+    }
+
+    check_kratos_secret_env
+    generate_kratos_env_file
+
+    printf "install Postgresql for Ory Kratos \n"
     set -a
     source ory-kratos/db_kratos_secret.env
     set +a
@@ -25,6 +63,10 @@ intall_kratos() {
     # this will generate 'postgres-kratos-postgresql' service
 
     printf "install Ory Kratos \n"
+    set -a
+    source ory-kratos/.env
+    source ory-kratos/secret.env
+    set +a
     # preprocess file through substituting env values
     t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
     default_secret="$(openssl rand -hex 16)"
@@ -37,6 +79,11 @@ intall_kratos() {
         --set kratos.config.secrets.cipher[0]="$cipher_secret" \
         --set env[0].name=DB_USER --set env[0].value=${DB_USER} \
         --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
+    
+    verify_jsonnet() {
+        kratos help jsonnet lint
+        kratos jsonnet lint ./google-oidc-mapper.template.json
+    }
 
     verify()  {
         {

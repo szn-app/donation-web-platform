@@ -73,26 +73,44 @@ kratos:
           enabled: true
         oidc:
           enabled: true
-          # example:
-          # config:
-          #   providers:
-          # - id: github # this is `<provider-id>` in the Authorization callback URL. DO NOT CHANGE IT ONCE SET!
-          #   provider: github
-          #   client_id: _ # Replace this with the Client ID
-          #   client_secret: _ # Replace this with the Client secret
-          #   issuer_url: https://api.github.com # Replace this with the providers issuer URL
-          #   mapper_url: "base64://bG9jYWwgY2xhaW1zID0gc3RkLmV4dFZhcignY2xhaW1zJyk7Cgp7CiAgaWRlbnRpdHk6IHsKICAgIHRyYWl0czogewogICAgICBlbWFpbDogY2xhaW1zLmVtYWlsLAogICAgICB1c2VybmFtZTogY2xhaW1zLm5hbWUsCiAgICAgIHBob25lX251bWJlcjoxMjMKICAgIH0sCiAgfSwKfQ=="
-          #   scope:
-          #     - read:user
-          #     - user:email
-          #   requested_claims:
-          #     id_token:
-          #       email:
-          #         essential: true
-          #       username:
-          #         essential: true
-          #       phone_number:
-          #         essential: false
+
+          config:
+            providers:
+              - id: google
+                provider: google
+                client_id: "${GOOGLE_OIDC_CLIENT_ID}"
+                client_secret: "${GOOGLE_OIDC_CLIENT_PASSWORD}"
+                # [manually updated] base64 of google-oidc-mapper.json
+                mapper_url: "base64://${GOOGLE_JSONNET_MAPPER_BASE64}"
+                scope:
+                  - openid
+                  - profile
+                  - email
+                requested_claims:
+                  id_token:
+                    email:
+                      essential: true
+                    email_verified:
+                      essential: true
+
+            ### Example:
+            # - id: github # this is `<provider-id>` in the Authorization callback URL. DO NOT CHANGE IT ONCE SET!
+            #   provider: github
+            #   client_id: _ # Replace this with the Client ID
+            #   client_secret: _ # Replace this with the Client secret
+            #   issuer_url: https://api.github.com # Replace this with the providers issuer URL
+            #   mapper_url: "base64://bG9jYWwgY2xhaW1zID0gc3RkLmV4dFZhcignY2xhaW1zJyk7Cgp7CiAgaWRlbnRpdHk6IHsKICAgIHRyYWl0czogewogICAgICBlbWFpbDogY2xhaW1zLmVtYWlsLAogICAgICB1c2VybmFtZTogY2xhaW1zLm5hbWUsCiAgICAgIHBob25lX251bWJlcjoxMjMKICAgIH0sCiAgfSwKfQ=="
+            #   scope:
+            #     - read:user
+            #     - user:email
+            #   requested_claims:
+            #     id_token:
+            #       email:
+            #         essential: true
+            #       username:
+            #         essential: true
+            #       phone_number:
+            #         essential: false
 
       flows:
         # default return url if no uri parameter set or no service-level default_browser_return_url config set
@@ -107,6 +125,9 @@ kratos:
           lifespan: 10m
           after:
             default_browser_return_url: https://wosoom.com/
+            oidc:
+              hooks:
+                - hook: session
             password:
               hooks:
                 - hook: session

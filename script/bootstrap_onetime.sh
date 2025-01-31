@@ -1,3 +1,6 @@
+### contains some scripts used for tools intallaions
+# NOTE: these are not used anywhere in the code, they are merely for documentation records
+
 install_tailwindcss() { 
     pnpm install -D tailwindcss postcss autoprefixer
     pnpm dlx tailwindcss init -p
@@ -59,4 +62,10 @@ install_k8s_tools() {
     kubectl krew install ctx
     kubectl krew install ns
     brew install fzf
+}
+
+# https://www.ory.sh/docs/kratos/install#linux
+install_ory_cli() {
+    bash <(curl https://raw.githubusercontent.com/ory/meta/master/install.sh) -d -b . kratos v1.3.1 && chmod +x ./kratos && sudo mv kratos /usr/bin
+    kratos help
 }

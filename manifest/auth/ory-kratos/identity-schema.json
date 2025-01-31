@@ -41,13 +41,8 @@
           "maxLength": 320
         },
         "name": {
-          "type": "object",
-          "properties": {
-            "first": {
-              "title": "Full Name",
-              "type": "string"
-            }
-          }
+          "type": "string",
+          "title": "Full Name"
         }
       },
       "required": ["email"],

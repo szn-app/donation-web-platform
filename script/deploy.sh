@@ -218,7 +218,7 @@ install_ory_stack() {
 
         # manage users using Ory Admin API through the CLI tool
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
-        {            
+        {
             export KRATOS_ADMIN_URL="http://kratos-admin" 
             # https://www.ory.sh/docs/kratos/reference/api
             curl -X GET "$KRATOS_ADMIN_URL/admin/health/ready"
