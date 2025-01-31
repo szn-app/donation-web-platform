@@ -1,3 +1,6 @@
 [submodule "service/auth-ui/kratos-selfservice-ui-node"]
 	path = service/auth-ui/kratos-selfservice-ui-node
 	url = https://github.com/szn-app/fork-kratos-selfservice-ui-node.git
+[submodule "dependency/ai-generated"]
+	path = dependency/ai-generated
+	url = https://github.com/szn-app/ai-generated

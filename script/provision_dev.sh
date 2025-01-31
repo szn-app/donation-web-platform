@@ -8,12 +8,13 @@ misc_provision_dev() {
 git_submodule() {
     onetime_intialization() {
         git submodule add https://github.com/szn-app/fork-kratos-selfservice-ui-node.git service/auth-ui/kratos-selfservice-ui-node
+        git submodule add https://github.com/szn-app/ai-generated dependency/ai-generated
     }
 
     example_remove() { 
         git submodule deinit -f service/auth-ui/kratos-selfservice-ui-node
         git rm --cached service/auth-ui/kratos-selfservice-ui-node
-        rm -r .git/modules
+        rm -r .git/modules/kratos-selfservice-ui-node
         # [manual] remove section from .git/config
     }
 
