@@ -210,7 +210,8 @@ oathkeeper:
   mutatorIdTokenJWKs: ""
 
   # this configuration gets overriden by --set-file 'oathkeeper.accessRules=./path/to/access-rules.json'
-  # -- If set, uses the given access rules.
+  # example: https://github.com/GaloyMoney/blink/blob/b445e8b3228a3e38c5f2b1f87aa989fea08859ea/dev/config/ory/oathkeeper_rules.yaml#L48
+  # example: https://github.com/pluralsh/trace-shield/blob/9ac535c97ecbf32cc247bc3ffe5d9e07505a0416/dev/oathkeeper_values.yaml#L47
   accessRules: |-
     - id: "example-rule"
       upstream:

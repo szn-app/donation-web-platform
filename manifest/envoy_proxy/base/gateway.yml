@@ -16,6 +16,8 @@ spec:
           from: All
 ---
 # https://gateway.envoyproxy.io/contributions/design/security-policy/
+# https://gateway.envoyproxy.io/docs/api/extension_types/#extauth
+# https://gateway.envoyproxy.io/latest/tasks/security/ext-auth/
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: SecurityPolicy
 metadata:
