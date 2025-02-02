@@ -3,7 +3,7 @@ import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { NextUIProvider } from "@nextui-org/react";
-import { GlobalContext } from "../context/GlobalContext";
+import { GlobalContext } from "../example/context/GlobalContext";
 import { useState } from "react";
 
 export const Route = createRootRoute({
