@@ -1,4 +1,5 @@
 import "./App.css";
+import React from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
@@ -25,9 +26,18 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
+
+export const Route = createLazyFileRoute("/")({
+  component: App,
+});
+
 import Example from "@/components/with_avatars_and_multi_line_content";
 
-export default function App() {
+import Pizza from "@/components/Pizza";
+import Order from "@/components/Order";
+
+function App() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
@@ -42,6 +52,7 @@ export default function App() {
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
+                    <Link to="/order">order</Link>
                     <BreadcrumbLink href="#">
                       Building Your Application
                     </BreadcrumbLink>
@@ -55,16 +66,21 @@ export default function App() {
             </div>
           </header>
           <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+            <Order></Order>
             <DataTableDemo></DataTableDemo>
 
+            <Pizza type="mozarella"></Pizza>
+            <Pizza type="mozarell3"></Pizza>
+            <Pizza type="mozarella2"></Pizza>
+
             <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-              <div className="bg-muted/50 aspect-video rounded-xl" />
-              <div className="bg-muted/50 aspect-video animate-pulse content-center rounded-xl text-justify text-3xl">
+              <div className="aspect-video rounded-xl bg-muted/50" />
+              <div className="aspect-video animate-pulse content-center rounded-xl bg-muted/50 text-justify text-3xl">
                 ❤️ Rima wE LoVE yOU ❤️‍🔥
               </div>
-              <div className="bg-muted/50 aspect-video rounded-xl" />
+              <div className="aspect-video rounded-xl bg-muted/50" />
             </div>
-            <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
               <Button>Press me</Button>
               <Button onPress={onOpen}>Open Drawer</Button>
               <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>

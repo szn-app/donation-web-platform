@@ -7,7 +7,11 @@
     "dev": "vite dev",
     "build": "tsc && vite build",
     "preview": "tsc && vite build && vite preview",
-    "test": "echo 'TODO: should implement test'"
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint": "eslint ./src",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@nextui-org/react": "^2.6.11",
@@ -22,6 +26,9 @@
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
     "@radix-ui/themes": "^3.1.6",
+    "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-query-devtools": "^5.66.0",
+    "@tanstack/react-router": "^1.99.0",
     "@tanstack/react-table": "^8.20.6",
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2.2.0",
@@ -31,16 +38,29 @@
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-error-boundary": "^5.0.0",
     "react-icons": "^5.4.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.19.0",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/typography": "^0.5.16",
+    "@tanstack/eslint-plugin-query": "^5.66.0",
+    "@tanstack/router-devtools": "^1.99.0",
+    "@tanstack/router-plugin": "^1.99.0",
+    "@testing-library/react": "^16.2.0",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^3.0.4",
+    "@vitest/ui": "^3.0.4",
     "autoprefixer": "^10.4.20",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react": "^7.37.4",
+    "globals": "^15.14.0",
+    "happy-dom": "^16.8.1",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
@@ -48,6 +68,9 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.3",
-    "vite": "^6.0.7"
+    "typescript-eslint": "^8.22.0",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.4",
+    "vitest-fetch-mock": "^0.4.3"
   }
 }

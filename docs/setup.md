@@ -14,4 +14,4 @@
 - For github packages turn on "Inherit access from source repository (recommended)" from pacakge settings.
 - Manual Cloudflare infrastructure setup required.
 - Manual Google OIDC client registration.
--
+- Browser dev tools: React Developer Tools extension
