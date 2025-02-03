@@ -1,4 +1,3 @@
-import "./.css";
 import React from "react";
 import { AppSidebar } from "@/example/components/app-sidebar";
 import {
@@ -33,8 +32,16 @@ import Example from "@/example/components/with_avatars_and_multi_line_content";
 import Pizza from "@/example/components/Pizza";
 import Order from "@/example/components/Order";
 
-export default function Layout() {
+export type LayoutProps = {
+  name?: string;
+  key1: number;
+};
+
+export default function Layout({ name, key1 }: LayoutProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  console.log(name);
+  console.log(key1);
 
   return (
     <>

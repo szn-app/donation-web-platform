@@ -5,7 +5,7 @@ export default {
   darkMode: "class",
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx,html}",
     // use a glob pattern for multiple component styles
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
@@ -79,5 +79,6 @@ export default {
     require("tailwindcss-animate"), // additional animations
     require("@tailwindcss/typography"), // adds 'prose'
     require("@tailwindcss/container-queries"), // adds '@container'
+    require("@tailwindcss/forms"),
   ],
 };

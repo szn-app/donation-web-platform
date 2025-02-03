@@ -15,6 +15,6 @@ bootstrap() {
     # https://react-v9.holt.courses/lessons/tools/code-formatting
     install_prettier() { 
         pnpm install --save-dev prettier
-        # create .prettierrc
+        # create prettier.config.js
     }
 }
