@@ -17,4 +17,17 @@ bootstrap() {
         pnpm install --save-dev prettier
         # create prettier.config.js
     }
+
+    install_shadcn() { 
+        pnpm dlx shadcn@latest init
+    }
+
+    install_tanstack_router() {
+        # https://tanstack.com/router/latest/docs/framework/react/quick-start#using-file-based-route-generation
+        echo ''
+     }
+}
+
+add_shadcn_components() { 
+    pnpm dlx shadcn@latest add "component-name" 
 }
