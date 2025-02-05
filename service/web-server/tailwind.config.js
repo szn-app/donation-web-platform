@@ -82,5 +82,6 @@ export default {
     require("@tailwindcss/typography"), // adds 'prose'
     require("@tailwindcss/container-queries"), // adds '@container'
     require("@tailwindcss/forms"),
+    require("@tailwindcss/aspect-ratio"),
   ],
 };

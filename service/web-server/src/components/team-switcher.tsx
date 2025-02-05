@@ -1,5 +1,12 @@
-import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import React, { useEffect } from "react";
+import {
+  useMatchRoute,
+  useNavigate,
+  useRouter,
+  useRouterState,
+} from "@tanstack/react-router";
+
+import { ChevronsUpDown, Plus } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -9,25 +16,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-export function TeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
-}) {
-  const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+export interface Team {
+  name: string;
+  logo: React.ComponentType;
+  plan: string;
+  url: string;
+}
+
+export function TeamSwitcher({ teams }: { teams: Team[] }) {
+  const { isMobile } = useSidebar();
+  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const navigate = useNavigate();
+  const router = useRouter();
+  const matchRoute = useMatchRoute();
+
+  useEffect(() => {
+    const currentUrl = router.state.location.pathname;
+    const currentTeam = teams.find(
+      (team) => !!matchRoute({ to: team.url, fuzzy: true }),
+    );
+    if (currentTeam) {
+      setActiveTeam(currentTeam);
+    }
+  }, []);
 
   return (
     <SidebarMenu>
@@ -38,8 +57,8 @@ export function TeamSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-4" />
+              <div className="flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <activeTeam.logo className="size-8" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
@@ -57,31 +76,29 @@ export function TeamSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-zinc-500 dark:text-zinc-400">
-              Teams
+              Marketplaces
             </DropdownMenuLabel>
             {teams.map((team, index) => (
-              <DropdownMenuItem
-                key={team.name}
-                onClick={() => setActiveTeam(team)}
-                className="gap-2 p-2"
-              >
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
-                </div>
-                {team.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
-              </DropdownMenuItem>
+              <React.Fragment key={team.name}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setActiveTeam(team);
+                    navigate({ to: team.url });
+                  }}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex size-6 items-center justify-center rounded-sm border">
+                    <team.logo className="size-4 shrink-0" />
+                  </div>
+                  {team.name}
+                  {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
+                </DropdownMenuItem>
+                {index === 0 || index === 2 ? <DropdownMenuSeparator /> : null}
+              </React.Fragment>
             ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-                <Plus className="size-4" />
-              </div>
-              <div className="font-medium text-zinc-500 dark:text-zinc-400">Add team</div>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
