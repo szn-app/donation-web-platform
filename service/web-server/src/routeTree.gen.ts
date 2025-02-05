@@ -19,7 +19,7 @@ import { Route as rootRoute } from './routes/__root'
 const AboutLazyImport = createFileRoute('/about')()
 const AppLazyImport = createFileRoute('/_app')()
 const AppIndexLazyImport = createFileRoute('/_app/')()
-const AppP1LazyImport = createFileRoute('/_app/p1')()
+const AppPage1LazyImport = createFileRoute('/_app/page-1')()
 
 // Create/Update Routes
 
@@ -40,11 +40,11 @@ const AppIndexLazyRoute = AppIndexLazyImport.update({
   getParentRoute: () => AppLazyRoute,
 } as any).lazy(() => import('./routes/_app/index.lazy').then((d) => d.Route))
 
-const AppP1LazyRoute = AppP1LazyImport.update({
-  id: '/p1',
-  path: '/p1',
+const AppPage1LazyRoute = AppPage1LazyImport.update({
+  id: '/page-1',
+  path: '/page-1',
   getParentRoute: () => AppLazyRoute,
-} as any).lazy(() => import('./routes/_app/p1.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/_app/page-1.lazy').then((d) => d.Route))
 
 // Populate the FileRoutesByPath interface
 
@@ -64,11 +64,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
-    '/_app/p1': {
-      id: '/_app/p1'
-      path: '/p1'
-      fullPath: '/p1'
-      preLoaderRoute: typeof AppP1LazyImport
+    '/_app/page-1': {
+      id: '/_app/page-1'
+      path: '/page-1'
+      fullPath: '/page-1'
+      preLoaderRoute: typeof AppPage1LazyImport
       parentRoute: typeof AppLazyImport
     }
     '/_app/': {
@@ -84,12 +84,12 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AppLazyRouteChildren {
-  AppP1LazyRoute: typeof AppP1LazyRoute
+  AppPage1LazyRoute: typeof AppPage1LazyRoute
   AppIndexLazyRoute: typeof AppIndexLazyRoute
 }
 
 const AppLazyRouteChildren: AppLazyRouteChildren = {
-  AppP1LazyRoute: AppP1LazyRoute,
+  AppPage1LazyRoute: AppPage1LazyRoute,
   AppIndexLazyRoute: AppIndexLazyRoute,
 }
 
@@ -99,13 +99,13 @@ const AppLazyRouteWithChildren =
 export interface FileRoutesByFullPath {
   '': typeof AppLazyRouteWithChildren
   '/about': typeof AboutLazyRoute
-  '/p1': typeof AppP1LazyRoute
+  '/page-1': typeof AppPage1LazyRoute
   '/': typeof AppIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/about': typeof AboutLazyRoute
-  '/p1': typeof AppP1LazyRoute
+  '/page-1': typeof AppPage1LazyRoute
   '/': typeof AppIndexLazyRoute
 }
 
@@ -113,16 +113,16 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_app': typeof AppLazyRouteWithChildren
   '/about': typeof AboutLazyRoute
-  '/_app/p1': typeof AppP1LazyRoute
+  '/_app/page-1': typeof AppPage1LazyRoute
   '/_app/': typeof AppIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/about' | '/p1' | '/'
+  fullPaths: '' | '/about' | '/page-1' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/p1' | '/'
-  id: '__root__' | '/_app' | '/about' | '/_app/p1' | '/_app/'
+  to: '/about' | '/page-1' | '/'
+  id: '__root__' | '/_app' | '/about' | '/_app/page-1' | '/_app/'
   fileRoutesById: FileRoutesById
 }
 
@@ -153,15 +153,15 @@ export const routeTree = rootRoute
     "/_app": {
       "filePath": "_app.lazy.tsx",
       "children": [
-        "/_app/p1",
+        "/_app/page-1",
         "/_app/"
       ]
     },
     "/about": {
       "filePath": "about.lazy.tsx"
     },
-    "/_app/p1": {
-      "filePath": "_app/p1.lazy.tsx",
+    "/_app/page-1": {
+      "filePath": "_app/page-1.lazy.tsx",
       "parent": "/_app"
     },
     "/_app/": {

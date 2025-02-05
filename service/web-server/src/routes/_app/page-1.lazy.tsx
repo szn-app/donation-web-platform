@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
-export const Route = createLazyFileRoute("/_app/")({
-  component,
+export const Route = createLazyFileRoute("/_app/page-1")({
+  component: RouteComponent,
+  notFoundComponent: () => {
+    return <h1>Not Found! from _app/page-1</h1>;
+  },
 });
 
-function component() {
+function RouteComponent() {
   return (
     <>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

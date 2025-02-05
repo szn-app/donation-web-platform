@@ -15,7 +15,7 @@ const timeline = [
     dateTime: "2025-02",
   },
 ];
-const jobOpenings = [
+const jobOpenings: any = [
   /*
   {
     id: 1,
