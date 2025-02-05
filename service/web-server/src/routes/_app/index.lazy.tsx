@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from '@tanstack/react-router'
 
 import {
   Breadcrumb,
@@ -7,16 +7,16 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/breadcrumb'
+import { Separator } from '@/components/ui/separator'
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger } from '@/components/ui/sidebar'
 
-export const Route = createFileRoute("/_app/")({
-  component: Index,
-});
+export const Route = createLazyFileRoute('/_app/')({
+  component,
+})
 
-function Index() {
+function component() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -27,7 +27,7 @@ function Index() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink asChild>
-                  <Link to="/product">Building Your Application</Link>
+                  <Link to="/p1">Building Your Application</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
@@ -47,5 +47,5 @@ function Index() {
         <div className="min-h-[100vh] flex-1 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 md:min-h-min" />
       </div>
     </>
-  );
+  )
 }

@@ -8,45 +8,43 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AppImport } from './routes/_app'
-import { Route as AppIndexImport } from './routes/_app/index'
-import { Route as AppProductImport } from './routes/_app/product'
-import { Route as AppP2Import } from './routes/_app/p2'
-import { Route as AppP1Import } from './routes/_app/p1'
+
+// Create Virtual Routes
+
+const AboutLazyImport = createFileRoute('/about')()
+const AppLazyImport = createFileRoute('/_app')()
+const AppIndexLazyImport = createFileRoute('/_app/')()
+const AppP1LazyImport = createFileRoute('/_app/p1')()
 
 // Create/Update Routes
 
-const AppRoute = AppImport.update({
+const AboutLazyRoute = AboutLazyImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/about.lazy').then((d) => d.Route))
+
+const AppLazyRoute = AppLazyImport.update({
   id: '/_app',
   getParentRoute: () => rootRoute,
-} as any)
+} as any).lazy(() => import('./routes/_app.lazy').then((d) => d.Route))
 
-const AppIndexRoute = AppIndexImport.update({
+const AppIndexLazyRoute = AppIndexLazyImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
+  getParentRoute: () => AppLazyRoute,
+} as any).lazy(() => import('./routes/_app/index.lazy').then((d) => d.Route))
 
-const AppProductRoute = AppProductImport.update({
-  id: '/product',
-  path: '/product',
-  getParentRoute: () => AppRoute,
-} as any)
-
-const AppP2Route = AppP2Import.update({
-  id: '/p2',
-  path: '/p2',
-  getParentRoute: () => AppRoute,
-} as any)
-
-const AppP1Route = AppP1Import.update({
+const AppP1LazyRoute = AppP1LazyImport.update({
   id: '/p1',
   path: '/p1',
-  getParentRoute: () => AppRoute,
-} as any)
+  getParentRoute: () => AppLazyRoute,
+} as any).lazy(() => import('./routes/_app/p1.lazy').then((d) => d.Route))
 
 // Populate the FileRoutesByPath interface
 
@@ -56,103 +54,86 @@ declare module '@tanstack/react-router' {
       id: '/_app'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof AppImport
+      preLoaderRoute: typeof AppLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutLazyImport
       parentRoute: typeof rootRoute
     }
     '/_app/p1': {
       id: '/_app/p1'
       path: '/p1'
       fullPath: '/p1'
-      preLoaderRoute: typeof AppP1Import
-      parentRoute: typeof AppImport
-    }
-    '/_app/p2': {
-      id: '/_app/p2'
-      path: '/p2'
-      fullPath: '/p2'
-      preLoaderRoute: typeof AppP2Import
-      parentRoute: typeof AppImport
-    }
-    '/_app/product': {
-      id: '/_app/product'
-      path: '/product'
-      fullPath: '/product'
-      preLoaderRoute: typeof AppProductImport
-      parentRoute: typeof AppImport
+      preLoaderRoute: typeof AppP1LazyImport
+      parentRoute: typeof AppLazyImport
     }
     '/_app/': {
       id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexImport
-      parentRoute: typeof AppImport
+      preLoaderRoute: typeof AppIndexLazyImport
+      parentRoute: typeof AppLazyImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface AppRouteChildren {
-  AppP1Route: typeof AppP1Route
-  AppP2Route: typeof AppP2Route
-  AppProductRoute: typeof AppProductRoute
-  AppIndexRoute: typeof AppIndexRoute
+interface AppLazyRouteChildren {
+  AppP1LazyRoute: typeof AppP1LazyRoute
+  AppIndexLazyRoute: typeof AppIndexLazyRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppP1Route: AppP1Route,
-  AppP2Route: AppP2Route,
-  AppProductRoute: AppProductRoute,
-  AppIndexRoute: AppIndexRoute,
+const AppLazyRouteChildren: AppLazyRouteChildren = {
+  AppP1LazyRoute: AppP1LazyRoute,
+  AppIndexLazyRoute: AppIndexLazyRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AppLazyRouteWithChildren =
+  AppLazyRoute._addFileChildren(AppLazyRouteChildren)
 
 export interface FileRoutesByFullPath {
-  '': typeof AppRouteWithChildren
-  '/p1': typeof AppP1Route
-  '/p2': typeof AppP2Route
-  '/product': typeof AppProductRoute
-  '/': typeof AppIndexRoute
+  '': typeof AppLazyRouteWithChildren
+  '/about': typeof AboutLazyRoute
+  '/p1': typeof AppP1LazyRoute
+  '/': typeof AppIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/p1': typeof AppP1Route
-  '/p2': typeof AppP2Route
-  '/product': typeof AppProductRoute
-  '/': typeof AppIndexRoute
+  '/about': typeof AboutLazyRoute
+  '/p1': typeof AppP1LazyRoute
+  '/': typeof AppIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/_app': typeof AppRouteWithChildren
-  '/_app/p1': typeof AppP1Route
-  '/_app/p2': typeof AppP2Route
-  '/_app/product': typeof AppProductRoute
-  '/_app/': typeof AppIndexRoute
+  '/_app': typeof AppLazyRouteWithChildren
+  '/about': typeof AboutLazyRoute
+  '/_app/p1': typeof AppP1LazyRoute
+  '/_app/': typeof AppIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/p1' | '/p2' | '/product' | '/'
+  fullPaths: '' | '/about' | '/p1' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/p1' | '/p2' | '/product' | '/'
-  id:
-    | '__root__'
-    | '/_app'
-    | '/_app/p1'
-    | '/_app/p2'
-    | '/_app/product'
-    | '/_app/'
+  to: '/about' | '/p1' | '/'
+  id: '__root__' | '/_app' | '/about' | '/_app/p1' | '/_app/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
+  AppLazyRoute: typeof AppLazyRouteWithChildren
+  AboutLazyRoute: typeof AboutLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
+  AppLazyRoute: AppLazyRouteWithChildren,
+  AboutLazyRoute: AboutLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -165,32 +146,26 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/_app"
+        "/_app",
+        "/about"
       ]
     },
     "/_app": {
-      "filePath": "_app.tsx",
+      "filePath": "_app.lazy.tsx",
       "children": [
         "/_app/p1",
-        "/_app/p2",
-        "/_app/product",
         "/_app/"
       ]
     },
+    "/about": {
+      "filePath": "about.lazy.tsx"
+    },
     "/_app/p1": {
-      "filePath": "_app/p1.tsx",
-      "parent": "/_app"
-    },
-    "/_app/p2": {
-      "filePath": "_app/p2.tsx",
-      "parent": "/_app"
-    },
-    "/_app/product": {
-      "filePath": "_app/product.tsx",
+      "filePath": "_app/p1.lazy.tsx",
       "parent": "/_app"
     },
     "/_app/": {
-      "filePath": "_app/index.tsx",
+      "filePath": "_app/index.lazy.tsx",
       "parent": "/_app"
     }
   }

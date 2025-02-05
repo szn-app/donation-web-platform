@@ -4,8 +4,14 @@ import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import NotFoundGlobal from "./app/NotFoundGlobal";
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: () => {
+    return <NotFoundGlobal />;
+  },
+});
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
   interface Register {
