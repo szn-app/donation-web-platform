@@ -1,4 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { NavProjects } from "@/components/nav-projects";
+import { NavMain } from "@/components/nav-main";
+import { navMainData, projects } from "@/data/luxury-navigation";
 import React from "react";
 
 export const Route = createLazyFileRoute("/_app/luxury")({
@@ -11,7 +14,7 @@ export default function component() {
       <div className="bg-[#D4AF37] pb-20 sm:pb-24 xl:pb-0">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-x-8 gap-y-10 px-6 sm:gap-y-8 lg:px-8 xl:flex-row xl:items-stretch">
           <div className="-mt-8 w-full max-w-2xl xl:-mb-8 xl:w-96 xl:flex-none">
-            <div className="relative aspect-[2/1] h-full md:-mx-8 xl:mx-0 xl:aspect-auto">
+            <div className="xl:aspect-auto relative aspect-[2/1] h-full animate-appearance-in md:-mx-8 xl:mx-0">
               <img
                 alt=""
                 src="/image-6.png"
@@ -33,7 +36,7 @@ export default function component() {
                 />
                 <use x={86} href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" />
               </svg>
-              <blockquote className="text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9">
+              <blockquote className="animate-bounce text-xl font-semibold leading-8 text-white sm:text-2xl sm:leading-9">
                 <p>I'M NOT HERE TO BE AVERAGE.</p>
               </blockquote>
               <figcaption className="mt-8 text-base">
@@ -47,5 +50,14 @@ export default function component() {
         </div>
       </div>
     </div>
+  );
+}
+
+export function SidebarContent() {
+  return (
+    <>
+      <NavMain items={navMainData} />
+      <NavProjects projects={projects} />
+    </>
   );
 }

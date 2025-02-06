@@ -1,4 +1,7 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { NavProjects } from "@/components/nav-projects";
+import { NavMain } from "@/components/nav-main";
+import { navMainData, projects } from "@/data/retailer-navigation";
 
 export const Route = createLazyFileRoute("/_app/retailer")({
   component,
@@ -81,16 +84,18 @@ export default function component() {
 
       <section
         aria-labelledby="collection-heading"
-        className="relative -mt-96 sm:mt-0"
+        className="relative -mt-96 animate-in slide-in-from-bottom-1/3 sm:mt-0"
       >
         <h2 id="collection-heading" className="sr-only">
           Collections
         </h2>
         <div className="mx-auto grid max-w-md grid-cols-1 gap-y-6 px-4 sm:max-w-7xl sm:grid-cols-3 sm:gap-x-6 sm:gap-y-0 sm:px-6 lg:gap-x-8 lg:px-8">
-          {collections.map((collection) => (
+          {collections.map((collection, index) => (
             <div
               key={collection.name}
-              className="sm:aspect-h-5 sm:aspect-w-4 group relative h-96 rounded-lg bg-white shadow-xl sm:h-auto"
+              className={`group relative h-96 rounded-lg bg-white shadow-xl sm:aspect-h-5 sm:aspect-w-4 sm:h-auto ${
+                index === 1 ? "animate-in slide-in-from-bottom-1/3" : ""
+              }`}
             >
               <div>
                 <div
@@ -111,7 +116,7 @@ export default function component() {
                     <p aria-hidden="true" className="text-sm text-white">
                       Shop the collection
                     </p>
-                    <h3 className="mt-1 font-semibold text-white">
+                    <h3 className="mt-1 font-semibold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">
                       <a href={collection.href}>
                         <span className="absolute inset-0" />
                         {collection.name}
@@ -125,5 +130,14 @@ export default function component() {
         </div>
       </section>
     </div>
+  );
+}
+
+export function SidebarContent() {
+  return (
+    <>
+      <NavMain items={navMainData} />
+      <NavProjects projects={projects} />
+    </>
   );
 }

@@ -1,9 +1,8 @@
 import * as React from "react";
+import { useContext, useEffect } from "react";
 
-import { NavMain, NavItem } from "@/components/nav-main";
-import { NavProjects, Project } from "@/components/nav-projects";
 import { NavUser, type User } from "@/components/nav-user";
-import { TeamSwitcher, type Team } from "@/components/team-switcher";
+import { SectionSwitcher, type Section } from "@/components/section-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -11,34 +10,31 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { SectionContext } from "@/context/SectionContext";
 
-export type { NavItem };
-export type { Project };
-export type { Team };
+export type { Section };
 export type { User };
 
 export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: User;
-  teams: Team[];
-  navItems: NavItem[];
-  projects: Project[];
+  sections: Section[];
 }
 
 export function AppSidebar({
   user,
-  teams,
-  navItems,
-  projects,
+  sections,
+  children,
   ...props
-}: AppSidebarProps) {
+}: React.PropsWithChildren<AppSidebarProps>) {
+  const { activeSection } = useContext(SectionContext);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={teams} />
+        <SectionSwitcher sections={sections} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navItems} />
-        <NavProjects projects={projects} />
+        {activeSection && <activeSection.sidebarContent />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

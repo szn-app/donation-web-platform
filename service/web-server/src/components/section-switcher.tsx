@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Fragment, useContext, useEffect } from "react";
 import {
   useMatchRoute,
   useNavigate,
@@ -23,28 +23,31 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { SectionContext } from "@/context/SectionContext";
 
-export interface Team {
+export interface Section {
   name: string;
-  logo: React.ComponentType;
+  logo: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   plan: string;
   url: string;
+  sidebarContent: React.ComponentType;
 }
 
-export function TeamSwitcher({ teams }: { teams: Team[] }) {
+export function SectionSwitcher({ sections }: { sections: Section[] }) {
   const { isMobile } = useSidebar();
-  const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const { activeSection, setActiveSection } = useContext(SectionContext);
+
   const navigate = useNavigate();
   const router = useRouter();
   const matchRoute = useMatchRoute();
 
   useEffect(() => {
     const currentUrl = router.state.location.pathname;
-    const currentTeam = teams.find(
-      (team) => !!matchRoute({ to: team.url, fuzzy: true }),
+    const currentSection = sections.find(
+      (section) => !!matchRoute({ to: section.url, fuzzy: true }),
     );
-    if (currentTeam) {
-      setActiveTeam(currentTeam);
+    if (currentSection) {
+      setActiveSection(currentSection);
     }
   }, []);
 
@@ -57,14 +60,14 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <activeTeam.logo className="size-8" />
+              <div className="aspect-square flex items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <activeSection.logo className="size-8" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {activeTeam.name}
+                  {activeSection.name}
                 </span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
+                <span className="truncate text-xs">{activeSection.plan}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -78,23 +81,23 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
             <DropdownMenuLabel className="text-xs text-zinc-500 dark:text-zinc-400">
               Marketplaces
             </DropdownMenuLabel>
-            {teams.map((team, index) => (
-              <React.Fragment key={team.name}>
+            {sections.map((section, index) => (
+              <Fragment key={section.name}>
                 <DropdownMenuItem
                   onClick={() => {
-                    setActiveTeam(team);
-                    navigate({ to: team.url });
+                    setActiveSection(section);
+                    navigate({ to: section.url });
                   }}
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 items-center justify-center rounded-sm border">
-                    <team.logo className="size-4 shrink-0" />
+                    <section.logo className="size-4 shrink-0" />
                   </div>
-                  {team.name}
+                  {section.name}
                   {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
                 </DropdownMenuItem>
                 {index === 0 || index === 2 ? <DropdownMenuSeparator /> : null}
-              </React.Fragment>
+              </Fragment>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>

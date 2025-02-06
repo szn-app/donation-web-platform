@@ -6,24 +6,31 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Link } from "@tanstack/react-router";
-import React from "react";
+import { SectionContext } from "@/context/SectionContext";
+import { Link, useRouter } from "@tanstack/react-router";
+import { useContext, Fragment } from "react";
+import { useEffect, useState, createContext } from "react";
 
 export interface BreadcrumbItem {
   label: string;
   link?: string;
 }
 
-interface BreadcrumbProps {
-  items: BreadcrumbItem[];
-}
+export function BreadcrumbListComponent() {
+  const router = useRouter();
 
-export function BreadcrumbListComponent({ items }: BreadcrumbProps) {
+  const [pathLinks, setPathLinks] = useState<BreadcrumbItem[]>([]);
+  const { activeSection } = useContext(SectionContext);
+
+  useEffect(() => {
+    setPathLinks(generateBreadcrumbs(router.state.location.pathname));
+  }, [activeSection, router.state.location]);
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {items.map((item, index) => (
-          <React.Fragment key={index}>
+        {pathLinks.map((item, index) => (
+          <Fragment key={index}>
             <BreadcrumbItem className={index === 0 ? "hidden md:block" : ""}>
               {item.link ? (
                 <BreadcrumbLink asChild>
@@ -33,12 +40,12 @@ export function BreadcrumbListComponent({ items }: BreadcrumbProps) {
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               )}
             </BreadcrumbItem>
-            {index < items.length - 1 && (
+            {index < pathLinks.length - 1 && (
               <BreadcrumbSeparator
                 className={index === 0 ? "hidden md:block" : ""}
               />
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>
