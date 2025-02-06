@@ -36,12 +36,27 @@
 
     "service/web-server": {
       "component": "web-server",
-      "release-type": "node"
+      "release-type": "node", 
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "manifest/web_server/production/kustomization.yml",
+          "jsonpath": "$.images[0].newTag"
+        }
+      ]
     },
 
     "service/auth-ui": {
       "component": "auth-ui",
-      "release-type": "node"
+      "release-type": "node",
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "manifest/auth_ui/production/kustomization.yml",
+          "jsonpath": "$.images[0].newTag"
+        }
+      ]
+
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
