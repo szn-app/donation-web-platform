@@ -30,6 +30,6 @@
     // do not fail build when unused variables
     // "noUnusedLocals": false
   },
-  "include": ["src"],
+  "include": ["src", "../../tmp/example"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

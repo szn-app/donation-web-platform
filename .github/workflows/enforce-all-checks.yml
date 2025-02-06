@@ -57,7 +57,7 @@ jobs:
       #   env:
       #     GH_TOKEN: ${{ secrets.PAT_WORKFLOW }}
 
-  # IMPORTANT! must setup "enforce-all-checks" as a required job in repo's setrule settings.
+  # IMPORTANT! when bootstrapping must setup "enforce-all-checks" as a required job in repo's setrule settings.
   enforce-all-checks:
     runs-on: ubuntu-latest
     permissions:
