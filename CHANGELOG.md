@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.6](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.5...donation-app@v0.4.6) (2025-02-06)
+
+
+### Features
+
+* add React tools, dev tools, and examples ([d8dbf61](https://github.com/szn-app/donation-app/commit/d8dbf61549de76586f0b5fb31e6996b1da699d9e))
+* **auth:** Google OIDC provider ([e6f48e5](https://github.com/szn-app/donation-app/commit/e6f48e599990cac3da1e5471a45c7757a073bcc6))
+* complete Oauth2.0 + OIDC integration ([9aba583](https://github.com/szn-app/donation-app/commit/9aba5835b1e191e0acf4b23ddd0d53d60280b966))
+
+
+### Bug Fixes
+
+* **gateway:** properly configure gateway routes and expose Hubble UI ([6f659d1](https://github.com/szn-app/donation-app/commit/6f659d169035f0593034b57db9f4091926534243))
+* rollback cert-manager version to avoid issue ([ac66fb8](https://github.com/szn-app/donation-app/commit/ac66fb8e68bb4fc3da7c6a801c8655b21cbdd8e0))
+
 ## [0.4.5](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.4...donation-app@v0.4.5) (2025-01-14)
 
 
