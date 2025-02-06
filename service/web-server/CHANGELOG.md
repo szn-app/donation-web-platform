@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.0.65](https://github.com/szn-app/donation-app/compare/web-server@v0.0.64...web-server@v0.0.65) (2025-02-06)
+
+
+### Features
+
+* about & not found pages ([4763a47](https://github.com/szn-app/donation-app/commit/4763a47abfe26c226336cc6f0c8fc89d4206a56f))
+* add React tools, dev tools, and examples ([d8dbf61](https://github.com/szn-app/donation-app/commit/d8dbf61549de76586f0b5fb31e6996b1da699d9e))
+* app initial layout ([06d9172](https://github.com/szn-app/donation-app/commit/06d9172f5d9033c24392a45c00601dd41dff9a03))
+* app sections and primary pages ([b49f53d](https://github.com/szn-app/donation-app/commit/b49f53da8f7c13c15fc153c4041cd6f9f4a2c981))
+* associate navigation with app sections; Create sample pages for each section ([711af22](https://github.com/szn-app/donation-app/commit/711af224c3c3df65a17959ccd38c0386a53afe49))
+* breadcrumb navigation ([bb4f26a](https://github.com/szn-app/donation-app/commit/bb4f26ad9752d27faeba9113dd6062d73967fe0f))
+* setup app scaffold and example pages ([bf0a32e](https://github.com/szn-app/donation-app/commit/bf0a32e52cbf72ee33c5f4c58bb80ae0d19106ff))
+
 ## [0.0.64](https://github.com/szn-app/donation-app/compare/web-server@v0.0.63...web-server@v0.0.64) (2025-01-13)
 
 
