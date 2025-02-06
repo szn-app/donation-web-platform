@@ -11,7 +11,7 @@ on:
 jobs:
   test-frontend:
     # release-please PR originate from branches with `release-please--branches--*`
-    if: ${{!contains(github.head_ref, 'release-please') && github.actor != 'github-actions[bot]'}}
+    if: ${{!contains(github.head_ref, 'release-please') && !contains(github.event.pull_request.labels.*.name, 'automerge') && github.actor != 'github-actions[bot]' }}
 
     runs-on: ubuntu-latest
     # Ensure the PR is not a release PR
@@ -46,7 +46,7 @@ jobs:
 
   test-tauri:
     # release-please PR originate from branches with `release-please--branches--*`
-    if: ${{!contains(github.head_ref, 'release-please') && github.actor != 'github-actions[bot]'}}
+    if: ${{!contains(github.head_ref, 'release-please') && !contains(github.event.pull_request.labels.*.name, 'automerge') && github.actor != 'github-actions[bot]' }}
 
     strategy:
       fail-fast: false
