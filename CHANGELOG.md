@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.8](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.7...donation-app@v0.4.8) (2025-02-06)
+
+
+### Bug Fixes
+
+* remove example tests and files ([236eaca](https://github.com/szn-app/donation-app/commit/236eaca4fe0ace4009e49df7b005e9e94ffa4814))
+
 ## [0.4.7](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.6...donation-app@v0.4.7) (2025-02-06)
 
 
