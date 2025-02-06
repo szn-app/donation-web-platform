@@ -1,10 +1,5 @@
 import React, { Fragment, useContext, useEffect } from "react";
-import {
-  useMatchRoute,
-  useNavigate,
-  useRouter,
-  useRouterState,
-} from "@tanstack/react-router";
+import { useMatchRoute, useNavigate, useRouter } from "@tanstack/react-router";
 
 import { ChevronsUpDown, Plus } from "lucide-react";
 
@@ -34,7 +29,7 @@ export interface Section {
 }
 
 export function SectionSwitcher({ sections }: { sections: Section[] }) {
-  const { isMobile } = useSidebar();
+  const { isMobile, setOpen } = useSidebar();
   const { activeSection, setActiveSection } = useContext(SectionContext);
 
   const navigate = useNavigate();
@@ -87,6 +82,7 @@ export function SectionSwitcher({ sections }: { sections: Section[] }) {
                   onClick={() => {
                     setActiveSection(section);
                     navigate({ to: section.url });
+                    setOpen(false);
                   }}
                   className="gap-2 p-2"
                 >
