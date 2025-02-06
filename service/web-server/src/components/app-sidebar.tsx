@@ -14,6 +14,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { SectionContext } from "@/context/SectionContext";
+import { UserContext } from "@/context/UserContext";
+import { sections } from "@/data/sections";
 
 import { Button } from "@/components/ui/button";
 import { LogIn, User2 } from "lucide-react";
@@ -21,18 +23,14 @@ import { LogIn, User2 } from "lucide-react";
 export type { Section };
 export type { User };
 
-export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  user: User | null;
-  sections: Section[];
-}
+export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({
-  user,
-  sections,
   children,
   ...props
 }: React.PropsWithChildren<AppSidebarProps>) {
   const { activeSection } = useContext(SectionContext);
+  const { user } = useContext(UserContext);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -43,7 +41,7 @@ export function AppSidebar({
         {activeSection && <activeSection.sidebarContent />}
       </SidebarContent>
       <SidebarFooter>
-        {user ? (
+        {!!user ? (
           <NavUser user={user} />
         ) : (
           <SidebarMenu>

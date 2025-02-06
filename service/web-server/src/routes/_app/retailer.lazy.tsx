@@ -69,7 +69,7 @@ export default function component() {
         </div>
         <div className="relative py-32">
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-            Buy & Sell Market
+            Buyer & Seller Market
           </h1>
           <button className="mt-4 sm:mt-6">
             <a

@@ -15,7 +15,7 @@ export const sections: Section[] = [
     sidebarContent: DonationSidebarContent,
   },
   {
-    name: "Buy-Sell Market",
+    name: "Buyer-Seller Market",
     logo: ShoppingBag,
     plan: "Pre-owned / Used",
     url: "/market",
