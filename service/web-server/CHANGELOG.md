@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.69](https://github.com/szn-app/donation-app/compare/web-server@v0.0.68...web-server@v0.0.69) (2025-02-06)
+
+
+### Bug Fixes
+
+* **dummy:** for testing release-please updater ([3c5ae93](https://github.com/szn-app/donation-app/commit/3c5ae934a99b5b1d23edae1f5e7aead84cdb97a4))
+
 ## [0.0.68](https://github.com/szn-app/donation-app/compare/web-server@v0.0.67...web-server@v0.0.68) (2025-02-06)
 
 
