@@ -37,7 +37,8 @@ export const sections: Section[] = [
   },
 ];
 
-export const user: User = {
+// example user
+export const user_example: User = {
   name: "Mr./Mrs.",
   email: "me@gmail.com",
   avatar: "/avatar.svg",

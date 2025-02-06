@@ -1,12 +1,11 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { user } from "@/data/sections";
+import { AppSidebar, User } from "@/components/app-sidebar";
 import { Outlet, createLazyFileRoute } from "@tanstack/react-router";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SectionProvider } from "@/context/SectionContext";
 import { BreadcrumbListComponent } from "@/components/breadcrumb-list";
-import { sections } from "@/data/sections";
+import { sections, user_example } from "@/data/sections";
 
 export const Route = createLazyFileRoute("/_app")({
   component,
@@ -16,6 +15,8 @@ export const Route = createLazyFileRoute("/_app")({
 });
 
 function component() {
+  const user: User | null = null;
+
   return (
     <SectionProvider sections={sections}>
       <SidebarProvider>

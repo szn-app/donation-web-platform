@@ -79,30 +79,44 @@ export function NavUser({ user }: { user: User }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="hidden">
                 <Sparkles />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+              <DropdownMenuItem asChild>
+                <a
+                  href="https://auth.wosoom.com/settings"
+                  target="_blank"
+                  rel="noopener"
+                  className="flex cursor-pointer items-center gap-2 rounded p-2 hover:bg-gray-100"
+                >
+                  <BadgeCheck />
+                  Account Settings
+                </a>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="hidden">
                 <CreditCard />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="hidden">
                 <Bell />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
+            <DropdownMenuItem asChild>
+              <a
+                href="https://auth.wosoom.com/logout"
+                target="_blank"
+                rel="noopener"
+                className="flex cursor-pointer items-center gap-2 rounded p-2 hover:bg-gray-100"
+              >
+                <LogOut />
+                Log out
+              </a>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
