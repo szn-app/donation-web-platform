@@ -8,9 +8,7 @@ images:
   - name: web-server
     newName: ghcr.io/szn-app/donation-app/web-server
     ### automatically updated
-    # x-release-please-start-version
-    newTag: v0.0.64
-    # x-release-please-end
+    newTag: v0.0.64 # x-release-please-version
 
 # configMapGenerator:
 #   - name: properties-map-web-server

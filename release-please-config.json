@@ -39,7 +39,7 @@
       "release-type": "node", 
       "extra-files": [
         {
-          "type": "yaml",
+          "type": "generic",
           "path": "manifest/web_server/production/kustomization.yml",
           "jsonpath": "$.images[0].newTag"
         }
@@ -51,7 +51,7 @@
       "release-type": "node",
       "extra-files": [
         {
-          "type": "yaml",
+          "type": "generic",
           "path": "manifest/auth_ui/production/kustomization.yml",
           "jsonpath": "$.images[0].newTag"
         }
