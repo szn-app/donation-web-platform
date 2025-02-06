@@ -37,6 +37,7 @@
     "service/web-server": {
       "component": "web-server",
       "release-type": "node", 
+      
       "extra-files": [
         {
           "type": "generic",

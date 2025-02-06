@@ -18,6 +18,7 @@ images:
   - name: auth-ui
     newName: ghcr.io/szn-app/donation-app/auth-ui
     ### automatically updated
+    # FIX: release-please updater NOT WOKRING. update release-please after PR accepted https://github.com/googleapis/release-please/pull/2422
     newTag: v1.2.0 # x-release-please-version
 
 
