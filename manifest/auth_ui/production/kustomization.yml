@@ -17,7 +17,11 @@ transformers:
 images:
   - name: auth-ui
     newName: ghcr.io/szn-app/donation-app/auth-ui
+    ### automatically updated
+    # x-release-please-start-version
     newTag: v1.2.0
+    # x-release-please-end
+
 
 configMapGenerator:
   - name: properties-map-auth-ui
