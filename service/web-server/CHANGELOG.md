@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.68](https://github.com/szn-app/donation-app/compare/web-server@v0.0.67...web-server@v0.0.68) (2025-02-06)
+
+
+### Features
+
+* setup heroui ([43a9fb8](https://github.com/szn-app/donation-app/commit/43a9fb86c2d57d1ed59b3952bd97817e4bfb487a))
+
 ## [0.0.67](https://github.com/szn-app/donation-app/compare/web-server@v0.0.66...web-server@v0.0.67) (2025-02-06)
 
 
