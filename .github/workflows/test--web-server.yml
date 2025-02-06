@@ -41,8 +41,8 @@ jobs:
       - name: install web dependencies
         run: pnpm install --frozen-lockfile
         
-      - name: test javascript
-        run: pnpm run test
+      - name: run tests for React, JS/TS
+        run: pnpm run ci:check-all
 
   test-tauri:
     # release-please PR originate from branches with `release-please--branches--*`

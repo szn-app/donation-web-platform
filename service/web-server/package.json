@@ -13,7 +13,8 @@
     "lint": "eslint ./src",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "ci:check-all": "pnpm run typecheck && pnpm vitest run && pnpm vitest --ui run"
   },
   "dependencies": {
     "@nextui-org/react": "^2.6.11",

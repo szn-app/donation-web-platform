@@ -266,13 +266,13 @@ export default function component() {
               <img
                 alt=""
                 src="https://images.unsplash.com/photo-1606857521015-7f9fcf423740?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1344&h=1104&q=80"
-                className="mt-16 aspect-[6/5] w-full rounded-2xl bg-gray-50 object-cover lg:aspect-auto lg:h-[34.5rem]"
+                className="lg:aspect-auto mt-16 aspect-[6/5] w-full rounded-2xl bg-gray-50 object-cover lg:h-[34.5rem]"
               />
             </div>
             <div className="w-full lg:max-w-xl lg:flex-auto">
               <h3 className="sr-only">Job openings</h3>
               <ul className="-my-8 divide-y divide-gray-100">
-                {jobOpenings.map((opening) => (
+                {jobOpenings.map((opening: any) => (
                   <li key={opening.id} className="py-8">
                     <dl className="relative flex flex-wrap gap-x-3">
                       <dt className="sr-only">Role</dt>
@@ -329,7 +329,7 @@ export default function component() {
         <div className="mx-auto max-w-7xl px-6 pb-8 lg:px-8">
           <div className="mt-16 border-t border-gray-900/10 pt-8 sm:mt-20 md:flex md:items-center md:justify-between lg:mt-24">
             <div className="flex space-x-6 md:order-2">
-              {footerNavigation.social.map((item) => (
+              {footerNavigation.social.map((item: any) => (
                 <a
                   key={item.name}
                   href={item.href}
