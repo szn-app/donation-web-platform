@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.7](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.6...donation-app@v0.4.7) (2025-02-06)
+
+
+### Bug Fixes
+
+* types for imported components and remove old test ([b088987](https://github.com/szn-app/donation-app/commit/b088987d4145c14caec86e1692e5ceaf24d4e4a8))
+
 ## [0.4.6](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.5...donation-app@v0.4.6) (2025-02-06)
 
 
