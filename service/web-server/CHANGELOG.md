@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.66](https://github.com/szn-app/donation-app/compare/web-server@v0.0.65...web-server@v0.0.66) (2025-02-06)
+
+
+### Bug Fixes
+
+* types for imported components and remove old test ([b088987](https://github.com/szn-app/donation-app/commit/b088987d4145c14caec86e1692e5ceaf24d4e4a8))
+
 ## [0.0.65](https://github.com/szn-app/donation-app/compare/web-server@v0.0.64...web-server@v0.0.65) (2025-02-06)
 
 
