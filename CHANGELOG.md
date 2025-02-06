@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.9](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.8...donation-app@v0.4.9) (2025-02-06)
+
+
+### Bug Fixes
+
+* **dummy:** for testing release-please updater ([3c5ae93](https://github.com/szn-app/donation-app/commit/3c5ae934a99b5b1d23edae1f5e7aead84cdb97a4))
+
 ## [0.4.8](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.7...donation-app@v0.4.8) (2025-02-06)
 
 
