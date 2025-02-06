@@ -1,9 +1,8 @@
-import * as React from "react";
+import React, { Suspense, useState } from "react";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { NextUIProvider } from "@nextui-org/react";
 import { GlobalProvider } from "../context/GlobalContext";
-import { Suspense, useState } from "react";
+import { HeroUIProvider } from "@heroui/react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
@@ -23,9 +22,9 @@ export const Route = createRootRoute({
   component: () => (
     <>
       <GlobalProvider>
-        <NextUIProvider>
+        <HeroUIProvider>
           <Outlet />
-        </NextUIProvider>
+        </HeroUIProvider>
       </GlobalProvider>
       <ReactQueryDevtools />
       <Suspense>
