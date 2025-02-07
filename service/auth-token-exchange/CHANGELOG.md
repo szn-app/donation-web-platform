@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.3...auth-token-exchange@v0.0.4) (2025-02-07)
+
+
+### Bug Fixes
+
+* docker image ([8510daf](https://github.com/szn-app/donation-app/commit/8510dafd5a2c40718da73e132935d4e86bdb229d))
+
 ## [0.0.3](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.2...auth-token-exchange@v0.0.3) (2025-02-07)
 
 
