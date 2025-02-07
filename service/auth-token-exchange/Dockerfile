@@ -3,13 +3,10 @@
 # building/compiling stage
 FROM rust AS build
 
-ENV TARGET x86_64-unknown-linux-gnu
-RUN rustup target add "$TARGET"
-
 WORKDIR /app
 COPY . /app
 
-RUN cargo build --release --locked --target "$TARGET"
+RUN cargo build --release --locked
 
 # configure run script
 COPY target/release/auth-token-exchange /bin/auth-token-exchange
