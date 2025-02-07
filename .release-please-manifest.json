@@ -1,6 +1,6 @@
 {
-  ".": "0.4.9",
-  "service/web-server": "0.0.69",
+  ".": "0.4.10",
+  "service/web-server": "0.0.70",
   "service/auth-ui": "1.2.0",
-  "service/auth-token-exchange": "0.0.1"
+  "service/auth-token-exchange": "0.0.2"
 }

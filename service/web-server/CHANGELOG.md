@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.70](https://github.com/szn-app/donation-app/compare/web-server@v0.0.69...web-server@v0.0.70) (2025-02-07)
+
+
+### Features
+
+* context for user info when logged in ([4fd1cba](https://github.com/szn-app/donation-app/commit/4fd1cbac5b701217fc3c16310151d078e5cf261b))
+* frontend OIDC client ([6e54bbe](https://github.com/szn-app/donation-app/commit/6e54bbe0770472038a03cc60a0d51b8e5ca67b79))
+* index redirect and sidebar toggle ([d452ec1](https://github.com/szn-app/donation-app/commit/d452ec1e38f2b08990479698cc2fca09c6a13359))
+* setup backend auth-token-exchange ([840b78e](https://github.com/szn-app/donation-app/commit/840b78e6ada4153db568aa11434de83e14e11c07))
+* user sign in button ([0da425b](https://github.com/szn-app/donation-app/commit/0da425ba92172166663987857d139177ff64f131))
+
 ## [0.0.69](https://github.com/szn-app/donation-app/compare/web-server@v0.0.68...web-server@v0.0.69) (2025-02-06)
 
 
