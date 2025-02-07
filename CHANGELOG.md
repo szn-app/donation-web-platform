@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.11](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.10...donation-app@v0.4.11) (2025-02-07)
+
+
+### Bug Fixes
+
+* docker config in Rust subproject ([286dbbe](https://github.com/szn-app/donation-app/commit/286dbbe4d3ac6663fcaff25720e8c8a67173029a))
+
 ## [0.4.10](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.9...donation-app@v0.4.10) (2025-02-07)
 
 
