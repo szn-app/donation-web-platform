@@ -28,6 +28,7 @@
       "exclude-paths": [
         "service/web-server",
         "service/auth-ui",
+        "service/auth-token-exchange",
         ".release-please-config.json",
         ".release-please-manifest.json",
         "Cargo.toml"
@@ -57,8 +58,20 @@
           "jsonpath": "$.images[0].newTag"
         }
       ]
+    },
 
+    "service/auth-token-exchange": {
+      "component": "auth-token-exchange",
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "manifest/auth-token-exchange/production/kustomization.yml",
+          "jsonpath": "$.images[0].newTag"
+        }
+      ]
     }
+
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }

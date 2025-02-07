@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+images:
+  - name: auth-token-exchange
+    newName: ghcr.io/szn-app/donation-app/auth-token-exchange
+    ### automatically updated
+    # FIX: release-please updater NOT WOKRING. update release-please after PR accepted https://github.com/googleapis/release-please/pull/2422
+    newTag: v0.0.1 # x-release-please-version
+
+# configMapGenerator:
+#   - name: properties-map-auth-token-exchange
+#     env: config.properties
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: auth-token-exchange
+        
+      spec:
+        template:
+          spec:
+            containers:
+            - name: auth-token-exchange
+              imagePullPolicy: Always

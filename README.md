@@ -9,6 +9,9 @@ Online donation platform for physical items.
 
 - web-server: Tauri-based React app for web
 - api-server: serves web, desktop, and mobile apps.
+- auth-ui
+- auth-token-exchange
+- Ory Stack
 
 # About
 
