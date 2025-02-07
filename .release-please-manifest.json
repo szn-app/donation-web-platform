@@ -2,5 +2,5 @@
   ".": "0.4.10",
   "service/web-server": "0.0.70",
   "service/auth-ui": "1.2.0",
-  "service/auth-token-exchange": "0.0.2"
+  "service/auth-token-exchange": "0.0.3"
 }
