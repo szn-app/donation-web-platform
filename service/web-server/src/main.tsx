@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import NotFoundGlobal from "./app/NotFoundGlobal";
+import { UserProvider } from "./contexts/UserContext";
 
 const router = createRouter({
   routeTree,
@@ -12,7 +13,7 @@ const router = createRouter({
     return <NotFoundGlobal />;
   },
 });
-// Register the router instance for type safety
+
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
@@ -26,9 +27,11 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <QueryClientProvider client={query_client}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
+      <UserProvider>
+        <QueryClientProvider client={query_client}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </UserProvider>
     </StrictMode>,
   );
 }

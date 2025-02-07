@@ -6,7 +6,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { SectionContext } from "@/context/SectionContext";
+import { SectionContext } from "@/contexts/SectionContext";
 import { Link, useRouter } from "@tanstack/react-router";
 import { useContext, Fragment } from "react";
 import { useEffect, useState, createContext } from "react";

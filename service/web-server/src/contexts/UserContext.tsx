@@ -1,6 +1,8 @@
 import React, { createContext, useState, PropsWithChildren } from "react";
 import { User } from "@/components/app-sidebar";
 
+export type { User };
+
 interface UserContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;

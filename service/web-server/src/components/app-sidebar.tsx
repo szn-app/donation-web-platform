@@ -13,8 +13,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { SectionContext } from "@/context/SectionContext";
-import { UserContext } from "@/context/UserContext";
+import { SectionContext } from "@/contexts/SectionContext";
+import { UserContext } from "@/contexts/UserContext";
 import { sections } from "@/data/sections";
 
 import { Button } from "@/components/ui/button";

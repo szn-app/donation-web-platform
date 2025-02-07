@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { SectionContext } from "@/context/SectionContext";
+import { SectionContext } from "@/contexts/SectionContext";
 
 export interface Section {
   name: string;

@@ -1,7 +1,7 @@
 import React, { Suspense, useState } from "react";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { GlobalProvider } from "../context/GlobalContext";
+import { GlobalProvider } from "../contexts/GlobalContext";
 import { HeroUIProvider } from "@heroui/react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
