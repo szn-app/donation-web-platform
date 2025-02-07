@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.10](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.9...donation-app@v0.4.10) (2025-02-07)
+
+
+### Features
+
+* frontend OIDC client ([6e54bbe](https://github.com/szn-app/donation-app/commit/6e54bbe0770472038a03cc60a0d51b8e5ca67b79))
+* setup backend auth-token-exchange ([31a3a72](https://github.com/szn-app/donation-app/commit/31a3a722bc37ee3e7c52105a068e06083309375c))
+
 ## [0.4.9](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.8...donation-app@v0.4.9) (2025-02-06)
 
 
