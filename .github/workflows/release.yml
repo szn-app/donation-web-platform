@@ -21,6 +21,8 @@ jobs:
       web-server--tag_name: ${{ steps.release-step.outputs['service/web-server--tag_name'] }}
       auth-ui--release_created: ${{ steps.release-step.outputs['service/auth-ui--release_created'] }}
       auth-ui--tag_name: ${{ steps.release-step.outputs['service/auth-ui--tag_name'] }}
+      auth-token-exchange--release_created: ${{ steps.release-step.outputs['service/auth-token-exchange--release_created'] }}
+      auth-token-exchange--tag_name: ${{ steps.release-step.outputs['service/auth-token-exchange--tag_name'] }}
 
     steps:
       - uses: googleapis/release-please-action@v4
@@ -251,3 +253,70 @@ jobs:
           gh release edit ${{ needs.release-please.outputs.auth-ui--tag_name }} --notes "$new_desc"
         env:
           GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
+
+  auth-token-exchange-publish-package:
+    needs: [release-please]
+    if: ${{ needs.release-please.outputs.auth-token-exchange--release_created }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+
+    runs-on: "ubuntu-latest"
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./service/auth-token-exchange
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # find release ID given the associated tag and pass it to Tauri build in following step (bc it seems like tauri-action fails to find the release id sometimes)
+      - name: Find Release ID
+        id: find_release_id
+        env:
+          GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
+        run: |
+          release_id=$(gh release view ${{ needs.release-please.outputs.auth-token-exchange--tag_name }} --json databaseId | jq -r '.databaseId')
+          echo "release_id=$release_id" >> $GITHUB_OUTPUT
+          if [[ -z "$release_id" ]]; then
+            echo "Error: release id retrieval failed for tagname: ${{ needs.release-please.outputs.auth-token-exchange--tag_name }}"
+            exit 1;
+          else 
+            echo "release_id=$release_id"
+          fi
+
+      - name: build auth-token-exchange container
+        run: |
+          chmod +x ./script.sh 
+          ./script.sh build_container_auth_token_exchange
+
+      - name: upload container to Github Container Registry
+        run: |
+          echo "${{ secrets.PAT_GITHUB_CONTAINER_REGISTRY }}" | docker login ghcr.io -u ${{github.actor}} --password-stdin
+          TAG=auth-token-exchange:latest
+          docker tag $TAG ghcr.io/szn-app/donation-app/$TAG
+          docker push ghcr.io/szn-app/donation-app/$TAG
+          VERSION_TAG=${{ needs.release-please.outputs.auth-token-exchange--tag_name }}
+          MAPPED_VERSION="${VERSION_TAG//@/:}"
+          docker tag $TAG ghcr.io/szn-app/donation-app/$MAPPED_VERSION
+          docker push ghcr.io/szn-app/donation-app/$MAPPED_VERSION
+
+      - name: Update release description
+        run: |
+          release_desc=$(gh release view ${{ needs.release-please.outputs.auth-token-exchange--tag_name }} --json body | jq -r '.body')
+          new_desc=$(cat <<EOF
+          $release_desc
+          ___
+          ### Container:
+          * [auth-token-exchange:latest](https://ghcr.io/szn-app/donation-app/auth-token-exchange:latest)
+          EOF
+          )
+          gh release edit ${{ needs.release-please.outputs.auth-token-exchange--tag_name }} --notes "$new_desc"
+        env:
+          GITHUB_TOKEN: ${{secrets.PAT_WORKFLOW}}
+        

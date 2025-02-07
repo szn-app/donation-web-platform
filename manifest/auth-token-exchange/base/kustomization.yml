@@ -1,0 +1,70 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yml
+  - service.yml
+  - route.yml
+
+namePrefix: prod-
+nameSuffix: -v1
+
+# [BUG in Kustomize https://github.com/kubernetes-sigs/kustomize/issues/5047] specifiying namespace ruins configMapGenerator name resolution
+# namespace: auth # using customization transformers instead (which provides more options)
+transformers:
+  - |-
+    apiVersion: builtin
+    kind: NamespaceTransformer
+    metadata:
+      name: _not_important_here
+      namespace: auth
+    unsetOnly: true
+
+# adds labels to all resources (including selector and template fields)
+labels:
+  - pairs:
+      app: auth-token-exchange
+    includeSelectors: true
+
+patches:
+  # TODO: add proper limits if needed without slowing down auth-token-exchange
+  # - target:
+  #     kind: Deployment
+  #     name: auth-token-exchange
+  #   patch: |-
+  #     apiVersion: apps/v1
+  #     kind: Deployment
+  #     metadata:
+  #       name: _ # required field but not used
+
+  #     spec:
+  #       template:
+  #         spec:
+  #           containers:
+  #             - name: nginx
+  #               resources:
+  #                 requests:
+  #                   cpu: "10m"
+  #                   memory: "20Mi"
+  #                 limits:
+  #                   cpu: "50m"
+  #                   memory: "100Mi"
+
+  # NOTE: taint keys are defined in the Terraform file
+  - target:
+      kind: Deployment
+      name: auth-token-exchange
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: _ # required field but not used
+
+      spec:
+        template: 
+          spec:  
+            tolerations:
+              - key: "node.kubernetes.io/role"
+                operator: "Equal"
+                value: "peak-workloads"
+                effect: "NoExecute"
