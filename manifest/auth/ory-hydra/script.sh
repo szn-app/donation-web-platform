@@ -23,6 +23,11 @@ install_hydra() {
         --set env[0].name=DB_PASSWORD --set env[0].value=${DB_PASSWORD}
 
     verify() { 
+        print_info() {
+            curl -k -s https://auth.wosoom.com/authorize/.well-known/openid-configuration | jq
+            curl -k -s https://auth.wosoom.com/authorize/.well-known/jwks.json | jq
+        }
+
         # /.well-known/jwks.json
         # /.well-known/openid-configuration
         # /oauth2/auth
@@ -182,14 +187,15 @@ EOF
             t="$(mktemp).sh" && cat << EOF > $t
 #!/bin/bash
 
+# Hybrid Flow involves code+id_toekn
 curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/json' \
 --data '{
     "client_id": "frontend-client",
     "client_name": "frontend-client",
     "client_secret": "${client_secret}",
     "grant_types": ["authorization_code", "refresh_token"],
-    "response_types": ["code id_token"],
-    "redirect_uris": ["https://wosoom.com"], 
+    "response_types": ["code", "code id_token"],
+    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
     "audience": ["https://wosoom.com"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
@@ -225,7 +231,7 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code"],
-    "redirect_uris": ["https://wosoom.com"], 
+    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
     "audience": ["https://wosoom.com"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
@@ -260,7 +266,7 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code id_token"],
-    "redirect_uris": ["https://wosoom.com"], 
+    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
     "audience": ["https://wosoom.com"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
@@ -295,7 +301,7 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["client_credentials"],
     "response_types": [],
-    "redirect_uris": ["https://wosoom.com"], 
+    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
     "audience": ["internal-service", "external-service"],
     "scope": "offline_access openid email profile",
     "token_endpoint_auth_method": "client_secret_basic",
@@ -371,6 +377,7 @@ EOF
     manual_verify() { 
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- curl http://hydra-admin/admin/clients | jq
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- curl http://hydra-admin/admin/clients/frontend-client | jq
+        
     }
 
     popd

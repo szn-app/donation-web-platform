@@ -37,6 +37,7 @@ kratos:
           allowed_origins:
             # - "*" # NOTE: use for debug only
             - https://wosoom.com/
+            - https://wosoom.com/callback
             - https://auth.wosoom.com/
             - https://*.wosoom.com/
           allowed_methods:

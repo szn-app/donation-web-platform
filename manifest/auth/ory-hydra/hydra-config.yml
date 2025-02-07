@@ -12,6 +12,11 @@ hydra:
     serve:
       public:
         port: 4444
+        # TODO: remove for production 
+        cors:
+          enabled: true
+          allowed_origins:
+            - http://localhost:1420
       admin:
         port: 4445
         request_log:

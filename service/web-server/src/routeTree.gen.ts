@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as CallbackImport } from './routes/callback'
 
 // Create Virtual Routes
 
@@ -36,6 +37,12 @@ const AppLazyRoute = AppLazyImport.update({
   id: '/_app',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/_app.lazy').then((d) => d.Route))
+
+const CallbackRoute = CallbackImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AppIndexLazyRoute = AppIndexLazyImport.update({
   id: '/',
@@ -71,6 +78,13 @@ const AppDonationLazyRoute = AppDonationLazyImport.update({
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/callback': {
+      id: '/callback'
+      path: '/callback'
+      fullPath: '/callback'
+      preLoaderRoute: typeof CallbackImport
+      parentRoute: typeof rootRoute
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -145,6 +159,7 @@ const AppLazyRouteWithChildren =
   AppLazyRoute._addFileChildren(AppLazyRouteChildren)
 
 export interface FileRoutesByFullPath {
+  '/callback': typeof CallbackRoute
   '': typeof AppLazyRouteWithChildren
   '/about': typeof AboutLazyRoute
   '/donation': typeof AppDonationLazyRoute
@@ -155,6 +170,7 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '/callback': typeof CallbackRoute
   '/about': typeof AboutLazyRoute
   '/donation': typeof AppDonationLazyRoute
   '/luxury': typeof AppLuxuryLazyRoute
@@ -165,6 +181,7 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/callback': typeof CallbackRoute
   '/_app': typeof AppLazyRouteWithChildren
   '/about': typeof AboutLazyRoute
   '/_app/donation': typeof AppDonationLazyRoute
@@ -177,6 +194,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/callback'
     | ''
     | '/about'
     | '/donation'
@@ -185,9 +203,17 @@ export interface FileRouteTypes {
     | '/retailer'
     | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/donation' | '/luxury' | '/market' | '/retailer' | '/'
+  to:
+    | '/callback'
+    | '/about'
+    | '/donation'
+    | '/luxury'
+    | '/market'
+    | '/retailer'
+    | '/'
   id:
     | '__root__'
+    | '/callback'
     | '/_app'
     | '/about'
     | '/_app/donation'
@@ -199,11 +225,13 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  CallbackRoute: typeof CallbackRoute
   AppLazyRoute: typeof AppLazyRouteWithChildren
   AboutLazyRoute: typeof AboutLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  CallbackRoute: CallbackRoute,
   AppLazyRoute: AppLazyRouteWithChildren,
   AboutLazyRoute: AboutLazyRoute,
 }
@@ -218,9 +246,13 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/callback",
         "/_app",
         "/about"
       ]
+    },
+    "/callback": {
+      "filePath": "callback.tsx"
     },
     "/_app": {
       "filePath": "_app.lazy.tsx",
