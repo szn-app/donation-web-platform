@@ -9,7 +9,7 @@ COPY . /app
 RUN cargo build --release --locked
 
 # configure run script
-COPY target/release/auth-token-exchange /bin/auth-token-exchange
+COPY /app/target/release/auth-token-exchange /bin/auth-token-exchange
 RUN chmod +x /bin/auth-token-exchange
 
 # ---
