@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.5...auth-token-exchange@v0.0.6) (2025-02-08)
+
+
+### Bug Fixes
+
+* **dummy:** trigger release update package ([3bbfadb](https://github.com/szn-app/donation-app/commit/3bbfadb339ade9a3b0d6dd60738f52cccbe2f915))
+
 ## [0.0.5](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.4...auth-token-exchange@v0.0.5) (2025-02-07)
 
 
