@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.4...auth-token-exchange@v0.0.5) (2025-02-07)
+
+
+### Bug Fixes
+
+* docker config in Rust subproject ([286dbbe](https://github.com/szn-app/donation-app/commit/286dbbe4d3ac6663fcaff25720e8c8a67173029a))
+
 ## [0.0.4](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.3...auth-token-exchange@v0.0.4) (2025-02-07)
 
 
