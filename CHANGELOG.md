@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.13](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.12...donation-app@v0.4.13) (2025-02-08)
+
+
+### Features
+
+* accept requests from non localhost origins ([85a2d3a](https://github.com/szn-app/donation-app/commit/85a2d3af5071b0d880ab2fd5c4fef3c453103cdd))
+
 ## [0.4.12](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.11...donation-app@v0.4.12) (2025-02-08)
 
 
