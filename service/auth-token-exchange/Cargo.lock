@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "auth-token-exchange"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
  "axum",
  "openidconnect",

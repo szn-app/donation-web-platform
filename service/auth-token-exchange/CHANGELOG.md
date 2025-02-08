@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.9...auth-token-exchange@v0.0.10) (2025-02-08)
+
+
+### Features
+
+* accept requests from non localhost origins ([85a2d3a](https://github.com/szn-app/donation-app/commit/85a2d3af5071b0d880ab2fd5c4fef3c453103cdd))
+
 ## [0.0.9](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.8...auth-token-exchange@v0.0.9) (2025-02-08)
 
 
