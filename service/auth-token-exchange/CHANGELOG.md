@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.7...auth-token-exchange@v0.0.8) (2025-02-08)
+
+
+### Bug Fixes
+
+* **docker:** rename image ([a0e9091](https://github.com/szn-app/donation-app/commit/a0e909113eae5ca4c67cb5e92a709e25796492d5))
+
 ## [0.0.7](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.6...auth-token-exchange@v0.0.7) (2025-02-08)
 
 
