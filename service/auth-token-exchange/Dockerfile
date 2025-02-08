@@ -7,6 +7,9 @@ WORKDIR /app
 COPY . /app
 
 RUN cargo build --release --locked
+RUN ls -al /app/target/release
+RUN ls -al /app/target/
+RUN find . -name auth-token-exchange
 
 # configure run script
 COPY /app/target/release/auth-token-exchange /bin/auth-token-exchange

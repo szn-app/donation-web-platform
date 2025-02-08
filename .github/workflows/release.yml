@@ -291,9 +291,9 @@ jobs:
           fi
 
       - name: build auth-token-exchange container
-        working-directory: ./
+        working-directory: ./service/auth-token-exchange
         run: |
-          chmod +x ./script.sh 
+          chmod +x ./script.sh
           ./script.sh build_container_auth_token_exchange
 
       - name: upload container to Github Container Registry
