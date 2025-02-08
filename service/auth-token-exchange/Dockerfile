@@ -14,8 +14,8 @@ RUN chmod +x /bin/auth-token-exchange
 
 # ---
 
-# image hosting application
-FROM scratch AS final
+# image hosting application (required glibc for rust)
+FROM debian:bookworm-slim AS final
 
 # ISSUE: github container registry doesn't pick up org.opencontainers.image.source value to associate automatically the image with the repo.
 LABEL org.opencontainers.image.source="https://github.com/szn-app/donation-app"
