@@ -18,7 +18,7 @@ spec:
           image: auth-token-exchange:latest
           ports:
             - containerPort: 3000
-              name: http-auth-token-exchange
+              name: http
           # envFrom:
           #   - configMapRef:
           #       name: properties-auth-token-exchange

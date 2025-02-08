@@ -13,22 +13,6 @@ spec:
     - donation-app.test
 
   rules:
-    # handle token exchange in same domain to avoid CORS
-    - backendRefs:
-        - name: auth-token-exchange
-          namespace: auth
-          port: 80
-      matches:
-        - path:
-          type: PathPrefix
-          value: /api/oauth2/token
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /oauth2/token
-
     - backendRefs:
         # kubernetees service
         - name: web-server
@@ -37,6 +21,22 @@ spec:
         - path:
             type: PathPrefix
             value: /
+
+    # handle token exchange in same domain to avoid CORS
+    - backendRefs:
+        - name: auth-token-exchange
+          namespace: auth
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /api/oauth2/token
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /oauth2/token
 
 ---
 apiVersion: gateway.networking.k8s.io/v1

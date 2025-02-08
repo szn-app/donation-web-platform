@@ -7,4 +7,4 @@ spec:
   type: ClusterIP
   ports: 
     - port: 80
-      targetPort: http-auth-token-exchange
+      targetPort: http
