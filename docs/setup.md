@@ -15,3 +15,4 @@
 - Manual Cloudflare infrastructure setup required.
 - Manual Google OIDC client registration.
 - Browser dev tools: React Developer Tools extension
+- repository: settings > secrets and variables > actions; add repository secret for ACTIONS_STEP_DEBUG = true and ACTIONS_RUNNER_DEBUG = true
