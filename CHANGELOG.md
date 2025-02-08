@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.12](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.11...donation-app@v0.4.12) (2025-02-08)
+
+
+### Bug Fixes
+
+* **docker:** copy configuration step ([24a8af6](https://github.com/szn-app/donation-app/commit/24a8af6c7d5fcc96f5e41109d53d59ad1ecf5245))
+
 ## [0.4.11](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.10...donation-app@v0.4.11) (2025-02-07)
 
 

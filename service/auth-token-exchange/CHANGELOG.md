@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.7](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.6...auth-token-exchange@v0.0.7) (2025-02-08)
+
+
+### Bug Fixes
+
+* **docker:** copy configuration step ([24a8af6](https://github.com/szn-app/donation-app/commit/24a8af6c7d5fcc96f5e41109d53d59ad1ecf5245))
+
 ## [0.0.6](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.5...auth-token-exchange@v0.0.6) (2025-02-08)
 
 
