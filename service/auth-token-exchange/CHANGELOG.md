@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.8...auth-token-exchange@v0.0.9) (2025-02-08)
+
+
+### Bug Fixes
+
+* **docker:** pick image with glibc for production ([695e0e9](https://github.com/szn-app/donation-app/commit/695e0e94d9fccc93ea5ded103276ac03c2aa4ee0))
+
 ## [0.0.8](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.7...auth-token-exchange@v0.0.8) (2025-02-08)
 
 
