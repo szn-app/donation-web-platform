@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.71](https://github.com/szn-app/donation-app/compare/web-server@v0.0.70...web-server@v0.0.71) (2025-02-08)
+
+
+### Bug Fixes
+
+* **dummy:** update cargo package to trigger release ([c9f0ef4](https://github.com/szn-app/donation-app/commit/c9f0ef4847d599b7064a3db43d5b834edbb18f8c))
+
 ## [0.0.70](https://github.com/szn-app/donation-app/compare/web-server@v0.0.69...web-server@v0.0.70) (2025-02-07)
 
 
