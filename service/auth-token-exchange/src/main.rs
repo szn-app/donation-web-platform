@@ -20,7 +20,7 @@ async fn main() {
         .route("/oauth2/token", get(oauth2_token));
 
     // Run our application
-    let listener = tokio::net::TcpListener::bind("localhost:3000").await.unwrap();
-    println!("Server running on http://localhost:3000");
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    println!("Server running on http://0.0.0.0:3000");
     axum::serve(listener, app).await.unwrap();
 }

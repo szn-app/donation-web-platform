@@ -25,7 +25,7 @@ spec:
     # handle token exchange in same domain to avoid CORS
     - backendRefs:
         - name: auth-token-exchange
-          namespace: auth
+          # namespace: donation-app
           port: 80
       matches:
         - path:
