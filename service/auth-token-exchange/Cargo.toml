@@ -4,7 +4,21 @@ version = "0.0.10"
 edition = "2021"
 
 [dependencies]
-axum = "0.8.1"
+axum = "0.8.1" # Web framework that focuses on ergonomics and modularity.
+base64 = "0.22.1" # Encode and decode base64 as bytes or utf8.
+http = "1.2.0" # Types for HTTP requests and responses.
+hyper = { version = "1.6.0", features = ["full"] } # A fast and correct HTTP library.
+once_cell = "1.20.3" # Single assignment cells and lazy values.
 openidconnect = "4.0.0"
-tokio = { version = "1.43.0", features = ["full"] }
+serde = { version = "1.0.217", features = ["derive"] } # A serialization/deserialization framework.
+serde_json = { version = "1.0.138" } # Serde serialization/deserialization of JSON data.
+tokio = { version = "1.43.0", features = ["full"] } # Event-driven, non-blocking I/O platform.
+tower = "0.5.2" # Modular reusable components for building robust clients and servers.
 tower-http = { version = "0.6.2", features = ["cors"] }
+tracing = "0.1.41" # Application-level tracing for Rust.
+tracing-subscriber = { version = "~0.3.19", features = ["env-filter"] } # Utilities for `tracing` subscribers.
+
+[dev-dependencies]
+anyhow = "1.0.95"
+httpc-test = "0.1.10"
+ 
