@@ -4,6 +4,6 @@ build_container_web_server() {
     docker build . -t web-server:latest
 }
 
-run() {
+run_web_server() {
     docker run -d -p 80:80 web-server
 }

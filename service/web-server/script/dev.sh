@@ -1,10 +1,10 @@
-dev() { 
+dev_web_server() { 
     pnpm run dev
     pnpm run lint -- --debug
     pnpm run lint -- --fix
 }
 
-bootstrap() { 
+bootstrap_web_server() { 
     # https://typescript-eslint.io/getting-started/
     # https://react-v9.holt.courses/lessons/tools/linting
     install_eslint() { 

@@ -1,14 +1,14 @@
 #!/bin/bash
 
-misc() { 
+misc_() {
     # modify permission
     find ./ -maxdepth 4 -name "script.sh" -exec chmod +x {} \;
 
-    cargo create-tauri-app 
+    cargo create-tauri-app
 }
 
 ## IMPORTANT! used in .github/workflows/*
-build_react_spa() { 
+build_react_spa() {
     pushd ./service/web-server
 
     pnpm install --frozen-lockfile
@@ -38,7 +38,7 @@ develop_pnpm_react() {
     pnpm run dev
 }
 
-build() {
+build_app() {
     pnpm install
     NO_STRIP=true cargo tauri build 
     # run application
@@ -65,7 +65,7 @@ feature_pull_request() {
     # NOTE: automerge is applied only on PRs from branches that are prefix with "feature/*" or "hotfix/*".
 }
 
-minikube() {
+minikube_development() {
     # bind docker images directly inside minikube
     eval $(minikube docker-env)
     (cd service/web-server && ./script.sh build_container_web_server)
@@ -90,7 +90,6 @@ minikube() {
 
     # using ingress 
     kubectl describe ingress ingress -n donation-app
-    
 
     # using gateway 
     {

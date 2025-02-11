@@ -10,7 +10,7 @@ RUN npm install -g pnpm
 RUN pnpm install && pnpm run build
 
 # configure run script
-COPY script/nginx.sh /bin/nginx.sh
+COPY script/nginx.sh.template /bin/nginx.sh
 RUN chmod +x /bin/nginx.sh
 
 # ---

@@ -58,10 +58,24 @@ install_kubectl_krew_plugin_manager() {
 }
 
 install_k8s_tools() { 
+    # optional installation for more command options compared to `kubectl kustomize <...>` (kubectly kustomize preinstalled plugin)
+    install_kustomize() { 
+        TMP=$(mktemp -d)
+        pushd $TMP
+            curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+            sudo mv kustomize /usr/local/bin/kustomize
+        popd
+        rm -r $TMP
+        kustomize version
+    }
+
+    install_kustomize
     brew install derailed/k9s/k9s
     kubectl krew install ctx
     kubectl krew install ns
     brew install fzf
+
 }
 
 # https://www.ory.sh/docs/kratos/install#linux
