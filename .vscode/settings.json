@@ -3,5 +3,13 @@
         "activityBar.background": "#1F3220",
         "titleBar.activeBackground": "#2B462C",
         "titleBar.activeForeground": "#F9FBF9"
-    }
+    }, 
+    "rust-analyzer.files.excludeDirs": [
+        "**/dependency/",
+    ], 
+    "rust-analyzer.linkedProjects": [
+        "./service/auth-token-exchange/Cargo.toml",
+        "./service/web-server/src-tauri/Cargo.toml",
+    ]
+    
 }
