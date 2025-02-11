@@ -6,10 +6,11 @@ install_gateway_api_cilium() {
 
   restart_cilinium
 
-  verify() { 
+  verify() {
     kubectl get crd -A
     cilium status
     cilium config view | grep -w "gateway"
+    cilium config view | grep -w "enabe-gateway-api"
     cilium sysdump
 
     # verify tls setup

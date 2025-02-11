@@ -30,16 +30,16 @@ kratos:
     serve:
       # links to generete for kratos-public internal server
       public:
-        base_url: https://auth.wosoom.com/authenticate
+        base_url: ${AUTHENTICATION_URL}
         port: 4433
         cors:
           enabled: true
           allowed_origins:
             # - "*" # NOTE: use for debug only
-            - https://wosoom.com/
-            - https://wosoom.com/callback
-            - https://auth.wosoom.com/
-            - https://*.wosoom.com/
+            - ${APP_URL}
+            - ${APP_URL}/callback
+            - ${AUTH_BASE_URL}
+            - ${WILDCARD_SUBDOMAIN_APP_URL}
           allowed_methods:
             - GET
             - OPTIONS
@@ -52,12 +52,12 @@ kratos:
 
     selfservice:
       # links to generate for kratos ui pages
-      default_browser_return_url: https://wosoom.com/callback # default callback checks for access tokens, if non-exist redirect to Oauth2 to complete the authorization step (in case initiated authentication directly with SSO "/login" interface)
+      default_browser_return_url: ${APP_URL}/callback # default callback checks for access tokens, if non-exist redirect to Oauth2 to complete the authorization step (in case initiated authentication directly with SSO "/login" interface)
       allowed_return_urls: # redirect uri
-        - https://wosoom.com
-        - https://auth.wosoom.com
-        - https://*.wosoom.com
-        - https://wosoom.com/callback
+        - ${APP_URL}
+        - ${AUTH_BASE_URL}
+        - ${WILDCARD_SUBDOMAIN_APP_URL}
+        - ${APP_URL}/callback
 
       methods:
         password: # email/password authentication (SSO)
@@ -116,16 +116,16 @@ kratos:
       flows:
         # default return url if no uri parameter set or no service-level default_browser_return_url config set
         login:
-          ui_url: https://auth.wosoom.com/login
+          ui_url: ${AUTH_BASE_URL}/login
           lifespan: 10m
         logout:
           after:
-            default_browser_return_url: https://wosoom.com/
+            default_browser_return_url: ${APP_URL}
         registration:
-          ui_url: https://auth.wosoom.com/registration
+          ui_url: ${AUTH_BASE_URL}/registration
           lifespan: 10m
           after:
-            default_browser_return_url: https://wosoom.com/
+            default_browser_return_url: ${APP_URL}
             oidc:
               hooks:
                 - hook: session
@@ -135,20 +135,20 @@ kratos:
                 # - hook: show_verification_ui
         verification:
           enabled: true
-          ui_url: https://auth.wosoom.com/verification
+          ui_url: ${AUTH_BASE_URL}/verification
           # use: code
           after:
-            default_browser_return_url: https://wosoom.com/
+            default_browser_return_url: ${APP_URL}
         settings:
-          ui_url: https://auth.wosoom.com/settings
+          ui_url: ${AUTH_BASE_URL}/settings
           privileged_session_max_age: 15m
           # required_aal: highest_available
         recovery:
           enabled: true
-          ui_url: https://auth.wosoom.com/recovery
+          ui_url: ${AUTH_BASE_URL}/recovery
           # use: code
         error:
-          ui_url: https://auth.wosoom.com/error
+          ui_url: ${AUTH_BASE_URL}/error
 
     secrets:
       default:
@@ -167,7 +167,7 @@ kratos:
         cost: 8
 
     cookies:
-      domain: ".wosoom.com" # allow cookie for root and subdomains
+      domain: ".${DOMAIN_NAME}" # allow cookie for root and subdomains
       path: "/"
       same_site: Strict
 

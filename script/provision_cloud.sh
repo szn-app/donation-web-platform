@@ -129,6 +129,7 @@ hetzner_cloud_provision() {
         #     IMPORTANT: Cilium Gateway API controller must be installed BEFORE Cilium installation, otherwise even a restart won't work
         #!/bin/bash
         INIT_TF_PATH=".terraform/modules/kube-hetzner/init.tf"
+        # NOTE: contents of match file should be synchronized with the script that is used for minikube to keep development and production environment in sync 'install_gateway_api_crds'
         PATCH_FILE="init.tf.patch"
 
         # Check if files exist

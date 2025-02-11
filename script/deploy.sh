@@ -122,6 +122,8 @@ github_container_registry_deploy() {
 }
 
 env_files() {
+    local environment="$1"
+
     _related_commands() {
         find . -name '.env.template' 
         sed "s/<username>/your_username/g;s/<password>/your_password/g;s/YOUR_API_KEY/your_actual_api_key/g;s/YOUR_SECRET_KEY/your_actual_secret_key/g" < .env.template > .env
@@ -137,9 +139,9 @@ env_files() {
 
                     # Check if .env file already exists
                     if [ ! -f "$env_file" ]; then
-                            # Create a new .env file from the template in the same directory
-                            cp "$template_file" "$env_file" 
-                            echo "created env file file://$env_file from $template_file"
+                        # Create a new .env file from the template in the same directory
+                        cp "$template_file" "$env_file" 
+                        echo "created env file file://$env_file from $template_file"
                     fi
             done
     }
@@ -147,143 +149,99 @@ env_files() {
     generate_database_kratos_credentials
     generate_database_hydra_credentials
     generate_database_keto_credentials
-    generate_secret_auth_ui
+    generate_secret_auth_ui $environment
     create_env_files
 }
 
-# https://k8s.ory.sh/helm/
-# $`install_ory_stack
-# $`install_ory_stack delete
-install_ory_stack() {
-    action=${1:-"install"}
-
-    {
-        if [ "$action" == "delete" ]; then
-            helm uninstall kratos -n auth
-            helm uninstall postgres-kratos -n auth
-            helm uninstall hydra -n auth
-            helm uninstall postgres-hydra -n auth
-            helm uninstall oathkeeper -n auth
-
-            kubectl delete secret ory-hydra-client--frontend-client-oauth -n auth
-            kubectl delete secret ory-hydra-client--frontend-client -n auth
-            kubectl delete secret ory-hydra-client--internal-communication -n auth
-            kubectl delete secret ory-hydra-client--oathkeeper-introspection -n auth
-            return 
-        fi
-    }
-
-    # ory stack charts
-    helm repo add ory https://k8s.ory.sh/helm/charts
-    # postgreSQL
-    helm repo add bitnami https://charts.bitnami.com/bitnami 
-    helm repo update
-
-    intall_kratos
-    install_hydra
-    install_keto
-    create_oauth2_client_for_trusted_app
-    install_oathkeeper # depends on `create_oauth2_client_for_trusted_app`
-
-
-    manual_verify() { 
-        # use --debug with `helm` for verbose output
-        
-        # tunnel to remote service 
-        kubectl port-forward -n auth service/kratos-admin 8083:80
-
-        kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash 
-        {
-            $(nslookup kratos-admin)
-            
-            # execute from within `auth` cluster namespace
-            # get an example payload from login and registration
-            flow_id=$(curl -s -X GET -H "Accept: application/json" http://kratos-public/self-service/login/api  | jq -r '.id')
-            curl -s -X GET -H "Accept: application/json" "http://kratos-public/self-service/login/flows?id=$flow_id" | jq
-
-            flow_id=$(curl -s -X GET -H "Accept: application/json" http://kratos-public/self-service/registration/api | jq -r '.id')
-            curl -s -X GET -H "Accept: application/json" "http://kratos-public/self-service/registration/flows?id=$flow_id" | jq
-        }
-
-        # verify database:
-        set -a
-        source manifest/auth/ory-kratos/db_kratos_secret.env
-        set +a
-        kubectl run -it --rm --image=postgres debug-pod --namespace auth --env DB_USER=$DB_USER --env DB_PASSWORD=$DB_PASSWORD -- /bin/bash
-        {
-            export PGPASSWORD=$DB_PASSWORD
-            psql -h "postgres-kratos-postgresql" -U "$DB_USER" -d "kratos_db" -p 5432 -c "\dt" 
-            psql -h "postgres-kratos-postgresql" -U "$DB_USER" -d "kratos_db" -p 5432 -c "SELECT * FROM identities;" 
-        }
-
-        # manage users using Ory Admin API through the CLI tool
-        kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
-        {
-            export KRATOS_ADMIN_URL="http://kratos-admin" 
-            # https://www.ory.sh/docs/kratos/reference/api
-            curl -X GET "$KRATOS_ADMIN_URL/admin/health/ready"
-            curl -X GET "$KRATOS_ADMIN_URL/admin/identities" -H "Content-Type: application/json" | jq
-            list_all_sessions() {
-                for identity_id in $(curl -X GET "$KRATOS_ADMIN_URL/admin/identities" -H "Content-Type: application/json" | jq -r '.[].id'); do
-                    echo "Sessions for Identity: $identity_id"
-                    curl -X GET "$KRATOS_ADMIN_URL/admin/identities/$identity_id/sessions" -H "Content-Type: application/json" | jq
-                    echo ""
-                done
-            }
-            list_all_sessions
-
-        }
-    }
-}
+source ./script/library/install_ory_stack.sh
 
 deploy_application() {
-    action=${1:-"install"}
+    local environment="development" # environment = development, production
+    local action="install" # action = install, delete
+
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --environment) environment="$2"; shift ;;
+            --action) action="$2"; shift ;;
+            *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        esac
+        shift
+    done
 
     {
         if [ "$action" == "delete" ]; then
-            kubectl delete -k ./manifest/entrypoint/production
+            kubectl delete -k ./manifest/entrypoint/$environment
             return 
         fi
     }
 
     pushd ./manifest 
-        kubectl apply -k ./entrypoint/production
+        kubectl apply -k ./entrypoint/$environment
         {
-            pushd ./entrypoint/production 
+            pushd ./entrypoint/$environment 
             t="$(mktemp).yml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
         }
     popd 
 }
 
-restart_cilinium() { 
+restart_cilinium() {
     kubectl -n kube-system rollout restart deployment/cilium-operator
     kubectl -n kube-system rollout restart ds/cilium
 }
 
-kustomize_kubectl() {
-    action=${1:-"install"} && shift
+{
+    production_deploy() { 
+        deploy --environment production --action install
+    }
+    development_deploy() { 
+        deploy --environment development --action install
+    }
+}
+# using kubectl, helm, kustomize
+deploy() {
+    local environment="development" # environment = development, production
+    local action="install" # action = install, delete, kustomize, app
+
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --environment) environment="$2"; shift ;;
+            --action) action="$2"; shift ;;
+            *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        esac
+        shift
+    done
 
     if ! command -v kubectl-ctx &> /dev/null; then
         echo "kubectl ctx is not installed. Exiting."
         return
     fi
 
-    kubectl ctx k3s
-    env_files
+    # set kubectl context based on environment
+    if [ "$environment" == "production" ]; then
+        kubectl ctx k3s
+    elif [ "$environment" == "development" ]; then
+        kubectl ctx minikube
+    else
+        echo "Unknown environment: $environment"
+        exit 1
+    fi
+
+    # create .env files from default template if doesn't exist
+    env_files $environment
 
     {
         if [ "$action" == "delete" ]; then
-            install_ory_stack delete
-            deploy_application delete
+            install_ory_stack --environment "$environment" --action delete 
+            deploy_application --environment "$environment" --action delete
             return 
          elif [ "$action" == "kustomize" ]; then
-            pushd manifest/entrypoint/production 
+            pushd manifest/entrypoint/"$environment"
             t="$(mktemp).yml" && kubectl kustomize ./ > $t && printf "rendered manifest template: file://$t\n"  # code -n $t
             popd
             return
          elif [ "$action" == "app" ]; then
-            deploy_application
+            deploy_application --environment "$environment" --action install
             return
         elif [ "$action" != "install" ]; then
             # Call the function based on the argument
@@ -297,8 +255,8 @@ kustomize_kubectl() {
         fi
     }
 
-    install_ory_stack
-    deploy_application
+    install_ory_stack --action $environment --action install
+    deploy_application --environment "$environment" --action install
     
     echo "Services deployed to the cluster (wait few minutes to complete startup and propagate TLS certificate generation)."
 
@@ -329,11 +287,11 @@ kustomize_kubectl() {
         kubectl describe gateway -n gateway
 
         # check dns + web server response with tls staging certificate
-        domain_name=""
+        domain_name="donation-app.test"
         curl -i http://$domain_name
         curl --insecure -I https://$domain_name
         cloud_load_balancer_ip=""
-        curl -i --header "Host: donation-app.com" $cloud_load_balancer_ip
+        curl -i --header "Host: donation-app.test" $cloud_load_balancer_ip
         kubectl logs -n kube-system deployments/cilium-operator | grep gateway
 
         # run ephemeral debug container
@@ -345,11 +303,3 @@ kustomize_kubectl() {
 
 }
 
-
-### example and verification
-{
-    example_test_cilium() { 
-
-        cilium config view | grep -w "enabe-gateway-api"
-    }
-}

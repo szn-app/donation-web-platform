@@ -40,3 +40,4 @@ kube.config
 
 *.txt.tmp
 *.env 
+*.local

@@ -19,11 +19,10 @@ patches:
       kind: Gateway
       name: gateway
 
-    # TODO: value: "production-cluster-issuer"
     patch: |-
       - op: replace
         path: /metadata/annotations/cert-manager.io~1cluster-issuer
-        value: "staging-cluster-issuer"
+        value: "production-cluster-issuer"
 
   - target:
       kind: Gateway

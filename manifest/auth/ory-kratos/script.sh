@@ -28,7 +28,7 @@ intall_kratos() {
     generate_kratos_env_file() {
         pushd "ory-kratos" 
 
-        env_file_name=".env"
+        env_file_name="jsonnet.env"
         google_jsonnet_file="./google-oidc-mapper.jsonnet"
 
         # Check if the JSONNET file exists
@@ -64,11 +64,11 @@ EOF
 
     printf "install Ory Kratos \n"
     set -a
-    source ory-kratos/.env
+    source ory-kratos/jsonnet.env
     source ory-kratos/secret.env
     set +a
     # preprocess file through substituting env values
-    t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
+    t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.template.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
     default_secret="$(openssl rand -hex 16)"
     cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)" 
     cipher_secret="$(openssl rand -hex 16)"
@@ -101,34 +101,34 @@ EOF
             {   
                 # https://www.ory.sh/docs/kratos/quickstart#perform-registration-login-and-logout
                 # return a new login flow and csrf_token 
-                flow=$(curl -k -s -X GET -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/login/api")
+                flow=$(curl -k -s -X GET -H "Accept: application/json" "https://auth.donation-app.test/authenticate/self-service/login/api")
                 flowId=$(echo $flow | jq -r '.id')
                 actionUrl=$(echo $flow | jq -r '.ui.action')
                 echo $actionUrl
                 # display info about the new login flow and required parameters
-                curl -k -s -X GET -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/login/flows?id=$flowId" | jq
+                curl -k -s -X GET -H "Accept: application/json" "https://auth.donation-app.test/authenticate/self-service/login/flows?id=$flowId" | jq
                 curl -k -s -X POST -H  "Accept: application/json" -H "Content-Type: application/json" -d '{"identifier": "i-do-not-exist@user.org", "password": "the-wrong-password", "method": "password"}' "$actionUrl" | jq
             }
             {
-                # makes internal call to https://auth.wosoom.com/authenticate/self-service/login/api to retrieve csrf_token and redirect user
-                curl -k -s -i -X GET -H "Accept: text/html" https://auth.wosoom.com/authenticate/self-service/login/browser 
+                # makes internal call to https://auth.donation-app.test/authenticate/self-service/login/api to retrieve csrf_token and redirect user
+                curl -k -s -i -X GET -H "Accept: text/html" https://auth.donation-app.test/authenticate/self-service/login/browser 
                 # login will make POST request with required parameters to /self-service/login/flows?id=$flowId 
-                printf "visit https://auth.wosoom.com/login?flow=$flowId\n"   
+                printf "visit https://auth.donation-app.test/login?flow=$flowId\n"   
             }
 
             # send cookies in curl
             {
                 # A cookie jar for storing the CSRF tokens
-                cookieJar=$(mktemp) && flowId=$(curl -k -s -X GET --cookie-jar $cookieJar --cookie $cookieJar -H "Accept: application/json" https://auth.wosoom.com/authenticate/self-service/login/browser | jq -r '.id')
+                cookieJar=$(mktemp) && flowId=$(curl -k -s -X GET --cookie-jar $cookieJar --cookie $cookieJar -H "Accept: application/json" https://auth.donation-app.test/authenticate/self-service/login/browser | jq -r '.id')
                 # The endpoint uses Ory Identities' REST API to fetch information about the request (requires the CSRF cookie created for the login flow)
-                curl -k -s -X GET --cookie-jar $cookieJar --cookie $cookieJar -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/login/flows?id=$flowId" | jq
+                curl -k -s -X GET --cookie-jar $cookieJar --cookie $cookieJar -H "Accept: application/json" "https://auth.donation-app.test/authenticate/self-service/login/flows?id=$flowId" | jq
             }
         }
 
         # registration flow 
         registration_flow() {
-            flowId=$(curl -k -s -X GET -H "Accept: application/json" https://auth.wosoom.com/authenticate/self-service/registration/api | jq -r '.id')
-            curl -k -s -X GET -H "Accept: application/json" "https://auth.wosoom.com/authenticate/self-service/registration/flows?id=$flowId" | jq
+            flowId=$(curl -k -s -X GET -H "Accept: application/json" https://auth.donation-app.test/authenticate/self-service/registration/api | jq -r '.id')
+            curl -k -s -X GET -H "Accept: application/json" "https://auth.donation-app.test/authenticate/self-service/registration/flows?id=$flowId" | jq
         }
 
     }

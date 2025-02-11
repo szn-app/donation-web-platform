@@ -33,7 +33,9 @@ bootstrap_minikube() {
         # fix issue with docker cli plugins where symlinks are corrupted and invalid
         rm ~/.docker/cli-plugins/*
     }
-    minikube start --driver=docker
+    minikube start --cpus=max --memory=max --disk-size=100g --driver=docker
+    # minikube start --driver=docker
+    kubectl label node minikube role=worker # used for some affinity/selector configurations in the app manifest/helm files
     kubectl ctx minikube
     kubectl config get-contexts
 
@@ -46,6 +48,10 @@ bootstrap_minikube() {
         }
     }
     {
+        source "./script/library/install_envoy_gateway_class.sh"
+        install_envoy_gateway_class
+    }
+    {
         # Ingress k8s resource controllers
         minikube addons enable ingress # NGINX Ingress controller
         minikube addons enable ingress-dns 
@@ -56,10 +62,6 @@ bootstrap_minikube() {
         kubectl get pods -n ingress-nginx # verify Ingress controller running
     }
     {
-        source "./script/library/install_envoy_gateway_class.sh"
-        install_envoy_gateway_class
-    }
-    {
         source "./script/library/install_cert_manager.sh"
         minikube_install_cert_manager
         cert_manager_related
@@ -68,7 +70,11 @@ bootstrap_minikube() {
     {
         source "./script/library/hetzner/install_storage_class.sh"
         minikube_mock_storage_classes
-    }    
+    }
+    {
+        source "./script/library/install_gateway_api_crds.sh"
+        install_gateway_api_crds
+    }
 
     install_domain_dns_systemd_resolved_for_test_domains
     # NOTE: careful of minikube dns caching and limitations, if dns name is not resolved after a change, an entire restart of minikube and probably disable/enable addons is required. 

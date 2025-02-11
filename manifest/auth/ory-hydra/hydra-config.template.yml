@@ -39,15 +39,15 @@ hydra:
 
     urls:
       self:
-        issuer: https://auth.wosoom.com/authorize/
-        public: https://auth.wosoom.com/authorize/
-      login: https://auth.wosoom.com/login
-      logout: https://auth.wosoom.com/logout
-      consent: https://auth.wosoom.com/consent # Must matche auth_ui consent endpoint
+        issuer: ${AUTHORIZATION_URL}
+        public: ${AUTHORIZATION_URL}
+      login: ${AUTH_BASE_URL}/login
+      logout: ${AUTH_BASE_URL}/logout
+      consent: ${AUTH_BASE_URL}/consent # Must matche auth_ui consent endpoint
       identity_provider:
         url: http://kratos-admin
         publicUrl: http://kratos-public
-      error: https://auth.wosoom.com/error
+      error: ${AUTH_BASE_URL}/error
 
     strategies:
       access_token: jwt

@@ -1,10 +1,13 @@
 install_hydra() {
+    environment=$1
+
     pushd ./manifest/auth
     printf "install Postgresql for Ory Hydra \n"
 
     set -a
-    source ory-hydra/db_hydra_secret.env # DB_USER, DB_PASSWORD
+        source ory-hydra/db_hydra_secret.env # DB_USER, DB_PASSWORD
     set +a
+    
     helm upgrade --reuse-values --install postgres-hydra bitnami/postgresql -n auth --create-namespace -f ory-hydra/postgresql-values.yml \
         --set auth.username=${DB_USER} \
         --set auth.password=${DB_PASSWORD} \
@@ -12,8 +15,18 @@ install_hydra() {
     # this will generate 'postgres-hydra-postgresql' service
 
     printf "install Ory Hydra \n"
+    set -a 
+        if [ -f ./.env.$environment ]; then
+            source ./.env.$environment
+        elif [ -f ./.env.$environment.local ]; then
+            source ./.env.$environment.local
+        else
+            echo "Error: .env.$environment file not found."
+            exit 1
+        fi
+    set +a
     # preprocess file through substituting env values
-    t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
+    t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.template.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
     system_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 | base64 -w 0)" 
     cookie_secret="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)" 
     helm upgrade --install hydra ory/hydra -n auth --create-namespace -f ory-hydra/helm-values.yml -f $t \
@@ -24,8 +37,8 @@ install_hydra() {
 
     verify() { 
         print_info() {
-            curl -k -s https://auth.wosoom.com/authorize/.well-known/openid-configuration | jq
-            curl -k -s https://auth.wosoom.com/authorize/.well-known/jwks.json | jq
+            curl -k -s https://auth.donation-app.test/authorize/.well-known/openid-configuration | jq
+            curl -k -s https://auth.donation-app.test/authorize/.well-known/jwks.json | jq
         }
 
         # /.well-known/jwks.json
@@ -66,7 +79,7 @@ install_hydra() {
                 hydra introspect token --format json-pretty --endpoint http://hydra-admin$TOKEN
                 { # test envoy gateway + oathkeeper as external authorization  
                     # introspects http://oathkeeper-api:80/decisions
-                    curl -i -k -H "Authorization: Bearer $TOKEN" https://test.wosoom.com/oauth-header 
+                    curl -i -k -H "Authorization: Bearer $TOKEN" ${TEST_SUBDOMAIN_URL}/oauth-header 
                 }
             }
 
@@ -106,7 +119,19 @@ install_hydra() {
 
 
 create_oauth2_client_for_trusted_app() {
-    pushd ./manifest/auth
+    environment=$1
+    pushd ./manifest/auth/ory-hydra
+
+    set -a 
+        if [ -f ./.env.$environment ]; then
+            source ./.env.$environment
+        elif [ -f ./.env.$environment.local ]; then
+            source ./.env.$environment.local
+        else
+            echo "Error: .env.$environment file not found."
+            exit 1
+        fi
+    set +a
 
     example_hydra_admin() { 
         kubectl run -it --rm --image=debian:latest debug-pod --namespace auth -- /bin/bash
@@ -150,7 +175,7 @@ EOF
     example_using_hydra() { 
         t="$(mktemp).sh" && cat << 'EOF' > $t
 #!/bin/bash
-hydra create oauth2-client --name frontend-client-2 --audience backend-service --endpoint http://hydra-admin --grant-type authorization_code,refresh_token --response-type code --redirect-uri https://wosoom.com --scope offline_access,openid --skip-consent --skip-logout-consent --token-endpoint-auth-method client_secret_post
+hydra create oauth2-client --name frontend-client-2 --audience backend-service --endpoint http://hydra-admin --grant-type authorization_code,refresh_token --response-type code --redirect-uri ${APP_URL} --scope offline_access,openid --skip-consent --skip-logout-consent --token-endpoint-auth-method client_secret_post
 EOF
         kubectl cp $t setup-pod:$t --namespace auth
         kubectl exec -it setup-pod --namespace auth -- /bin/bash -c "chmod +x $t && $t"
@@ -165,7 +190,7 @@ EOF
             --response-type code,id_token \
             --format json \
             --scope openid --scope offline \
-            --redirect-uri https://wosoom.com/ --token-endpoint-auth-method none
+            --redirect-uri ${APP_URL} --token-endpoint-auth-method none
 
         code_client_id=$(echo $code_client | jq -r '.client_id')
         code_client_secret=$(echo $code_client | jq -r '.client_secret')
@@ -195,8 +220,8 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code", "code id_token"],
-    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
-    "audience": ["https://wosoom.com"],    
+    "redirect_uris": ["${APP_URL}", "${APP_URL}/callback"], 
+    "audience": ["${APP_URL}"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
     "skip_consent": true,
@@ -231,8 +256,8 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code"],
-    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
-    "audience": ["https://wosoom.com"],    
+    "redirect_uris": ["${APP_URL}", "${APP_URL}/callback"], 
+    "audience": ["${APP_URL}"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
     "skip_consent": true,
@@ -266,8 +291,8 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["authorization_code", "refresh_token"],
     "response_types": ["code id_token"],
-    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
-    "audience": ["https://wosoom.com"],    
+    "redirect_uris": ["${APP_URL}", "${APP_URL}/callback"], 
+    "audience": ["${APP_URL}"],    
     "scope": "offline_access openid",
     "token_endpoint_auth_method": "client_secret_post",
     "skip_consent": false,
@@ -301,7 +326,7 @@ curl -X POST 'http://hydra-admin/admin/clients' -H 'Content-Type: application/js
     "client_secret": "${client_secret}",
     "grant_types": ["client_credentials"],
     "response_types": [],
-    "redirect_uris": ["https://wosoom.com", "https://wosoom.com/callback"], 
+    "redirect_uris": ["${APP_URL}", "${APP_URL}/callback"], 
     "audience": ["internal-service", "external-service"],
     "scope": "offline_access openid email profile",
     "token_endpoint_auth_method": "client_secret_basic",

@@ -73,9 +73,9 @@ EOF
 
         oathkeeper rules validate --file ory-oathkeeper/access-rules.json
 
-        curl -i https://auth.wosoom.com/authorize/health/alive
-        curl -i https://auth.wosoom.com/authorize/health/ready
-        curl https://auth.wosoom.com/authorize/.well-known/jwks.json | jq
+        curl -i https://auth.donation-app.test/authorize/health/alive
+        curl -i https://auth.donation-app.test/authorize/health/ready
+        curl https://auth.donation-app.test/authorize/.well-known/jwks.json | jq
 
         kubectl run -it --rm --image=nicolaka/netshoot debug-pod --namespace auth -- /bin/bash
         {
@@ -84,8 +84,8 @@ EOF
             curl http://hydra-admin/admin/clients | jq
         }
 
-        curl -k -i https://test.wosoom.com/allow/ 
-        curl -k -i -H "Accept: text/html" -X GET https://test.wosoom.com/allow/ 
+        curl -k -i https://test.donation-app.test/allow/ 
+        curl -k -i -H "Accept: text/html" -X GET https://test.donation-app.test/allow/ 
 
         # NOTE: gaining authorization code process requires a browser or tool that handles consent; SDK libraries for Oauth and OIDC compose requests better
         oauth2_flow() {
@@ -93,7 +93,7 @@ EOF
             # following the process should redirect after login with the authorization code provided in the URL
             {
                 {
-                    printf "visit in browser %s" "https://auth.wosoom.com/authorize/oauth2/auth?client_id=frontend-client&response_type=code%20id_token&scope=offline_access%20openid&redirect_uri=https://wosoom.com&state=some_random_string&nonce=some_other_random_string"
+                    printf "visit in browser %s" "https://auth.donation-app.test/authorize/oauth2/auth?client_id=frontend-client&response_type=code%20id_token&scope=offline_access%20openid&redirect_uri=https://donation-app.test&state=some_random_string&nonce=some_other_random_string"
 
                     # typically would run from within the cluster using the backend server of the frontend ui application (must be secure as it contains client secret)
                     # EXAMPLE for usage with client_secret_post
@@ -103,11 +103,11 @@ EOF
                     CLIENT_SECRET="$(kubectl get secret "ory-hydra-client--$CLIENT_ID" -n auth -o jsonpath='{.data.client_secret}' | base64 -d)"
                     # [manually eplace this] update the code from the result redirect url parameter after login
                     AUTHORIZATION_CODE=""
-                    REDIRECT_URI="https://wosoom.com"
+                    REDIRECT_URI="https://donation-app.test"
                 }
                 # or 
                 {
-                    printf "visit in browser %s" "https://auth.wosoom.com/authorize/oauth2/auth?client_id=frontend-client-oauth&response_type=code&scope=offline_access%20openid&redirect_uri=https://wosoom.com&state=some_random_string&nonce=some_random_str"
+                    printf "visit in browser %s" "https://auth.donation-app.test/authorize/oauth2/auth?client_id=frontend-client-oauth&response_type=code&scope=offline_access%20openid&redirect_uri=https://donation-app.test&state=some_random_string&nonce=some_random_str"
 
                     # typically would run from within the cluster using the backend server of the frontend ui application (must be secure as it contains client secret)
                     # EXAMPLE for usage with client_secret_post
@@ -117,11 +117,11 @@ EOF
                     # CLIENT_SECRET=""
                     # [manually eplace this] update the code from the result redirect url parameter after login
                     AUTHORIZATION_CODE="ory_ac_qdyriUfO1jyHatQzcjZ4oTvqei-aB5BRREoY-XwAB2o.jrTz5KqJ_wZzbCTMWf0Gl4tyTnyJwz6c66Zyhd-YKHc"
-                    REDIRECT_URI="https://wosoom.com"
+                    REDIRECT_URI="https://donation-app.test"
                 }
                 # or 
                 {
-                    printf "visit in browser %s" "https://auth.wosoom.com/authorize/oauth2/auth?client_id=frontend-client-oauth-consent&response_type=code%20id_token&scope=offline_access%20openid&redirect_uri=https://wosoom.com&state=some_random_string&nonce=some_other_random_string"
+                    printf "visit in browser %s" "https://auth.donation-app.test/authorize/oauth2/auth?client_id=frontend-client-oauth-consent&response_type=code%20id_token&scope=offline_access%20openid&redirect_uri=https://donation-app.test&state=some_random_string&nonce=some_other_random_string"
 
                     # typically would run from within the cluster using the backend server of the frontend ui application (must be secure as it contains client secret)
                     # EXAMPLE for usage with client_secret_post
@@ -131,14 +131,14 @@ EOF
                     CLIENT_ID="frontend-client-oauth-consent"
                     CLIENT_SECRET="$(kubectl get secret "ory-hydra-client--$CLIENT_ID" -n auth -o jsonpath='{.data.client_secret}' | base64 -d)" # NOTE: the secret is retreived by kubectl and base64 is applied thus decoding is required
                     # CLIENT_SECRET=""
-                    REDIRECT_URI="https://wosoom.com"
+                    REDIRECT_URI="https://donation-app.test"
                 }
 
             }
 
             # Execute the curl request
             # -v -s -o /dev/null  -k
-            tokens_payload=$(curl -k -s --request POST --url https://auth.wosoom.com/authorize/oauth2/token --header "accept: application/x-www-form-urlencoded" \
+            tokens_payload=$(curl -k -s --request POST --url https://auth.donation-app.test/authorize/oauth2/token --header "accept: application/x-www-form-urlencoded" \
                 --form "grant_type=authorization_code" \
                 --form "code=${AUTHORIZATION_CODE}" \
                 --form "redirect_uri=${REDIRECT_URI}" \
@@ -155,10 +155,10 @@ EOF
             {
                 curl -k -i --request POST --url http://hydra-admin/admin/oauth2/introspect --header "accept: application/x-www-form-urlencoded" --form "token=$ACCESS_TOKEN" 
                 # access restricted endpoint through Envoy Gateway + Oauthkeeper as introspection (calls http://oathkeeper-admin:80/decisions)
-                curl -i -k -H "Authorization: Bearer $ACCESS_TOKEN" https://test.wosoom.com/oauth-header
+                curl -i -k -H "Authorization: Bearer $ACCESS_TOKEN" https://test.donation-app.test/oauth-header
 
                 # request refresh token 
-                curl -k -i --request POST --url https://auth.wosoom.com/authorize/oauth2/token --header "accept: application/x-www-form-urlencoded" \
+                curl -k -i --request POST --url https://auth.donation-app.test/authorize/oauth2/token --header "accept: application/x-www-form-urlencoded" \
                     --form "grant_type=refresh_token" \
                     --form "refresh_token=${REFRESH_TOKEN}" \
                     --form "redirect_uri=${REDIRECT_URI}" \
@@ -177,7 +177,7 @@ EOF
             CLIENT_ID="internal-communication"
             CLIENT_SECRET="$(kubectl get secret "ory-hydra-client--$CLIENT_ID" -n auth -o jsonpath="{.data.client_secret}" | base64 -d)"
             # CLIENT_SECRET=""
-            REDIRECT_URI="https://wosoom.com"
+            REDIRECT_URI="https://donation-app.test"
             # Base64 encode the client ID and secret
             BASE64_CREDENTIALS=$(echo -n "${CLIENT_ID}:${CLIENT_SECRET}" | base64 -w 0)
             echo $BASE64_CREDENTIALS
@@ -186,7 +186,7 @@ EOF
             tokens_payload=$(curl -s -k -X POST -H "Content-Type: application/x-www-form-urlencoded" \
                 -H "Authorization: Basic ${BASE64_CREDENTIALS}" \
                 -d "grant_type=client_credentials" \
-                https://auth.wosoom.com/authorize/oauth2/token | jq)
+                https://auth.donation-app.test/authorize/oauth2/token | jq)
             echo $tokens_payload
             
             ACCESS_TOKEN=$(echo $tokens_payload | jq -r '.access_token')
@@ -195,14 +195,14 @@ EOF
             # verify tokens
             {
                 # access restricted endpoint through Envoy Gateway + Oauthkeeper as introspection (calls http://oathkeeper-admin:80/decisions)
-                curl -i -k -H "Authorization: Bearer $ACCESS_TOKEN" https://test.wosoom.com/oauth-header
+                curl -i -k -H "Authorization: Bearer $ACCESS_TOKEN" https://test.donation-app.test/oauth-header
                 # run within cluster
                 kubectl run -it --rm --image=nicolaka/netshoot debug-pod-auth --namespace auth -- /bin/bash
                 {
                     curl -k -i --request POST --url http://hydra-admin/admin/oauth2/introspect --header "accept: application/x-www-form-urlencoded" --form "token=$ACCESS_TOKEN" 
                 }
                 # check as JWT
-                curl -i -k -H "Authorization: Bearer $ACCESS_TOKEN" https://test.wosoom.com/jwt
+                curl -i -k -H "Authorization: Bearer $ACCESS_TOKEN" https://test.donation-app.test/jwt
             }
         }
         

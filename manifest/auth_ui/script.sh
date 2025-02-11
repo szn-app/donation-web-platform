@@ -1,6 +1,8 @@
 generate_secret_auth_ui() {
-# generate secrets for production
-    auth_ui_secret_file="./manifest/auth_ui/production/secret.env"
+    local environment=$1
+    local auth_ui_secret_file="./manifest/auth_ui/${environment}/secret.env"
+    
+    # generate secrets 
     if [ ! -f "$auth_ui_secret_file" ]; then
         t=$(mktemp) && cat <<EOF > "$t"
 COOKIE_SECRET=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)

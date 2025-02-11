@@ -21,13 +21,13 @@ images:
 configMapGenerator:
   - name: properties-map-auth-ui
     namespace: auth
-    env: .env
+    env: .env.development
 
 secretGenerator:
   - name: secrets-auth-ui
     namespace: auth
-    files:
-      - secret.env
+    envs:
+      - secret.env.development
 
 patches:
   - patch: |-
