@@ -42,7 +42,7 @@ export const oidcConfig: AuthProviderProps = {
   metadata: {
     authorization_endpoint: `${import.meta.env.VITE_AUTHORIZATION_URL}/oauth2/auth`, // Authorization endpoint
     // token_endpoint: "https://auth.wosoom.com/authorize/oauth2/token", // Token endpoint
-    token_endpoint: `${import.meta.env.VITE_APP_URL}/api/oauth2/token`, // custom Token endpoint
+    token_endpoint: `${import.meta.env.VITE_APP_URL}/api/oauth2_token`, // custom Token endpoint
     userinfo_endpoint: `${import.meta.env.VITE_AUTHORIZATION_URL}/userinfo`, // UserInfo endpoint
     end_session_endpoint: `${import.meta.env.VITE_AUTHORIZATION_URL}/oauth2/sessions/logout`, // End session endpoint
     jwks_uri: `${import.meta.env.VITE_AUTHORIZATION_URL}/.well-known/jwks.json`, // JWKS endpoint

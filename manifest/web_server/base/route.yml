@@ -30,13 +30,13 @@ spec:
       matches:
         - path:
             type: PathPrefix
-            value: /api/oauth2/token
+            value: /api/oauth2_token
       filters:
         - type: URLRewrite
           urlRewrite:
             path:
               type: ReplacePrefixMatch
-              replacePrefixMatch: /oauth2/token
+              replacePrefixMatch: /oauth2_token
 
 ---
 apiVersion: gateway.networking.k8s.io/v1

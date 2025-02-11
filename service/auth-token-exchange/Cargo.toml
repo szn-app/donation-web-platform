@@ -18,8 +18,8 @@ tower-cookies = "0.11.0"
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = "0.1.41" # Application-level tracing for Rust.
 tracing-subscriber = { version = "~0.3.19", features = ["env-filter"] } # Utilities for `tracing` subscribers.
+reqwest = { version = "0.11", features = ["json"] }
 
 [dev-dependencies]
 anyhow = "1.0.95"
 httpc-test = "0.1.10"
- 
