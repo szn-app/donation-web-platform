@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.11](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.10...auth-token-exchange@v0.0.11) (2025-02-11)
+
+
+### Features
+
+* auth-token-exchange fallback api implementation ([674b4ff](https://github.com/szn-app/donation-app/commit/674b4ffa4e81aa697f3ec343eb83ab3f20e966b3))
+* oauth2 token exchange initial impl ([1ba1d68](https://github.com/szn-app/donation-app/commit/1ba1d686a6e1b0488131403722efe19e67da4566))
+
 ## [0.0.10](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.9...auth-token-exchange@v0.0.10) (2025-02-08)
 
 

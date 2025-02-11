@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.14](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.13...donation-app@v0.4.14) (2025-02-11)
+
+
+### Features
+
+* auth-token-exchange fallback api implementation ([674b4ff](https://github.com/szn-app/donation-app/commit/674b4ffa4e81aa697f3ec343eb83ab3f20e966b3))
+
 ## [0.4.13](https://github.com/szn-app/donation-app/compare/donation-app@v0.4.12...donation-app@v0.4.13) (2025-02-08)
 
 
