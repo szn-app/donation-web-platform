@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.72](https://github.com/szn-app/donation-app/compare/web-server@v0.0.71...web-server@v0.0.72) (2025-02-11)
+
+
+### Features
+
+* scaffold oauth2 backend token exchange ([b5f30ca](https://github.com/szn-app/donation-app/commit/b5f30cae485488258b1ed3fdd7184d2a11a6680e))
+
 ## [0.0.71](https://github.com/szn-app/donation-app/compare/web-server@v0.0.70...web-server@v0.0.71) (2025-02-08)
 
 

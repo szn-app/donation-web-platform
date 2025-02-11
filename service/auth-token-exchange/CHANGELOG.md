@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.12](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.11...auth-token-exchange@v0.0.12) (2025-02-11)
+
+
+### Features
+
+* scaffold oauth2 backend token exchange ([b5f30ca](https://github.com/szn-app/donation-app/commit/b5f30cae485488258b1ed3fdd7184d2a11a6680e))
+
 ## [0.0.11](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.10...auth-token-exchange@v0.0.11) (2025-02-11)
 
 
