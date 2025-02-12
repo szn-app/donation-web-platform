@@ -70,7 +70,7 @@ feature_pull_request() {
     build_all_containers_directly_into_minikube() {
         # bind docker images directly inside minikube
         eval $(minikube docker-env) # bind docker command to minikube docker
-        (cd service/web-server && ./script.sh build_container_web_server)
+        (cd service/web-server && ./script.sh build_container_web_server development)
         (cd service/auth-ui && ./script.sh bulid_container_auth_ui)
         (cd service/auth-token-exchange && ./script.sh build_container_auth_token_exchange)
 
@@ -82,7 +82,7 @@ feature_pull_request() {
     }
 }
 build_all_containers_with_load() {
-    (cd service/web-server && ./script.sh build_container_web_server)
+    (cd service/web-server && ./script.sh build_container_web_server development)
     docker save web-server:latest | (eval $(minikube docker-env) && docker load)
 
     (cd service/auth-ui && ./script.sh bulid_container_auth_ui)
@@ -90,6 +90,63 @@ build_all_containers_with_load() {
     
     (cd service/auth-token-exchange && ./script.sh build_container_auth_token_exchange)
     docker save auth-token-exchange:latest | (eval $(minikube docker-env) && docker load)
+}
+
+dns_forwarding() { 
+    local loadbalancer_ip="$1"
+
+    dns_forwarding_hosts() {
+        # remove previous entries
+        sudo sed -i '/\.test/d' /etc/hosts
+        # add new entries
+        echo "$loadbalancer_ip donation-app.test auth.donation-app.test api.donation-app.test test.donation-app.test *.donation-app.test" | sudo tee -a /etc/hosts
+    }
+
+    dns_forwarding_dnsmasq() {
+        sudo systemctl enable dnsmasq
+        sudo systemctl start dnsmasq
+        verify() {
+            systemctl status dnsmasq
+        }
+
+        {
+            sudo sed -i '/\.test/d' /etc/dnsmasq.conf
+            # echo "address=/.donation-app.test/$loadbalancer_ip" | sudo tee -a /etc/dnsmasq.conf
+            echo "address=/.test/$loadbalancer_ip" | sudo tee -a /etc/dnsmasq.conf
+            if ! grep -q "strict-order" /etc/dnsmasq.conf; then
+                echo "strict-order" | sudo tee -a /etc/dnsmasq.conf
+            fi
+            sudo systemctl restart dnsmasq
+        }
+
+        {
+            CONFIG_FILE="/etc/systemd/resolved.conf"
+            sudo tee "$CONFIG_FILE" > /dev/null <<EOF
+[Resolve]
+DNS=127.0.0.1
+Domains=~test
+DNSSEC=no
+Cache=false
+DNSStubListener=no
+EOF
+            sudo systemctl restart systemd-resolved
+        }
+
+        # {
+        #     CONFIG_FILE="/etc/NetworkManager/conf.d/dnsmasq.conf"
+        #     echo -e "[main]\ndns=dnsmasq" | sudo tee "$CONFIG_FILE" > /dev/null
+        #     echo "address=/test/127.0.0.1" | sudo tee /etc/NetworkManager/dnsmasq.d/test-domains.conf
+        #     sudo systemctl restart NetworkManager
+        # }
+
+        sleep 2
+        nslookup donation-app.test 127.0.0.1
+        time nslookup donation-app.test 127.0.0.1
+        dig donation-app.test @127.0.0.1
+    }
+
+    # dns_forwarding_hosts
+    dns_forwarding_dnsmasq
 }
 
 {
@@ -174,9 +231,8 @@ deploy_local_minikube() {
         done
         loadbalancer_ip=$(kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
         curl -k -i --header "Host: donation-app.test" $loadbalancer_ip
-
-        sudo sed -i '/\.test/d' /etc/hosts
-        echo "$loadbalancer_ip donation-app.test auth.donation-app.test api.donation-app.test test.donation-app.test *.donation-app.test" | sudo tee -a /etc/hosts
+        
+        dns_forwarding $loadbalancer_ip
 
         curl -k -i --resolve donation-app.test:443:$loadbalancer_ip https://donation-app.test
         curl -k -i https://donation-app.test

@@ -7,7 +7,8 @@ WORKDIR /app
 COPY . /app
 
 RUN npm install -g pnpm
-RUN pnpm install && pnpm run build
+ARG ENV=production
+RUN if [ "$ENV" = "development" ]; then pnpm install && pnpm run build-dev; else pnpm install && pnpm run build; fi
 
 # configure run script
 COPY script/nginx.sh.template /bin/nginx.sh
