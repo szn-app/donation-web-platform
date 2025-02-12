@@ -16,6 +16,7 @@ install_hydra() {
 
     printf "install Ory Hydra \n"
     set -a 
+        pushd ./ory-hydra
         if [ -f ./.env.$environment ]; then
             source ./.env.$environment
         elif [ -f ./.env.$environment.local ]; then
@@ -24,6 +25,7 @@ install_hydra() {
             echo "Error: .env.$environment file not found."
             exit 1
         fi
+        popd
     set +a
     # preprocess file through substituting env values
     t="$(mktemp).yml" && envsubst < ory-hydra/hydra-config.template.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
@@ -120,9 +122,10 @@ install_hydra() {
 
 create_oauth2_client_for_trusted_app() {
     environment=$1
-    pushd ./manifest/auth/ory-hydra
+    pushd ./manifest/auth
 
     set -a 
+        pushd ./ory-hydra
         if [ -f ./.env.$environment ]; then
             source ./.env.$environment
         elif [ -f ./.env.$environment.local ]; then
@@ -131,6 +134,7 @@ create_oauth2_client_for_trusted_app() {
             echo "Error: .env.$environment file not found."
             exit 1
         fi
+        popd
     set +a
 
     example_hydra_admin() { 

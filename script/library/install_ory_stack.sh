@@ -36,7 +36,7 @@ install_ory_stack() {
     helm repo add bitnami https://charts.bitnami.com/bitnami 
     helm repo update
 
-    intall_kratos
+    install_kratos $environment
     install_hydra $environment
     install_keto
     create_oauth2_client_for_trusted_app $environment

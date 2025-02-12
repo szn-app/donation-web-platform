@@ -6,8 +6,10 @@ install_domain_dns_systemd_resolved_for_test_domains() {
 sudo mkdir -p /etc/systemd/resolved.conf.d
 sudo tee /etc/systemd/resolved.conf.d/minikube.conf << EOF
 [Resolve]
-DNS=$(minikube ip)
-Domains=test
+DNS=1.1.1.1 $(minikube ip) 8.8.8.8
+Domains=~test
+# use the System's Existing DNS: makes systemd-resolved use the default DNS as a fallback
+DNSStubListener=yes  # Important! Enables listening on 53 for stub queries
 EOF
 sudo systemctl restart systemd-resolved
 }

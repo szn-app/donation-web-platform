@@ -65,51 +65,10 @@ feature_pull_request() {
     # NOTE: automerge is applied only on PRs from branches that are prefix with "feature/*" or "hotfix/*".
 }
 
-minikube_development_example_scripts() {
-    # bind docker images directly inside minikube
-    eval $(minikube docker-env)
-    (cd service/web-server && ./script.sh build_container_web_server)
-
-    # kubectl create namespace donation-app 
-    kubectl config set-context --current --namespace=donation-app
-    kubectl config view && kubectl get namespace && kubectl config get-contexts
-
-    (cd manifest/development && kubectl apply -k .)
-    kubectl get all
- 
-    minikube ip 
-    # expose service to host: 
-    minikube tunnel # expose all possible resources (e.g. loadbalancers)
-    minikube service dev-web-server --url --namespace=donation-app
-
-    nslookup donation-app.test $(minikube ip) # query dns server running in minikube cluaster
-    dig donation-app.test
-    export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
-    curl --resolve donation-app.test:80:$GW donation-app.test
-    ping donation-app.test
-
-    # using ingress 
-    kubectl describe ingress ingress -n donation-app
-
-    # using gateway 
-    {
-        export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
-        kubectl apply -k ./manifest/gateway/development
-        minikube tunnel # otherwise, with ingress-dns and ingress.yml re-route to gateway will make accessing gateway through domain resolution directly with minikube ip
-        minikube dashboard
-        kubectl describe gateway -n donation-app
-        kubectl describe httproute -n donation-app
-        dig donation
-        curl --resolve donation-app.test:80:$GW donation-app.test
-
-    }
-
-    kubectl apply -k ./manifest/entrypoint/development
-}
-
 {
     # alternative approach to build all containers directly into minikube
     build_all_containers_directly_into_minikube() {
+        # bind docker images directly inside minikube
         eval $(minikube docker-env) # bind docker command to minikube docker
         (cd service/web-server && ./script.sh build_container_web_server)
         (cd service/auth-ui && ./script.sh bulid_container_auth_ui)
@@ -142,9 +101,48 @@ build_all_containers_with_load() {
     }
 }
 deploy_local_minikube() {
+    example_scripts() {
+        kubectl config view && kubectl get namespace && kubectl config get-contexts
+
+        (cd manifest/development && kubectl apply -k .)
+        kubectl get all
+    
+        minikube ip 
+        # expose service to host: 
+        minikube tunnel # expose all possible resources (e.g. loadbalancers)
+        minikube service dev-web-server --url --namespace=donation-app
+
+        nslookup donation-app.test $(minikube ip) # query dns server running in minikube cluaster
+        dig donation-app.test
+        export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
+        curl --resolve donation-app.test:80:$GW donation-app.test
+        ping donation-app.test
+
+        # using ingress 
+        kubectl describe ingress ingress -n donation-app
+
+        # using gateway 
+        {
+            export GW=$(minikube ip) # or direct gateway ip exposed using minikube tunnel.
+            kubectl apply -k ./manifest/gateway/development
+            minikube tunnel # otherwise, with ingress-dns and ingress.yml re-route to gateway will make accessing gateway through domain resolution directly with minikube ip
+            minikube dashboard
+            kubectl describe gateway -n donation-app
+            kubectl describe httproute -n donation-app
+            dig donation
+            curl --resolve donation-app.test:80:$GW donation-app.test
+        }
+
+        kubectl apply -k ./manifest/entrypoint/development
+    }
+
     build_all_containers_with_load
     # build_all_containers_directly_into_minikube
 
     source ./script/deploy.sh
     deploy --environment development --action install
+
+    # kubectl create namespace donation-app 
+    kubectl config set-context --current --namespace=donation-app
+    minikube tunnel
 }

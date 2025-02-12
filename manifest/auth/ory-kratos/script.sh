@@ -11,7 +11,9 @@ EOF
     fi
 }
 
-intall_kratos() { 
+install_kratos() {
+    environment=$1
+
     pushd ./manifest/auth
 
     check_kratos_secret_env() {
@@ -54,7 +56,7 @@ EOF
 
     printf "install Postgresql for Ory Kratos \n"
     set -a
-    source ory-kratos/db_kratos_secret.env
+        source ory-kratos/db_kratos_secret.env
     set +a
     helm upgrade --reuse-values --install postgres-kratos bitnami/postgresql -n auth --create-namespace -f ory-kratos/postgresql-values.yml \
         --set auth.username=${DB_USER} \
@@ -64,8 +66,20 @@ EOF
 
     printf "install Ory Kratos \n"
     set -a
-    source ory-kratos/jsonnet.env
-    source ory-kratos/secret.env
+        source ory-kratos/jsonnet.env
+        source ory-kratos/secret.env
+    set +a
+    set -a 
+        pushd ./ory-kratos
+        if [ -f ./.env.$environment ]; then
+            source ./.env.$environment
+        elif [ -f ./.env.$environment.local ]; then
+            source ./.env.$environment.local
+        else
+            echo "Error: .env.$environment file not found."
+            exit 1
+        fi
+        popd
     set +a
     # preprocess file through substituting env values
     t="$(mktemp).yml" && envsubst < ory-kratos/kratos-config.template.yml > $t && printf "generated manifest with replaced env variables: file://$t\n" 
