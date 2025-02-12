@@ -5,7 +5,8 @@ kind: Kustomization
 
 resources:
   - ../base
-  - ingress.yml
+  # - ingress.yml
+  - cert-manager-cluster-issuer.yml
 
 # namespace: donation-app # using customization transformers instead (which provides more options)
 transformers:
@@ -33,3 +34,77 @@ patches:
       - op: replace
         path: /spec/gatewayClassName
         value: "nginx"
+
+### patches for tls certificateRefs
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: "selfsigned-issuer"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/1/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/3/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/5/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/7/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/9/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/11/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/13/tls/certificateRefs/0/name
+        value: "dev-tls"
+
+  - target:
+      kind: Gateway
+      name: gateway
+    patch: |-
+      - op: replace
+        path: /spec/listeners/15/tls/certificateRefs/0/name
+        value: "dev-tls"
+

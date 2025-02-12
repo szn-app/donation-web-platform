@@ -6,10 +6,11 @@ install_domain_dns_systemd_resolved_for_test_domains() {
 sudo mkdir -p /etc/systemd/resolved.conf.d
 sudo tee /etc/systemd/resolved.conf.d/minikube.conf << EOF
 [Resolve]
-DNS=1.1.1.1 $(minikube ip) 8.8.8.8
-Domains=~test
+# DNS=1.1.1.1 $(minikube ip) 8.8.8.8
+DNS=$(minikube ip) 8.8.8.8
+Domains=test
 # use the System's Existing DNS: makes systemd-resolved use the default DNS as a fallback
-DNSStubListener=yes  # Important! Enables listening on 53 for stub queries
+# DNSStubListener=yes  # Important! Enables listening on 53 for stub queries
 EOF
 sudo systemctl restart systemd-resolved
 }
@@ -78,7 +79,8 @@ bootstrap_minikube() {
         install_gateway_api_crds
     }
 
-    install_domain_dns_systemd_resolved_for_test_domains
+    # TODO: use hotst solution instead to avoid issues
+    # install_domain_dns_systemd_resolved_for_test_domains
     # NOTE: careful of minikube dns caching and limitations, if dns name is not resolved after a change, an entire restart of minikube and probably disable/enable addons is required. 
 
     verify() { 

@@ -1,0 +1,26 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+  namespace: gateway
+spec:
+  selfSigned: {}
+
+---
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dev-tls
+  namespace: gateway
+spec:
+  secretName: dev-tls
+  dnsNames:
+  - '*.donation-app.test'
+  - donation-app.test
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+
+---
+

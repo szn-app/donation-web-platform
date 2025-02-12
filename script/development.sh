@@ -101,6 +101,8 @@ build_all_containers_with_load() {
     }
 }
 deploy_local_minikube() {
+    action=${1:-"install"}
+
     example_scripts() {
         kubectl config view && kubectl get namespace && kubectl config get-contexts
 
@@ -134,7 +136,18 @@ deploy_local_minikube() {
         }
 
         kubectl apply -k ./manifest/entrypoint/development
+
+        curl -i --header "Host: donation-app.test" "<ip-of-load-balancer>"
     }
+
+    if [ "$action" == "delete" ]; then
+        minikube delete
+        return 
+    elif [ "$action" == "kustomize" ]; then
+        source ./script/deploy.sh
+        deploy --environment development --action kustomize
+        return
+    fi
 
     build_all_containers_with_load
     # build_all_containers_directly_into_minikube
@@ -142,7 +155,27 @@ deploy_local_minikube() {
     source ./script/deploy.sh
     deploy --environment development --action install
 
-    # kubectl create namespace donation-app 
-    kubectl config set-context --current --namespace=donation-app
-    minikube tunnel
+    kubectl config set-context --current --namespace=all
+
+    tunnel() {
+        sudo echo "" # switch to sudo explicitely
+        minikube tunnel & 
+        terminate_background_jobs() {
+            jobs -p | xargs kill -9
+            pkill -f "minikube tunnel"
+        }
+
+        while ! kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}' &> /dev/null; do
+            echo "Waiting for load balancer IP..."
+            sleep 5
+        done
+        loadbalancer_ip=$(kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        curl -k -i --header "Host: donation-app.test" $loadbalancer_ip
+
+        sudo sed -i '/\.test/d' /etc/hosts
+        echo "$loadbalancer_ip donation-app.test *.donation-app.test" | sudo tee -a /etc/hosts
+
+        curl -k -i https://donation-app.test
+    }
+
 }
