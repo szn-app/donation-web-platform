@@ -39,7 +39,7 @@ spec:
 ---
 # Generic allow SecurityPolicy of HTTPRoute (cert-manager namespace) to Services (auth)
 # https://gateway.envoyproxy.io/docs/api/extension_types/#securitypolicy
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
   name: allow-policy-httproute-internal-test

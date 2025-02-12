@@ -9,7 +9,7 @@ images:
     newName: ghcr.io/szn-app/donation-app/web-server
     ### automatically updated
     # FIX: release-please updater NOT WOKRING. update release-please after PR accepted https://github.com/googleapis/release-please/pull/2422
-    newTag: v0.0.71 # x-release-please-version
+    newTag: v0.0.72 # x-release-please-version
 
 # configMapGenerator:
 #   - name: properties-map-web-server
