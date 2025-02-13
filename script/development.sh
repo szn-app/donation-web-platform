@@ -198,7 +198,8 @@ deploy_local_minikube() {
     }
 
     if [ "$action" == "delete" ]; then
-        minikube delete
+        source ./script/deploy.sh
+        deploy --environment development --action delete
         return 
     elif [ "$action" == "kustomize" ]; then
         source ./script/deploy.sh

@@ -137,6 +137,8 @@ create_oauth2_client_for_trusted_app() {
         popd
     set +a
 
+    echo "APP_URL: $APP_URL" # debug print
+
     example_hydra_admin() { 
         kubectl run -it --rm --image=debian:latest debug-pod --namespace auth -- /bin/bash
         {

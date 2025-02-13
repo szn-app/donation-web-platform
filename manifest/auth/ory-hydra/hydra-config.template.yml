@@ -3,8 +3,10 @@
 
 hydra:
   config:
+    # TODO: remove for production
     log:
       level: debug
+      leak_sensitive_values: true
 
     # dsn: memory # NOTE: use for development only
     dsn: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres-hydra-postgresql:5432/hydra_db?sslmode=disable&max_conns=20&max_idle_conns=4"
@@ -16,7 +18,7 @@ hydra:
         cors:
           enabled: true
           allowed_origins:
-            - http://localhost:1420
+            - https://donation-app.test
       admin:
         port: 4445
         request_log:

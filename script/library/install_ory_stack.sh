@@ -20,12 +20,19 @@ install_ory_stack() {
             helm uninstall postgres-kratos -n auth
             helm uninstall hydra -n auth
             helm uninstall postgres-hydra -n auth
+            helm uninstall keto -n auth
+            helm uninstall postgres-keto -n auth
             helm uninstall oathkeeper -n auth
 
             kubectl delete secret ory-hydra-client--frontend-client-oauth -n auth
             kubectl delete secret ory-hydra-client--frontend-client -n auth
             kubectl delete secret ory-hydra-client--internal-communication -n auth
             kubectl delete secret ory-hydra-client--oathkeeper-introspection -n auth
+
+            if [ "$environment" == "development" ]; then
+                kubectl delete pv --all
+                kubectl delete pvc --all
+            fi
             return 
         fi
     }
