@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.13](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.12...auth-token-exchange@v0.0.13) (2025-02-13)
+
+
+### Bug Fixes
+
+* accept http/2 post with form urlencoded ([52b3278](https://github.com/szn-app/donation-app/commit/52b3278c8c0d0ff3d46a6de084237a8c1a4f1e17))
+
 ## [0.0.12](https://github.com/szn-app/donation-app/compare/auth-token-exchange@v0.0.11...auth-token-exchange@v0.0.12) (2025-02-11)
 
 
