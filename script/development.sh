@@ -149,6 +149,30 @@ EOF
     dns_forwarding_dnsmasq
 }
 
+tunnel_minikube() {
+    terminate_background_jobs() {
+        jobs -p | xargs kill -9
+        pkill -f "minikube tunnel"
+    }
+    terminate_background_jobs
+
+    sudo echo "" # switch to sudo explicitely
+    minikube tunnel & 
+    sleep 5 
+    
+    while ! kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}' &> /dev/null; do
+        echo "Waiting for load balancer IP..."
+        sleep 5
+    done
+    loadbalancer_ip=$(kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    curl -k -i --header "Host: donation-app.test" $loadbalancer_ip
+    
+    dns_forwarding $loadbalancer_ip
+
+    curl -k -i --resolve donation-app.test:443:$loadbalancer_ip https://donation-app.test
+    curl -k -i https://donation-app.test
+}
+
 {
     deploy_local_minikube_only_app() {
         build_all_containers_with_load
@@ -215,29 +239,11 @@ deploy_local_minikube() {
 
     kubectl config set-context --current --namespace=all
 
-    tunnel() {
-        terminate_background_jobs() {
-            jobs -p | xargs kill -9
-            pkill -f "minikube tunnel"
-        }
-        terminate_background_jobs
-
-        sudo echo "" # switch to sudo explicitely
-        minikube tunnel & 
-        sleep 5 
-        
-        while ! kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}' &> /dev/null; do
-            echo "Waiting for load balancer IP..."
-            sleep 5
-        done
-        loadbalancer_ip=$(kubectl get svc nginx-gateway -n nginx-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        curl -k -i --header "Host: donation-app.test" $loadbalancer_ip
-        
-        dns_forwarding $loadbalancer_ip
-
-        curl -k -i --resolve donation-app.test:443:$loadbalancer_ip https://donation-app.test
-        curl -k -i https://donation-app.test
-    }
-
-    tunnel
+    read -t 5 -p "Do you want to execute tunnel_minikube? (y/n, default is y after 5 seconds): " choice
+    choice=${choice:-y}
+    if [[ "$choice" == "y" ]]; then
+        tunnel_minikube
+    else
+        echo "Skipping tunnel_minikube execution."
+    fi
 }
